@@ -32,13 +32,22 @@ export const InterestsPage: React.FC = () => {
 
   const handleRespond = async (interestId: string, action: 'accept' | 'reject') => {
     try {
+      // Immediate optimistic state update
+      setReceived((prev) =>
+        prev.map((item) =>
+          item._id === interestId ? { ...item, status: action === 'accept' ? 'accepted' : 'rejected' } : item
+        )
+      );
+
       await fetchApi('/interests/respond', {
         method: 'POST',
         body: JSON.stringify({ interestId, action }),
       });
-      fetchInterests();
+
+      await fetchInterests();
     } catch (err: any) {
       alert(err.message || 'Action failed');
+      await fetchInterests();
     }
   };
 

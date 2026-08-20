@@ -123,10 +123,26 @@ export const fetchInterestsFirestore = async (userId: string): Promise<any[]> =>
 export const respondInterestFirestore = async (docId: string, action: 'accept' | 'reject', senderId: string, receiverId: string) => {
   try {
     const newStatus = action === 'accept' ? 'accepted' : 'rejected';
-    const reqRef = doc(db, 'connection_requests', docId);
-    await setDoc(reqRef, { status: newStatus }, { merge: true });
+    
+    // Update document by docId or query by sender/receiver
+    try {
+      const reqRef = doc(db, 'connection_requests', docId);
+      await setDoc(reqRef, { status: newStatus }, { merge: true });
+    } catch (e) {
+      if (senderId && receiverId) {
+        const q = query(
+          collection(db, 'connection_requests'),
+          where('senderId', '==', senderId),
+          where('receiverId', '==', receiverId)
+        );
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          await setDoc(doc(db, 'connection_requests', snap.docs[0].id), { status: newStatus }, { merge: true });
+        }
+      }
+    }
 
-    if (action === 'accept') {
+    if (action === 'accept' && senderId && receiverId) {
       const convId = `conv_${[senderId, receiverId].sort().join('_')}`;
       const convRef = doc(db, 'conversations', convId);
       await setDoc(convRef, {

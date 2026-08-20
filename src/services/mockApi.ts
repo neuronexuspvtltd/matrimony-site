@@ -508,31 +508,46 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
 
   if (endpoint === '/interests/respond' && method === 'POST') {
     const { interestId, action } = body;
-    const interests = getItem(INTERESTS_KEY, []);
+    let interests = getItem(INTERESTS_KEY, []);
+
+    let targetItem = interests.find((i: any) => i._id === interestId || i.id === interestId);
+
+    // Query Cloud Firestore interests if not found in local storage
+    if (!targetItem && currentUser?.id) {
+      try {
+        const fsInterests = await fetchInterestsFirestore(currentUser.id);
+        targetItem = fsInterests.find((i: any) => i._id === interestId || i.id === interestId);
+      } catch (e) {}
+    }
+
+    const newStatus = action === 'accept' ? 'accepted' : 'rejected';
+    const senderId = targetItem?.senderId || '';
+    const receiverId = targetItem?.receiverId || currentUser?.id || '';
+
+    // Update local storage
     const idx = interests.findIndex((i: any) => i._id === interestId || i.id === interestId);
-
-    let senderId = '';
-    let receiverId = currentUser?.id || '';
-
     if (idx !== -1) {
-      interests[idx].status = action === 'accept' ? 'accepted' : 'rejected';
-      setItem(INTERESTS_KEY, interests);
-      senderId = interests[idx].senderId;
+      interests[idx].status = newStatus;
+    } else if (targetItem) {
+      targetItem.status = newStatus;
+      interests.unshift(targetItem);
     }
+    setItem(INTERESTS_KEY, interests);
 
-    // Sync response to Cloud Firestore
-    if (senderId) {
-      respondInterestFirestore(interestId, action, senderId, receiverId).catch(() => {});
-    }
+    // Update Cloud Firestore in real time!
+    respondInterestFirestore(interestId, action, senderId, receiverId).catch((err) =>
+      console.warn('Firestore respond interest error:', err)
+    );
 
-    if (action === 'accept') {
+    if (action === 'accept' && senderId && currentUser?.id) {
+      const convId = `conv_${[senderId, currentUser.id].sort().join('_')}`;
       const conversations = getItem(CONVERSATIONS_KEY, []);
       let conv = conversations.find((c: any) =>
-        c.participants.includes(senderId) && c.participants.includes(currentUser.id)
+        c.participants && c.participants.includes(senderId) && c.participants.includes(currentUser.id)
       );
       if (!conv) {
         conv = {
-          _id: `conv_${[senderId, currentUser.id].sort().join('_')}`,
+          _id: convId,
           participants: [senderId, currentUser.id],
           lastMessage: 'Mutual connection established. Say Hi!',
           lastMessageAt: new Date().toISOString(),
@@ -560,7 +575,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       sendNotificationFirestore(notifObj).catch(() => {});
     }
 
-    return { message: `Interest ${action}ed` };
+    return { message: `Interest ${action}ed`, interest: targetItem };
   }
 
   if (endpoint === '/interests/my-interests') {
@@ -573,7 +588,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
         if (firestoreInterests && firestoreInterests.length > 0) {
           const map = new Map();
           [...interests, ...firestoreInterests].forEach((item: any) => {
-            const key = `${item.senderId}_${item.receiverId}`;
+            const key = item._id || item.id || `${item.senderId}_${item.receiverId}`;
             map.set(key, item);
           });
           interests = Array.from(map.values());
