@@ -4,6 +4,14 @@ import {
   uploadPdfBiodataToStorage,
   fetchProfilesFromFirestore,
   findProfileByEmailFirestore,
+  sendInterestFirestore,
+  fetchInterestsFirestore,
+  respondInterestFirestore,
+  sendNotificationFirestore,
+  fetchNotificationsFirestore,
+  fetchConversationsFirestore,
+  fetchMessagesFirestore,
+  sendMessageFirestore,
 } from './firebaseService';
 
 const PROFILES_KEY = 'pb_profiles_data';
@@ -65,7 +73,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
   // Initialize initial mock data from local storage
   let rawProfiles: ProfileData[] = getItem(PROFILES_KEY, initialProfiles);
 
-  // Sync fresh accounts from Cloud Firestore so logins work across all laptops, phones & devices!
+  // Sync fresh accounts from Cloud Firestore so logins & search work across all laptops, phones & devices!
   try {
     const firestoreProfiles = await fetchProfilesFromFirestore();
     if (firestoreProfiles && firestoreProfiles.length > 0) {
@@ -404,7 +412,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
         setItem(VIEWS_KEY, views);
 
         const notifications = getItem(NOTIFICATIONS_KEY, []);
-        notifications.unshift({
+        const notifObj = {
           _id: `notif_${Date.now()}`,
           userId: targetProf.user._id,
           type: 'PROFILE_VIEW',
@@ -416,8 +424,12 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
           targetProfileId: currentUser.profileId || 'PB-10024',
           isRead: false,
           createdAt: new Date().toISOString(),
-        });
+        };
+        notifications.unshift(notifObj);
         setItem(NOTIFICATIONS_KEY, notifications);
+
+        // Sync real-time notification to Cloud Firestore
+        sendNotificationFirestore(notifObj).catch(() => {});
       }
     }
 
@@ -447,7 +459,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     return { count: formattedViews.length, views: formattedViews };
   }
 
-  // --- 5. INTERESTS ENDPOINTS ---
+  // --- 5. REAL-TIME INTERESTS / CONNECTION REQUESTS ENDPOINTS ---
   if (endpoint === '/interests/send' && method === 'POST') {
     const { receiverId } = body;
     const interests = getItem(INTERESTS_KEY, []);
@@ -466,8 +478,13 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     interests.unshift(newInterest);
     setItem(INTERESTS_KEY, interests);
 
+    // Push connection request to Cloud Firestore real-time collection!
+    sendInterestFirestore(currentUser.id, receiverId).catch((err) =>
+      console.warn('Firestore interest send error:', err)
+    );
+
     const notifications = getItem(NOTIFICATIONS_KEY, []);
-    notifications.unshift({
+    const notifObj = {
       _id: `notif_${Date.now()}`,
       userId: receiverId,
       type: 'INTEREST_RECEIVED',
@@ -479,8 +496,12 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       targetProfileId: currentUser.profileId,
       isRead: false,
       createdAt: new Date().toISOString(),
-    });
+    };
+    notifications.unshift(notifObj);
     setItem(NOTIFICATIONS_KEY, notifications);
+
+    // Sync notification to Cloud Firestore
+    sendNotificationFirestore(notifObj).catch(() => {});
 
     return { message: 'Interest sent successfully', interest: newInterest };
   }
@@ -488,58 +509,87 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
   if (endpoint === '/interests/respond' && method === 'POST') {
     const { interestId, action } = body;
     const interests = getItem(INTERESTS_KEY, []);
-    const idx = interests.findIndex((i: any) => i._id === interestId);
+    const idx = interests.findIndex((i: any) => i._id === interestId || i.id === interestId);
+
+    let senderId = '';
+    let receiverId = currentUser?.id || '';
 
     if (idx !== -1) {
       interests[idx].status = action === 'accept' ? 'accepted' : 'rejected';
       setItem(INTERESTS_KEY, interests);
-
-      if (action === 'accept') {
-        const conversations = getItem(CONVERSATIONS_KEY, []);
-        let conv = conversations.find((c: any) =>
-          c.participants.includes(interests[idx].senderId) && c.participants.includes(currentUser.id)
-        );
-        if (!conv) {
-          conv = {
-            _id: `conv_${Date.now()}`,
-            participants: [interests[idx].senderId, currentUser.id],
-            lastMessage: 'Mutual connection established. Say Hi!',
-            lastMessageAt: new Date().toISOString(),
-          };
-          conversations.unshift(conv);
-          setItem(CONVERSATIONS_KEY, conversations);
-        }
-
-        const notifications = getItem(NOTIFICATIONS_KEY, []);
-        notifications.unshift({
-          _id: `notif_${Date.now()}`,
-          userId: interests[idx].senderId,
-          type: 'INTEREST_ACCEPTED',
-          titleEn: '🎉 Interest Accepted!',
-          titleMr: '🎉 आवड (Interest) स्विकारली!',
-          messageEn: `${currentUser.fullName} accepted your interest request!`,
-          messageMr: `${currentUser.fullName} यांनी तुमची आवड स्वीकारली!`,
-          senderId: currentUser.id,
-          targetProfileId: currentUser.profileId,
-          isRead: false,
-          createdAt: new Date().toISOString(),
-        });
-        setItem(NOTIFICATIONS_KEY, notifications);
-      }
-      return { message: `Interest ${action}ed`, interest: interests[idx] };
+      senderId = interests[idx].senderId;
     }
+
+    // Sync response to Cloud Firestore
+    if (senderId) {
+      respondInterestFirestore(interestId, action, senderId, receiverId).catch(() => {});
+    }
+
+    if (action === 'accept') {
+      const conversations = getItem(CONVERSATIONS_KEY, []);
+      let conv = conversations.find((c: any) =>
+        c.participants.includes(senderId) && c.participants.includes(currentUser.id)
+      );
+      if (!conv) {
+        conv = {
+          _id: `conv_${[senderId, currentUser.id].sort().join('_')}`,
+          participants: [senderId, currentUser.id],
+          lastMessage: 'Mutual connection established. Say Hi!',
+          lastMessageAt: new Date().toISOString(),
+        };
+        conversations.unshift(conv);
+        setItem(CONVERSATIONS_KEY, conversations);
+      }
+
+      const notifications = getItem(NOTIFICATIONS_KEY, []);
+      const notifObj = {
+        _id: `notif_${Date.now()}`,
+        userId: senderId,
+        type: 'INTEREST_ACCEPTED',
+        titleEn: '🎉 Interest Accepted!',
+        titleMr: '🎉 आवड (Interest) स्विकारली!',
+        messageEn: `${currentUser.fullName} accepted your interest request!`,
+        messageMr: `${currentUser.fullName} यांनी तुमची आवड स्वीकारली!`,
+        senderId: currentUser.id,
+        targetProfileId: currentUser.profileId,
+        isRead: false,
+        createdAt: new Date().toISOString(),
+      };
+      notifications.unshift(notifObj);
+      setItem(NOTIFICATIONS_KEY, notifications);
+      sendNotificationFirestore(notifObj).catch(() => {});
+    }
+
+    return { message: `Interest ${action}ed` };
   }
 
   if (endpoint === '/interests/my-interests') {
-    const interests = getItem(INTERESTS_KEY, []);
+    let interests = getItem(INTERESTS_KEY, []);
+
+    // Merge Cloud Firestore interests so requests sent from ANY device show up!
+    if (currentUser?.id) {
+      try {
+        const firestoreInterests = await fetchInterestsFirestore(currentUser.id);
+        if (firestoreInterests && firestoreInterests.length > 0) {
+          const map = new Map();
+          [...interests, ...firestoreInterests].forEach((item: any) => {
+            const key = `${item.senderId}_${item.receiverId}`;
+            map.set(key, item);
+          });
+          interests = Array.from(map.values());
+          setItem(INTERESTS_KEY, interests);
+        }
+      } catch (e) {}
+    }
+
     const received = interests.filter((i: any) => i.receiverId === currentUser?.id);
     const sent = interests.filter((i: any) => i.senderId === currentUser?.id);
 
     const formatList = (list: any[], userKey: string) =>
       list.map((item) => {
-        const p = profiles.find((prof: ProfileData) => prof.user._id === item[userKey]);
+        const p = profiles.find((prof: ProfileData) => prof.user._id === item[userKey] || prof._id === item[userKey]);
         return {
-          _id: item._id,
+          _id: item._id || item.id,
           status: item.status,
           createdAt: item.createdAt,
           user: p ? {
@@ -588,9 +638,22 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     });
   }
 
-  // --- 7. NOTIFICATIONS ENDPOINTS ---
+  // --- 7. NOTIFICATIONS ENDPOINTS (Cloud Firestore Synced) ---
   if (endpoint === '/notifications') {
-    const notifications = getItem(NOTIFICATIONS_KEY, []);
+    let notifications = getItem(NOTIFICATIONS_KEY, []);
+
+    if (currentUser?.id) {
+      try {
+        const firestoreNotifs = await fetchNotificationsFirestore(currentUser.id);
+        if (firestoreNotifs && firestoreNotifs.length > 0) {
+          const nMap = new Map();
+          [...notifications, ...firestoreNotifs].forEach((n: any) => nMap.set(n._id || n.id, n));
+          notifications = Array.from(nMap.values());
+          setItem(NOTIFICATIONS_KEY, notifications);
+        }
+      } catch (e) {}
+    }
+
     const myNotifs = notifications.filter((n: any) => n.userId === currentUser?.id);
     const unread = myNotifs.filter((n: any) => !n.isRead).length;
     return { notifications: myNotifs, unreadCount: unread };
@@ -616,16 +679,29 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     return { message: 'All read' };
   }
 
-  // --- 8. MESSAGING ENDPOINTS ---
+  // --- 8. MESSAGING ENDPOINTS (Cloud Firestore Synced) ---
   if (endpoint === '/messages/conversations') {
-    const conversations = getItem(CONVERSATIONS_KEY, []);
-    const myConvs = conversations.filter((c: any) => c.participants.includes(currentUser?.id));
+    let conversations = getItem(CONVERSATIONS_KEY, []);
+
+    if (currentUser?.id) {
+      try {
+        const fsConvs = await fetchConversationsFirestore(currentUser.id);
+        if (fsConvs && fsConvs.length > 0) {
+          const cMap = new Map();
+          [...conversations, ...fsConvs].forEach((c: any) => cMap.set(c._id || c.id, c));
+          conversations = Array.from(cMap.values());
+          setItem(CONVERSATIONS_KEY, conversations);
+        }
+      } catch (e) {}
+    }
+
+    const myConvs = conversations.filter((c: any) => c.participants && c.participants.includes(currentUser?.id));
 
     return myConvs.map((conv: any) => {
       const partnerId = conv.participants.find((p: string) => p !== currentUser?.id);
-      const partnerProf = profiles.find((p: ProfileData) => p.user._id === partnerId);
+      const partnerProf = profiles.find((p: ProfileData) => p.user._id === partnerId || p._id === partnerId);
       return {
-        _id: conv._id,
+        _id: conv._id || conv.id,
         lastMessage: conv.lastMessage,
         lastMessageAt: conv.lastMessageAt,
         partner: partnerProf ? {
@@ -640,7 +716,18 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
 
   if (endpoint.startsWith('/messages/conversations/')) {
     const convId = endpoint.replace('/messages/conversations/', '');
-    const messages = getItem(MESSAGES_KEY, []);
+    let messages = getItem(MESSAGES_KEY, []);
+
+    try {
+      const fsMsgs = await fetchMessagesFirestore(convId);
+      if (fsMsgs && fsMsgs.length > 0) {
+        const mMap = new Map();
+        [...messages, ...fsMsgs].forEach((m: any) => mMap.set(m._id || m.id, m));
+        messages = Array.from(mMap.values());
+        setItem(MESSAGES_KEY, messages);
+      }
+    } catch (e) {}
+
     return messages.filter((m: any) => m.conversationId === convId);
   }
 
@@ -658,12 +745,18 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     setItem(MESSAGES_KEY, messages);
 
     const conversations = getItem(CONVERSATIONS_KEY, []);
-    const cIdx = conversations.findIndex((c: any) => c._id === conversationId);
+    const cIdx = conversations.findIndex((c: any) => c._id === conversationId || c.id === conversationId);
     if (cIdx !== -1) {
       conversations[cIdx].lastMessage = content;
       conversations[cIdx].lastMessageAt = new Date().toISOString();
       setItem(CONVERSATIONS_KEY, conversations);
     }
+
+    // Push real-time message to Cloud Firestore database!
+    sendMessageFirestore(conversationId, currentUser.id, content).catch((err) =>
+      console.warn('Firestore message send error:', err)
+    );
+
     return newMsg;
   }
 
