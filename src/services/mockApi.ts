@@ -9,6 +9,20 @@ const CONVERSATIONS_KEY = 'pb_conversations_data';
 const MESSAGES_KEY = 'pb_messages_data';
 const REPORTS_KEY = 'pb_reports_data';
 const SUCCESS_STORIES_KEY = 'pb_success_stories_data';
+const SITE_CONTENT_KEY = 'pb_site_content_data';
+
+const defaultSiteContent = {
+  heroHeadlineEn: 'Choose Your Forever',
+  heroHeadlineMr: 'तुमच्या आयुष्याचा साथीदार शोधा',
+  heroSubtitleEn: 'Find love on your terms with thousands of verified profiles',
+  heroSubtitleMr: 'तुमच्या आवडीनुसार आणि विश्वासाने शोधा सुयोग्य स्थळे',
+  supportPhone: '+91 98765 43210',
+  supportPhoneAlt: '+91 98765 43211',
+  supportEmail: 'support@pavithrabandhan.com',
+  helpEmail: 'help@pavithrabandhan.com',
+  puneOffice: 'FC Road, Shivajinagar, Pune',
+  mumbaiOffice: 'Nariman Point, Mumbai',
+};
 
 // Helper to load or initialize LocalStorage
 const getItem = (key: string, defaultVal: any) => {
@@ -30,7 +44,7 @@ const setItem = (key: string, val: any) => {
 
 // Calculate profile completion percentage
 const calculateCompletion = (p: any): number => {
-  let score = 30; // base profile info
+  let score = 30;
   if (p.primaryPhoto) score += 20;
   if (p.biodataUrl) score += 20;
   if (p.aboutMe && p.aboutMe.length > 20) score += 10;
@@ -180,6 +194,18 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     return { user: currentUser };
   }
 
+  // --- SITE CONTENT ENDPOINTS FOR ADMIN CMS ---
+  if (endpoint === '/admin/site-content' && method === 'GET') {
+    return getItem(SITE_CONTENT_KEY, defaultSiteContent);
+  }
+
+  if (endpoint === '/admin/site-content' && method === 'PUT') {
+    const current = getItem(SITE_CONTENT_KEY, defaultSiteContent);
+    const updated = { ...current, ...body };
+    setItem(SITE_CONTENT_KEY, updated);
+    return { message: 'Site content saved and published successfully', content: updated };
+  }
+
   // --- 2. SEARCH & PROFILES ENDPOINTS ---
   if (endpoint === '/search/featured') {
     return profiles.filter((p: ProfileData) => p.isFeatured).slice(0, 6);
@@ -268,6 +294,14 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
 
     let targetProf = profiles.find((p: ProfileData) => p.profileId === targetId || p._id === targetId || p.user._id === targetId);
     if (!targetProf) throw new Error('Profile not found');
+
+    // Admin Access Bypass: Admin gets full access to photos & biodatas
+    if (currentUser?.role === 'admin') {
+      return {
+        ...targetProf,
+        isAdminAccess: true,
+      };
+    }
 
     if (currentUser && currentUser.id !== targetProf.user._id) {
       const views = getItem(VIEWS_KEY, []);

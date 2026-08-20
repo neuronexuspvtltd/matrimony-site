@@ -20,6 +20,8 @@ import {
   Globe2,
   X,
   Lock,
+  Save,
+  FileText,
 } from 'lucide-react';
 
 export const AdminPage: React.FC = () => {
@@ -29,9 +31,21 @@ export const AdminPage: React.FC = () => {
   const [usersList, setUsersList] = useState<any[]>([]);
   const [reportsList, setReportsList] = useState<any[]>([]);
   const [storiesList, setStoriesList] = useState<any[]>([]);
-  const [tab, setTab] = useState<'users' | 'stories' | 'announcement' | 'reports'>('users');
+  const [siteContent, setSiteContent] = useState<any>({
+    heroHeadlineEn: 'Choose Your Forever',
+    heroHeadlineMr: 'तुमच्या आयुष्याचा साथीदार शोधा',
+    heroSubtitleEn: 'Find love on your terms with thousands of verified profiles',
+    heroSubtitleMr: 'तुमच्या आवडीनुसार आणि विश्वासाने शोधा सुयोग्य स्थळे',
+    supportPhone: '+91 98765 43210',
+    supportEmail: 'support@pavithrabandhan.com',
+    puneOffice: 'FC Road, Shivajinagar, Pune',
+    mumbaiOffice: 'Nariman Point, Mumbai',
+  });
+
+  const [tab, setTab] = useState<'users' | 'stories' | 'content' | 'announcement' | 'reports'>('users');
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [savingContent, setSavingContent] = useState(false);
 
   // Edit User Modal State
   const [editingUser, setEditingUser] = useState<any | null>(null);
@@ -59,16 +73,18 @@ export const AdminPage: React.FC = () => {
   const fetchAdminData = async () => {
     setLoading(true);
     try {
-      const [sRes, uRes, rRes, stRes] = await Promise.all([
+      const [sRes, uRes, rRes, stRes, cRes] = await Promise.all([
         fetchApi('/admin/stats'),
         fetchApi(`/admin/users?search=${encodeURIComponent(search)}`),
         fetchApi('/admin/reports'),
         fetchApi('/admin/stories'),
+        fetchApi('/admin/site-content'),
       ]);
       setStats(sRes);
       setUsersList(uRes.users || []);
       setReportsList(rRes || []);
       setStoriesList(stRes || []);
+      if (cRes) setSiteContent(cRes);
     } catch (err) {
       console.error(err);
     } finally {
@@ -137,6 +153,22 @@ export const AdminPage: React.FC = () => {
     }
   };
 
+  const handleSaveSiteContent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingContent(true);
+    try {
+      const res = await fetchApi('/admin/site-content', {
+        method: 'PUT',
+        body: JSON.stringify(siteContent),
+      });
+      alert(res.message || 'Site content updated and published live!');
+    } catch (err: any) {
+      alert(err.message || 'Error saving site content');
+    } finally {
+      setSavingContent(false);
+    }
+  };
+
   const handleAddStory = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newStory.namesEn || !newStory.quoteEn) return;
@@ -184,10 +216,10 @@ export const AdminPage: React.FC = () => {
         <div>
           <h1 className="font-serif text-3xl font-bold text-brand-950 flex items-center gap-2">
             <Shield className="w-7 h-7 text-brand-700" />
-            <span>Website Content & Admin Management Panel</span>
+            <span>Master Website CMS & Admin Control Center</span>
           </h1>
           <p className="text-xs text-gray-500 mt-1">
-            Complete administrative control over profiles, PDF biodatas, homepage success stories, and site notifications.
+            Complete administrative control over all member profiles, verification, PDF biodatas, site content & copy, success stories, and announcements.
           </p>
         </div>
       </div>
@@ -250,7 +282,7 @@ export const AdminPage: React.FC = () => {
             tab === 'users' ? 'border-b-2 border-brand-900 text-brand-900' : 'text-gray-500 hover:text-gray-800'
           }`}
         >
-          Member & Profile Management ({usersList.length})
+          Member Profiles & Badges ({usersList.length})
         </button>
         <button
           onClick={() => setTab('stories')}
@@ -261,12 +293,20 @@ export const AdminPage: React.FC = () => {
           Success Stories CMS ({storiesList.length})
         </button>
         <button
+          onClick={() => setTab('content')}
+          className={`pb-3 text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
+            tab === 'content' ? 'border-b-2 border-brand-900 text-brand-900' : 'text-gray-500 hover:text-gray-800'
+          }`}
+        >
+          Website Site Content & Copy Editor
+        </button>
+        <button
           onClick={() => setTab('announcement')}
           className={`pb-3 text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
             tab === 'announcement' ? 'border-b-2 border-brand-900 text-brand-900' : 'text-gray-500 hover:text-gray-800'
           }`}
         >
-          Site Announcements & Banners
+          System Announcements & Banners
         </button>
         <button
           onClick={() => setTab('reports')}
@@ -401,7 +441,7 @@ export const AdminPage: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 2: Success Stories CMS (Homepage Content) */}
+      {/* TAB 2: Success Stories CMS */}
       {tab === 'stories' && (
         <div className="bg-white rounded-3xl border border-ivory-300 p-6 space-y-6 shadow-sm">
           <div className="flex items-center justify-between">
@@ -439,7 +479,123 @@ export const AdminPage: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 3: System Announcements & Banners */}
+      {/* TAB 3: Website Site Content & Copy Editor */}
+      {tab === 'content' && (
+        <form onSubmit={handleSaveSiteContent} className="bg-white rounded-3xl border border-ivory-300 p-6 space-y-6 max-w-3xl shadow-sm">
+          <div>
+            <h3 className="font-serif font-bold text-brand-950 text-lg flex items-center gap-2">
+              <FileText className="w-5 h-5 text-gold-600" />
+              <span>Website Site Content & Copy Editor</span>
+            </h3>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Edit live homepage headlines, subtitles, support contact numbers, and office addresses.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Hero Headline (English)</label>
+                <input
+                  type="text"
+                  value={siteContent.heroHeadlineEn || ''}
+                  onChange={(e) => setSiteContent({ ...siteContent, heroHeadlineEn: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border text-xs"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Hero Headline (मराठी)</label>
+                <input
+                  type="text"
+                  value={siteContent.heroHeadlineMr || ''}
+                  onChange={(e) => setSiteContent({ ...siteContent, heroHeadlineMr: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border text-xs"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Hero Subtitle (English)</label>
+                <textarea
+                  value={siteContent.heroSubtitleEn || ''}
+                  onChange={(e) => setSiteContent({ ...siteContent, heroSubtitleEn: e.target.value })}
+                  rows={2}
+                  className="w-full px-3 py-2 rounded-xl border text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Hero Subtitle (मराठी)</label>
+                <textarea
+                  value={siteContent.heroSubtitleMr || ''}
+                  onChange={(e) => setSiteContent({ ...siteContent, heroSubtitleMr: e.target.value })}
+                  rows={2}
+                  className="w-full px-3 py-2 rounded-xl border text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="border-t border-gray-100 pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Support Phone Number</label>
+                <input
+                  type="text"
+                  value={siteContent.supportPhone || ''}
+                  onChange={(e) => setSiteContent({ ...siteContent, supportPhone: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Support Email Address</label>
+                <input
+                  type="email"
+                  value={siteContent.supportEmail || ''}
+                  onChange={(e) => setSiteContent({ ...siteContent, supportEmail: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Pune HQ Office Address</label>
+                <input
+                  type="text"
+                  value={siteContent.puneOffice || ''}
+                  onChange={(e) => setSiteContent({ ...siteContent, puneOffice: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Mumbai Office Address</label>
+                <input
+                  type="text"
+                  value={siteContent.mumbaiOffice || ''}
+                  onChange={(e) => setSiteContent({ ...siteContent, mumbaiOffice: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border text-xs"
+                />
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={savingContent}
+            className="px-6 py-3 bg-brand-900 text-gold-300 font-bold rounded-xl text-xs flex items-center gap-2 cursor-pointer shadow-md hover:bg-brand-950"
+          >
+            <Save className="w-4 h-4" />
+            <span>{savingContent ? 'Saving...' : 'Save & Publish Live Site Content'}</span>
+          </button>
+        </form>
+      )}
+
+      {/* TAB 4: System Announcements & Banners */}
       {tab === 'announcement' && (
         <form onSubmit={handleBroadcastAnnouncement} className="bg-white rounded-3xl border border-ivory-300 p-6 space-y-4 max-w-2xl shadow-sm">
           <h3 className="font-serif font-bold text-brand-950 text-base">Broadcast System Notification & Banner</h3>
@@ -500,7 +656,7 @@ export const AdminPage: React.FC = () => {
         </form>
       )}
 
-      {/* TAB 4: Reports Review */}
+      {/* TAB 5: Reports Review */}
       {tab === 'reports' && (
         <div className="bg-white rounded-3xl border border-ivory-300 p-6 space-y-4 shadow-sm">
           {reportsList.length === 0 ? (
@@ -569,7 +725,7 @@ export const AdminPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-semibold text-gray-700 mb-1">PDF Biodata Privacy</label>
+                <label className="block font-semibold text-gray-700 mb-1">PDF Biodata Privacy Setting</label>
                 <select
                   value={editingUser.biodataPrivacy || 'Connections Only'}
                   onChange={(e) => setEditingUser({ ...editingUser, biodataPrivacy: e.target.value })}
