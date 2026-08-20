@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { fetchApi } from '../services/api';
-import { Heart, Check, X, MessageSquare } from 'lucide-react';
+import { Heart, Check, X, MessageSquare, ShieldCheck } from 'lucide-react';
 
 export const InterestsPage: React.FC = () => {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
 
-  const [tab, setTab] = useState<'received' | 'sent'>('received');
-  const [received, setReceived] = useState<any[]>([]);
+  const [tab, setTab] = useState<'received' | 'sent' | 'accepted'>('received');
+  const [allReceived, setAllReceived] = useState<any[]>([]);
   const [sent, setSent] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -17,7 +17,7 @@ export const InterestsPage: React.FC = () => {
     setLoading(true);
     try {
       const data = await fetchApi('/interests/my-interests');
-      setReceived(data.received || []);
+      setAllReceived(data.received || []);
       setSent(data.sent || []);
     } catch (err) {
       console.error(err);
@@ -32,10 +32,12 @@ export const InterestsPage: React.FC = () => {
 
   const handleRespond = async (interestId: string, action: 'accept' | 'reject') => {
     try {
-      // Immediate optimistic state update
-      setReceived((prev) =>
+      // Instantly remove from pending received list in UI
+      setAllReceived((prev) =>
         prev.map((item) =>
-          item._id === interestId ? { ...item, status: action === 'accept' ? 'accepted' : 'rejected' } : item
+          (item._id === interestId || item.id === interestId)
+            ? { ...item, status: action === 'accept' ? 'accepted' : 'rejected' }
+            : item
         )
       );
 
@@ -44,6 +46,14 @@ export const InterestsPage: React.FC = () => {
         body: JSON.stringify({ interestId, action }),
       });
 
+      if (action === 'accept') {
+        alert(
+          language === 'EN'
+            ? 'Interest accepted! You can now chat in Messages.'
+            : 'आवड स्वीकारली! तुम्ही आता संदेश पाठवू शकता.'
+        );
+      }
+
       await fetchInterests();
     } catch (err: any) {
       alert(err.message || 'Action failed');
@@ -51,7 +61,17 @@ export const InterestsPage: React.FC = () => {
     }
   };
 
-  const list = tab === 'received' ? received : sent;
+  // Filter lists based on tab
+  const pendingReceived = allReceived.filter((item) => item.status === 'pending');
+  const acceptedReceived = allReceived.filter((item) => item.status === 'accepted');
+
+  const getActiveList = () => {
+    if (tab === 'received') return pendingReceived;
+    if (tab === 'accepted') return acceptedReceived;
+    return sent;
+  };
+
+  const list = getActiveList();
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -71,19 +91,28 @@ export const InterestsPage: React.FC = () => {
         </div>
 
         {/* Tab Buttons */}
-        <div className="flex bg-ivory-200 p-1 rounded-2xl">
+        <div className="flex bg-ivory-200 p-1 rounded-2xl overflow-x-auto w-full sm:w-auto">
           <button
             onClick={() => setTab('received')}
-            className={`px-5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
               tab === 'received' ? 'bg-brand-900 text-gold-300 shadow-sm' : 'text-gray-600 hover:text-gray-900'
             }`}
           >
-            {t('dashboardInterests')} ({received.length})
+            {t('dashboardInterests')} ({pendingReceived.length})
+          </button>
+
+          <button
+            onClick={() => setTab('accepted')}
+            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+              tab === 'accepted' ? 'bg-brand-900 text-gold-300 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            {language === 'EN' ? 'Connected' : 'स्वीकारलेले'} ({acceptedReceived.length})
           </button>
 
           <button
             onClick={() => setTab('sent')}
-            className={`px-5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
               tab === 'sent' ? 'bg-brand-900 text-gold-300 shadow-sm' : 'text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -104,7 +133,9 @@ export const InterestsPage: React.FC = () => {
           <Heart className="w-12 h-12 text-gray-300 mx-auto" />
           <h3 className="font-serif text-lg font-bold text-gray-800">
             {tab === 'received'
-              ? (language === 'EN' ? 'No Received Interests' : 'अद्याप कोणत्याही विनंत्या प्राप्त झाल्या नाहीत')
+              ? (language === 'EN' ? 'No Pending Requests' : 'अद्याप कोणत्याही प्रलंबित विनंत्या नाहीत')
+              : tab === 'accepted'
+              ? (language === 'EN' ? 'No Connected Members Yet' : 'अद्याप जोडलेली खाती नाहीत')
               : (language === 'EN' ? 'No Sent Interests' : 'अद्याप कोणत्याच प्रोफाईलला आवड पाठवली नाही')}
           </h3>
           <Link
@@ -118,7 +149,7 @@ export const InterestsPage: React.FC = () => {
         <div className="space-y-4">
           {list.map((item) => (
             <div
-              key={item._id}
+              key={item._id || item.id}
               className="bg-white rounded-2xl border border-ivory-300 p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm hover:shadow-md transition-all"
             >
               <div className="flex items-center gap-4 text-center sm:text-left">
@@ -154,7 +185,7 @@ export const InterestsPage: React.FC = () => {
                     }`}>
                       {item.status}
                     </span>{' '}
-                    • {new Date(item.createdAt).toLocaleDateString()}
+                    • {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'Recent'}
                   </div>
                 </div>
               </div>
@@ -164,14 +195,14 @@ export const InterestsPage: React.FC = () => {
                 {tab === 'received' && item.status === 'pending' && (
                   <>
                     <button
-                      onClick={() => handleRespond(item._id, 'accept')}
+                      onClick={() => handleRespond(item._id || item.id, 'accept')}
                       className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs"
                     >
                       <Check className="w-4 h-4" />
                       <span>{t('accept')}</span>
                     </button>
                     <button
-                      onClick={() => handleRespond(item._id, 'reject')}
+                      onClick={() => handleRespond(item._id || item.id, 'reject')}
                       className="px-4 py-2 border border-gray-300 hover:bg-gray-100 text-gray-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
                     >
                       <X className="w-4 h-4 text-red-500" />
@@ -180,7 +211,7 @@ export const InterestsPage: React.FC = () => {
                   </>
                 )}
 
-                {item.status === 'accepted' && (
+                {(tab === 'accepted' || item.status === 'accepted') && (
                   <button
                     onClick={() => navigate('/messages')}
                     className="px-4 py-2 bg-brand-900 hover:bg-brand-950 text-gold-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs"
