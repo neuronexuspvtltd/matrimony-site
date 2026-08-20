@@ -714,6 +714,26 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     return { message: 'Success story added', story: newStory };
   }
 
+  if (endpoint.startsWith('/admin/stories/') && method === 'PUT') {
+    const storyId = endpoint.replace('/admin/stories/', '');
+    const stories = getItem(SUCCESS_STORIES_KEY, initialSuccessStories || []);
+    const sIdx = stories.findIndex((s: any) => String(s.id) === String(storyId));
+    if (sIdx !== -1) {
+      stories[sIdx] = {
+        ...stories[sIdx],
+        namesEn: body.namesEn || stories[sIdx].namesEn,
+        namesMr: body.namesMr || stories[sIdx].namesMr,
+        locationEn: body.locationEn || stories[sIdx].locationEn,
+        locationMr: body.locationMr || stories[sIdx].locationMr,
+        quoteEn: body.quoteEn || stories[sIdx].quoteEn,
+        quoteMr: body.quoteMr || stories[sIdx].quoteMr,
+        image: body.image || stories[sIdx].image,
+      };
+      setItem(SUCCESS_STORIES_KEY, stories);
+      return { message: 'Success story updated successfully', story: stories[sIdx] };
+    }
+  }
+
   if (endpoint.startsWith('/admin/stories/') && method === 'DELETE') {
     const storyId = endpoint.replace('/admin/stories/', '');
     const stories = getItem(SUCCESS_STORIES_KEY, initialSuccessStories || []);

@@ -50,9 +50,10 @@ export const AdminPage: React.FC = () => {
   // Edit User Modal State
   const [editingUser, setEditingUser] = useState<any | null>(null);
 
-  // Add Success Story Modal State
+  // Success Story Modal State (Add & Edit)
   const [showAddStory, setShowAddStory] = useState(false);
-  const [newStory, setNewStory] = useState({
+  const [editingStory, setEditingStory] = useState<any | null>(null);
+  const [storyForm, setStoryForm] = useState({
     namesEn: '',
     namesMr: '',
     locationEn: '',
@@ -169,19 +170,47 @@ export const AdminPage: React.FC = () => {
     }
   };
 
-  const handleAddStory = async (e: React.FormEvent) => {
+  const handleOpenAddStory = () => {
+    setEditingStory(null);
+    setStoryForm({ namesEn: '', namesMr: '', locationEn: '', locationMr: '', quoteEn: '', quoteMr: '', image: '' });
+    setShowAddStory(true);
+  };
+
+  const handleOpenEditStory = (story: any) => {
+    setEditingStory(story);
+    setStoryForm({
+      namesEn: story.namesEn || '',
+      namesMr: story.namesMr || '',
+      locationEn: story.locationEn || '',
+      locationMr: story.locationMr || '',
+      quoteEn: story.quoteEn || '',
+      quoteMr: story.quoteMr || '',
+      image: story.image || '',
+    });
+    setShowAddStory(true);
+  };
+
+  const handleSaveStory = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newStory.namesEn || !newStory.quoteEn) return;
+    if (!storyForm.namesEn || !storyForm.quoteEn) return;
     try {
-      await fetchApi('/admin/stories', {
-        method: 'POST',
-        body: JSON.stringify(newStory),
-      });
+      if (editingStory) {
+        await fetchApi(`/admin/stories/${editingStory.id}`, {
+          method: 'PUT',
+          body: JSON.stringify(storyForm),
+        });
+      } else {
+        await fetchApi('/admin/stories', {
+          method: 'POST',
+          body: JSON.stringify(storyForm),
+        });
+      }
       setShowAddStory(false);
-      setNewStory({ namesEn: '', namesMr: '', locationEn: '', locationMr: '', quoteEn: '', quoteMr: '', image: '' });
+      setEditingStory(null);
+      setStoryForm({ namesEn: '', namesMr: '', locationEn: '', locationMr: '', quoteEn: '', quoteMr: '', image: '' });
       fetchAdminData();
     } catch (err: any) {
-      alert(err.message || 'Error adding success story');
+      alert(err.message || 'Error saving success story');
     }
   };
 
@@ -450,7 +479,7 @@ export const AdminPage: React.FC = () => {
               <p className="text-xs text-gray-500">Manage happy couple testimonials displayed on the homepage.</p>
             </div>
             <button
-              onClick={() => setShowAddStory(true)}
+              onClick={handleOpenAddStory}
               className="px-4 py-2 bg-brand-900 text-gold-300 font-bold text-xs rounded-xl flex items-center gap-1.5 cursor-pointer shadow-sm hover:bg-brand-950"
             >
               <Plus className="w-4 h-4" />
@@ -461,14 +490,24 @@ export const AdminPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {storiesList.map((story) => (
               <div key={story.id} className="border border-ivory-300 rounded-2xl p-4 space-y-3 relative bg-ivory-50/50">
-                <button
-                  onClick={() => handleDeleteStory(story.id)}
-                  className="absolute top-3 right-3 p-1.5 bg-red-100 text-red-700 rounded-full hover:bg-red-200 cursor-pointer"
-                  title="Delete Story"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-                <div className="font-bold text-brand-950 text-base">{story.namesEn} ({story.namesMr})</div>
+                <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                  <button
+                    onClick={() => handleOpenEditStory(story)}
+                    className="p-1.5 bg-brand-50 text-brand-900 border border-brand-200 rounded-full hover:bg-brand-100 cursor-pointer"
+                    title="Edit Story"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteStory(story.id)}
+                    className="p-1.5 bg-red-100 text-red-700 rounded-full hover:bg-red-200 cursor-pointer"
+                    title="Delete Story"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                
+                <div className="font-bold text-brand-950 text-base pr-16">{story.namesEn} ({story.namesMr})</div>
                 <div className="text-xs text-gray-500 font-medium">{story.locationEn}</div>
                 <p className="text-xs text-gray-700 italic bg-white p-3 rounded-xl border border-ivory-200">
                   "{story.quoteEn}"
@@ -757,25 +796,27 @@ export const AdminPage: React.FC = () => {
         </div>
       )}
 
-      {/* ADD SUCCESS STORY MODAL */}
+      {/* ADD / EDIT SUCCESS STORY MODAL */}
       {showAddStory && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95">
             <div className="flex items-center justify-between border-b border-ivory-300 pb-3">
-              <h3 className="font-serif font-bold text-brand-950 text-base">Add New Success Story to Homepage</h3>
+              <h3 className="font-serif font-bold text-brand-950 text-base">
+                {editingStory ? 'Edit Success Story' : 'Add New Success Story to Homepage'}
+              </h3>
               <button onClick={() => setShowAddStory(false)} className="p-1 rounded-full text-gray-400 hover:bg-gray-100">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleAddStory} className="space-y-3 text-xs">
+            <form onSubmit={handleSaveStory} className="space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-semibold text-gray-700 mb-1">Names (English)</label>
                   <input
                     type="text"
-                    value={newStory.namesEn}
-                    onChange={(e) => setNewStory({ ...newStory, namesEn: e.target.value })}
+                    value={storyForm.namesEn}
+                    onChange={(e) => setStoryForm({ ...storyForm, namesEn: e.target.value })}
                     placeholder="e.g. Suyash & Priya"
                     className="w-full p-2.5 border rounded-xl"
                     required
@@ -785,8 +826,8 @@ export const AdminPage: React.FC = () => {
                   <label className="block font-semibold text-gray-700 mb-1">Names (मराठी)</label>
                   <input
                     type="text"
-                    value={newStory.namesMr}
-                    onChange={(e) => setNewStory({ ...newStory, namesMr: e.target.value })}
+                    value={storyForm.namesMr}
+                    onChange={(e) => setStoryForm({ ...storyForm, namesMr: e.target.value })}
                     placeholder="e.g. सुयश आणि प्रिया"
                     className="w-full p-2.5 border rounded-xl"
                     required
@@ -799,8 +840,8 @@ export const AdminPage: React.FC = () => {
                   <label className="block font-semibold text-gray-700 mb-1">Location & Date (EN)</label>
                   <input
                     type="text"
-                    value={newStory.locationEn}
-                    onChange={(e) => setNewStory({ ...newStory, locationEn: e.target.value })}
+                    value={storyForm.locationEn}
+                    onChange={(e) => setStoryForm({ ...storyForm, locationEn: e.target.value })}
                     placeholder="e.g. Married Dec 2025 • Pune"
                     className="w-full p-2.5 border rounded-xl"
                   />
@@ -809,8 +850,8 @@ export const AdminPage: React.FC = () => {
                   <label className="block font-semibold text-gray-700 mb-1">Location & Date (मराठी)</label>
                   <input
                     type="text"
-                    value={newStory.locationMr}
-                    onChange={(e) => setNewStory({ ...newStory, locationMr: e.target.value })}
+                    value={storyForm.locationMr}
+                    onChange={(e) => setStoryForm({ ...storyForm, locationMr: e.target.value })}
                     placeholder="e.g. विवाह: डिसेंबर २०२५ • पुणे"
                     className="w-full p-2.5 border rounded-xl"
                   />
@@ -820,8 +861,8 @@ export const AdminPage: React.FC = () => {
               <div>
                 <label className="block font-semibold text-gray-700 mb-1">Quote (English)</label>
                 <textarea
-                  value={newStory.quoteEn}
-                  onChange={(e) => setNewStory({ ...newStory, quoteEn: e.target.value })}
+                  value={storyForm.quoteEn}
+                  onChange={(e) => setStoryForm({ ...storyForm, quoteEn: e.target.value })}
                   rows={2}
                   className="w-full p-2.5 border rounded-xl"
                   required
@@ -831,11 +872,22 @@ export const AdminPage: React.FC = () => {
               <div>
                 <label className="block font-semibold text-gray-700 mb-1">Quote (मराठी)</label>
                 <textarea
-                  value={newStory.quoteMr}
-                  onChange={(e) => setNewStory({ ...newStory, quoteMr: e.target.value })}
+                  value={storyForm.quoteMr}
+                  onChange={(e) => setStoryForm({ ...storyForm, quoteMr: e.target.value })}
                   rows={2}
                   className="w-full p-2.5 border rounded-xl"
                   required
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-gray-700 mb-1">Couple Photo Image URL</label>
+                <input
+                  type="text"
+                  value={storyForm.image}
+                  onChange={(e) => setStoryForm({ ...storyForm, image: e.target.value })}
+                  placeholder="https://images.unsplash.com/..."
+                  className="w-full p-2.5 border rounded-xl"
                 />
               </div>
 
@@ -851,7 +903,7 @@ export const AdminPage: React.FC = () => {
                   type="submit"
                   className="px-4 py-2 bg-brand-900 text-gold-300 font-bold rounded-xl"
                 >
-                  Publish Story
+                  {editingStory ? 'Save Changes' : 'Publish Story'}
                 </button>
               </div>
             </form>
