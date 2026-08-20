@@ -238,109 +238,119 @@ export const AdminPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-6 sm:space-y-8">
       
       {/* Header */}
-      <div className="border-b border-ivory-300 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="border-b border-ivory-300 pb-3 sm:pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="font-serif text-3xl font-bold text-brand-950 flex items-center gap-2">
-            <Shield className="w-7 h-7 text-brand-700" />
+          <h1 className="font-serif text-xl sm:text-3xl font-bold text-brand-950 flex items-center gap-2">
+            <Shield className="w-6 h-6 sm:w-7 sm:h-7 text-brand-700 shrink-0" />
             <span>Master Website CMS & Admin Control Center</span>
           </h1>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-[11px] sm:text-xs text-gray-500 mt-1">
             Complete administrative control over all member profiles, verification, PDF biodatas, site content & copy, success stories, and announcements.
           </p>
         </div>
       </div>
 
-      {/* 5 Real-Time Admin Stat Cards */}
+      {/* 5 Real-Time Admin Stat Cards (Optimized for Mobile & Desktop) */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <div className="bg-white p-5 rounded-2xl border border-ivory-300 space-y-2 shadow-xs">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
+          <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-ivory-300 space-y-1 sm:space-y-2 shadow-xs">
             <div className="flex items-center justify-between text-brand-900">
-              <Users className="w-5 h-5 text-gold-600" />
-              <span className="text-[10px] uppercase font-bold text-gray-400">Total</span>
+              <Users className="w-4 h-4 sm:w-5 sm:h-5 text-gold-600" />
+              <span className="text-[9px] sm:text-[10px] uppercase font-bold text-gray-400">Total</span>
             </div>
-            <div className="font-serif text-2xl font-bold text-gray-900">{stats.totalUsers}</div>
-            <div className="text-xs text-gray-500">Registered Members</div>
+            <div className="font-serif text-xl sm:text-2xl font-bold text-gray-900">{stats.totalUsers}</div>
+            <div className="text-[11px] sm:text-xs text-gray-500">Registered Members</div>
           </div>
 
-          <div className="bg-white p-5 rounded-2xl border border-ivory-300 space-y-2 shadow-xs">
+          <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-ivory-300 space-y-1 sm:space-y-2 shadow-xs">
             <div className="flex items-center justify-between text-emerald-600">
-              <ShieldCheck className="w-5 h-5" />
-              <span className="text-[10px] uppercase font-bold text-gray-400">Verified</span>
+              <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="text-[9px] sm:text-[10px] uppercase font-bold text-gray-400">Verified</span>
             </div>
-            <div className="font-serif text-2xl font-bold text-gray-900">{stats.verifiedUsers}</div>
-            <div className="text-xs text-gray-500">Verified Profiles</div>
+            <div className="font-serif text-xl sm:text-2xl font-bold text-gray-900">{stats.verifiedUsers}</div>
+            <div className="text-[11px] sm:text-xs text-gray-500">Verified Profiles</div>
           </div>
 
-          <div className="bg-white p-5 rounded-2xl border border-ivory-300 space-y-2 shadow-xs">
+          <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-ivory-300 space-y-1 sm:space-y-2 shadow-xs">
             <div className="flex items-center justify-between text-brand-700">
-              <Heart className="w-5 h-5 text-brand-700 fill-brand-700/20" />
-              <span className="text-[10px] uppercase font-bold text-gray-400">Stories</span>
+              <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-brand-700 fill-brand-700/20" />
+              <span className="text-[9px] sm:text-[10px] uppercase font-bold text-gray-400">Stories</span>
             </div>
-            <div className="font-serif text-2xl font-bold text-gray-900">{stats.totalStories}</div>
-            <div className="text-xs text-gray-500">Homepage Stories</div>
+            <div className="font-serif text-xl sm:text-2xl font-bold text-gray-900">{stats.totalStories}</div>
+            <div className="text-[11px] sm:text-xs text-gray-500">Homepage Stories</div>
           </div>
 
-          <div className="bg-white p-5 rounded-2xl border border-ivory-300 space-y-2 shadow-xs">
+          <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-ivory-300 space-y-1 sm:space-y-2 shadow-xs">
             <div className="flex items-center justify-between text-gold-700">
-              <Eye className="w-5 h-5 text-gold-600" />
-              <span className="text-[10px] uppercase font-bold text-gray-400">Views</span>
+              <Eye className="w-4 h-4 sm:w-5 sm:h-5 text-gold-600" />
+              <span className="text-[9px] sm:text-[10px] uppercase font-bold text-gray-400">Views</span>
             </div>
-            <div className="font-serif text-2xl font-bold text-gray-900">{stats.totalViews}</div>
-            <div className="text-xs text-gray-500">Profile Views Logged</div>
+            <div className="font-serif text-xl sm:text-2xl font-bold text-gray-900">{stats.totalViews}</div>
+            <div className="text-[11px] sm:text-xs text-gray-500">Profile Views Logged</div>
           </div>
 
-          <div className="bg-white p-5 rounded-2xl border border-ivory-300 space-y-2 shadow-xs col-span-2 md:col-span-1">
+          <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-ivory-300 space-y-1 sm:space-y-2 shadow-xs col-span-2 md:col-span-1">
             <div className="flex items-center justify-between text-amber-600">
-              <AlertTriangle className="w-5 h-5" />
-              <span className="text-[10px] uppercase font-bold text-gray-400">Reports</span>
+              <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="text-[9px] sm:text-[10px] uppercase font-bold text-gray-400">Reports</span>
             </div>
-            <div className="font-serif text-2xl font-bold text-gray-900">{stats.pendingReports}</div>
-            <div className="text-xs text-gray-500">Pending Reviews</div>
+            <div className="font-serif text-xl sm:text-2xl font-bold text-gray-900">{stats.pendingReports}</div>
+            <div className="text-[11px] sm:text-xs text-gray-500">Pending Reviews</div>
           </div>
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="flex border-b border-ivory-300 gap-6 overflow-x-auto">
+      {/* Responsive Horizontal Scroll Tabs */}
+      <div className="flex border-b border-ivory-300 gap-2 sm:gap-6 overflow-x-auto pb-2 scrollbar-none">
         <button
           onClick={() => setTab('users')}
-          className={`pb-3 text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
-            tab === 'users' ? 'border-b-2 border-brand-900 text-brand-900' : 'text-gray-500 hover:text-gray-800'
+          className={`px-3 py-2 sm:px-0 sm:pb-3 text-xs font-bold transition-colors cursor-pointer whitespace-nowrap rounded-xl sm:rounded-none ${
+            tab === 'users'
+              ? 'bg-brand-900 text-gold-300 sm:bg-transparent sm:text-brand-900 sm:border-b-2 sm:border-brand-900'
+              : 'bg-ivory-100/80 text-gray-600 hover:text-gray-900 sm:bg-transparent sm:text-gray-500 sm:hover:text-gray-800'
           }`}
         >
           Member Profiles & Badges ({usersList.length})
         </button>
         <button
           onClick={() => setTab('stories')}
-          className={`pb-3 text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
-            tab === 'stories' ? 'border-b-2 border-brand-900 text-brand-900' : 'text-gray-500 hover:text-gray-800'
+          className={`px-3 py-2 sm:px-0 sm:pb-3 text-xs font-bold transition-colors cursor-pointer whitespace-nowrap rounded-xl sm:rounded-none ${
+            tab === 'stories'
+              ? 'bg-brand-900 text-gold-300 sm:bg-transparent sm:text-brand-900 sm:border-b-2 sm:border-brand-900'
+              : 'bg-ivory-100/80 text-gray-600 hover:text-gray-900 sm:bg-transparent sm:text-gray-500 sm:hover:text-gray-800'
           }`}
         >
           Success Stories CMS ({storiesList.length})
         </button>
         <button
           onClick={() => setTab('content')}
-          className={`pb-3 text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
-            tab === 'content' ? 'border-b-2 border-brand-900 text-brand-900' : 'text-gray-500 hover:text-gray-800'
+          className={`px-3 py-2 sm:px-0 sm:pb-3 text-xs font-bold transition-colors cursor-pointer whitespace-nowrap rounded-xl sm:rounded-none ${
+            tab === 'content'
+              ? 'bg-brand-900 text-gold-300 sm:bg-transparent sm:text-brand-900 sm:border-b-2 sm:border-brand-900'
+              : 'bg-ivory-100/80 text-gray-600 hover:text-gray-900 sm:bg-transparent sm:text-gray-500 sm:hover:text-gray-800'
           }`}
         >
-          Website Site Content & Copy Editor
+          Site Copy Editor
         </button>
         <button
           onClick={() => setTab('announcement')}
-          className={`pb-3 text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
-            tab === 'announcement' ? 'border-b-2 border-brand-900 text-brand-900' : 'text-gray-500 hover:text-gray-800'
+          className={`px-3 py-2 sm:px-0 sm:pb-3 text-xs font-bold transition-colors cursor-pointer whitespace-nowrap rounded-xl sm:rounded-none ${
+            tab === 'announcement'
+              ? 'bg-brand-900 text-gold-300 sm:bg-transparent sm:text-brand-900 sm:border-b-2 sm:border-brand-900'
+              : 'bg-ivory-100/80 text-gray-600 hover:text-gray-900 sm:bg-transparent sm:text-gray-500 sm:hover:text-gray-800'
           }`}
         >
-          System Announcements & Banners
+          Announcements & Banners
         </button>
         <button
           onClick={() => setTab('reports')}
-          className={`pb-3 text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
-            tab === 'reports' ? 'border-b-2 border-brand-900 text-brand-900' : 'text-gray-500 hover:text-gray-800'
+          className={`px-3 py-2 sm:px-0 sm:pb-3 text-xs font-bold transition-colors cursor-pointer whitespace-nowrap rounded-xl sm:rounded-none ${
+            tab === 'reports'
+              ? 'bg-brand-900 text-gold-300 sm:bg-transparent sm:text-brand-900 sm:border-b-2 sm:border-brand-900'
+              : 'bg-ivory-100/80 text-gray-600 hover:text-gray-900 sm:bg-transparent sm:text-gray-500 sm:hover:text-gray-800'
           }`}
         >
           Safety Reports ({reportsList.length})
@@ -349,7 +359,7 @@ export const AdminPage: React.FC = () => {
 
       {/* TAB 1: User & Profile Management */}
       {tab === 'users' && (
-        <div className="bg-white rounded-3xl border border-ivory-300 p-6 space-y-4 shadow-sm">
+        <div className="bg-white rounded-3xl border border-ivory-300 p-4 sm:p-6 space-y-4 shadow-sm">
           <div className="flex items-center justify-between gap-4">
             <div className="relative flex-1 max-w-md">
               <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-3" />
@@ -363,7 +373,8 @@ export const AdminPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* DESKTOP TABLE VIEW (Preserved 100% on desktop md:block) */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-ivory-100 text-gray-700 font-semibold border-b border-ivory-200">
                 <tr>
@@ -467,27 +478,113 @@ export const AdminPage: React.FC = () => {
               </tbody>
             </table>
           </div>
+
+          {/* MOBILE RESPONSIVE CARDS VIEW (< md screen size) */}
+          <div className="block md:hidden space-y-3">
+            {usersList.map((u) => (
+              <div key={u._id} className="p-4 rounded-2xl border border-ivory-300 bg-ivory-50/40 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h3 className="font-bold text-gray-900 text-sm">{u.fullName}</h3>
+                    <p className="text-[11px] text-gray-500 font-mono">{u.email}</p>
+                  </div>
+                  <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded shrink-0 ${
+                    u.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                    {u.status}
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 text-xs text-gray-700">
+                  <span className="font-mono font-bold text-brand-900 bg-brand-50 px-2 py-0.5 rounded-md border border-brand-200">
+                    ID: {u.profileId || 'N/A'}
+                  </span>
+                  <span>{u.caste || 'Maratha'} • {u.city || 'Pune'}</span>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  {u.isVerified && (
+                    <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded">
+                      Verified ✓
+                    </span>
+                  )}
+                  {u.isFeatured && (
+                    <span className="bg-gold-100 text-gold-900 text-[10px] font-bold px-2 py-0.5 rounded border border-gold-300">
+                      Featured ⭐
+                    </span>
+                  )}
+                  <span className="bg-ivory-200 text-brand-950 text-[10px] font-semibold px-2 py-0.5 rounded-md border border-ivory-300">
+                    PDF: {u.biodataPrivacy || 'Connections Only'}
+                  </span>
+                </div>
+
+                {/* Touch-Friendly Action Buttons */}
+                <div className="pt-2 border-t border-ivory-200 flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={() => handleToggleVerify(u._id)}
+                    className="flex-1 py-1.5 px-2 bg-brand-900 text-gold-300 rounded-xl text-[11px] font-semibold text-center cursor-pointer"
+                  >
+                    {u.isVerified ? 'Unverify' : 'Verify'}
+                  </button>
+
+                  <button
+                    onClick={() => handleToggleFeatured(u._id)}
+                    className="flex-1 py-1.5 px-2 bg-gold-400 text-brand-950 rounded-xl text-[11px] font-bold text-center cursor-pointer"
+                  >
+                    {u.isFeatured ? 'Unstar' : 'Feature ⭐'}
+                  </button>
+
+                  <button
+                    onClick={() => setEditingUser(u)}
+                    className="p-1.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 cursor-pointer"
+                    title="Edit Profile Content"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                  </button>
+
+                  <button
+                    onClick={() => handleToggleStatus(u._id, u.status)}
+                    className={`p-1.5 rounded-xl cursor-pointer ${
+                      u.status === 'active' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
+                    }`}
+                    title={u.status === 'active' ? 'Suspend Member' : 'Activate Member'}
+                  >
+                    <Ban className="w-4 h-4" />
+                  </button>
+
+                  <button
+                    onClick={() => handleDeleteUser(u._id)}
+                    className="p-1.5 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 cursor-pointer"
+                    title="Delete Member"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
         </div>
       )}
 
       {/* TAB 2: Success Stories CMS */}
       {tab === 'stories' && (
-        <div className="bg-white rounded-3xl border border-ivory-300 p-6 space-y-6 shadow-sm">
-          <div className="flex items-center justify-between">
+        <div className="bg-white rounded-3xl border border-ivory-300 p-4 sm:p-6 space-y-6 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h3 className="font-serif font-bold text-brand-950 text-lg">Homepage Success Stories CMS</h3>
-              <p className="text-xs text-gray-500">Manage happy couple testimonials displayed on the homepage.</p>
+              <h3 className="font-serif font-bold text-brand-950 text-base sm:text-lg">Homepage Success Stories CMS</h3>
+              <p className="text-[11px] sm:text-xs text-gray-500">Manage happy couple testimonials displayed on the homepage.</p>
             </div>
             <button
               onClick={handleOpenAddStory}
-              className="px-4 py-2 bg-brand-900 text-gold-300 font-bold text-xs rounded-xl flex items-center gap-1.5 cursor-pointer shadow-sm hover:bg-brand-950"
+              className="px-4 py-2.5 bg-brand-900 text-gold-300 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 cursor-pointer shadow-sm hover:bg-brand-950 shrink-0"
             >
               <Plus className="w-4 h-4" />
               <span>Add Success Story</span>
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             {storiesList.map((story) => (
               <div key={story.id} className="border border-ivory-300 rounded-2xl p-4 space-y-3 relative bg-ivory-50/50">
                 <div className="absolute top-3 right-3 flex items-center gap-1.5">
@@ -520,13 +617,13 @@ export const AdminPage: React.FC = () => {
 
       {/* TAB 3: Website Site Content & Copy Editor */}
       {tab === 'content' && (
-        <form onSubmit={handleSaveSiteContent} className="bg-white rounded-3xl border border-ivory-300 p-6 space-y-6 max-w-3xl shadow-sm">
+        <form onSubmit={handleSaveSiteContent} className="bg-white rounded-3xl border border-ivory-300 p-4 sm:p-6 space-y-6 max-w-3xl shadow-sm">
           <div>
-            <h3 className="font-serif font-bold text-brand-950 text-lg flex items-center gap-2">
+            <h3 className="font-serif font-bold text-brand-950 text-base sm:text-lg flex items-center gap-2">
               <FileText className="w-5 h-5 text-gold-600" />
               <span>Website Site Content & Copy Editor</span>
             </h3>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5">
               Edit live homepage headlines, subtitles, support contact numbers, and office addresses.
             </p>
           </div>
@@ -626,7 +723,7 @@ export const AdminPage: React.FC = () => {
           <button
             type="submit"
             disabled={savingContent}
-            className="px-6 py-3 bg-brand-900 text-gold-300 font-bold rounded-xl text-xs flex items-center gap-2 cursor-pointer shadow-md hover:bg-brand-950"
+            className="w-full sm:w-auto px-6 py-3 bg-brand-900 text-gold-300 font-bold rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md hover:bg-brand-950"
           >
             <Save className="w-4 h-4" />
             <span>{savingContent ? 'Saving...' : 'Save & Publish Live Site Content'}</span>
@@ -636,9 +733,9 @@ export const AdminPage: React.FC = () => {
 
       {/* TAB 4: System Announcements & Banners */}
       {tab === 'announcement' && (
-        <form onSubmit={handleBroadcastAnnouncement} className="bg-white rounded-3xl border border-ivory-300 p-6 space-y-4 max-w-2xl shadow-sm">
+        <form onSubmit={handleBroadcastAnnouncement} className="bg-white rounded-3xl border border-ivory-300 p-4 sm:p-6 space-y-4 max-w-2xl shadow-sm">
           <h3 className="font-serif font-bold text-brand-950 text-base">Broadcast System Notification & Banner</h3>
-          <p className="text-xs text-gray-500">
+          <p className="text-[11px] sm:text-xs text-gray-500">
             Sends an instant notification alert to all registered members on their header bell dropdown.
           </p>
           
@@ -687,7 +784,7 @@ export const AdminPage: React.FC = () => {
 
           <button
             type="submit"
-            className="px-6 py-3 bg-brand-900 text-gold-300 rounded-xl text-xs font-semibold flex items-center gap-2 cursor-pointer"
+            className="w-full sm:w-auto px-6 py-3 bg-brand-900 text-gold-300 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer"
           >
             <Send className="w-4 h-4" />
             <span>Broadcast Notification</span>
@@ -697,7 +794,7 @@ export const AdminPage: React.FC = () => {
 
       {/* TAB 5: Reports Review */}
       {tab === 'reports' && (
-        <div className="bg-white rounded-3xl border border-ivory-300 p-6 space-y-4 shadow-sm">
+        <div className="bg-white rounded-3xl border border-ivory-300 p-4 sm:p-6 space-y-4 shadow-sm">
           {reportsList.length === 0 ? (
             <p className="text-xs text-gray-500 text-center py-6">No reported profiles to review.</p>
           ) : (
@@ -720,10 +817,10 @@ export const AdminPage: React.FC = () => {
         </div>
       )}
 
-      {/* EDIT MEMBER MODAL */}
+      {/* EDIT MEMBER MODAL (Mobile Responsive) */}
       {editingUser && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-4 sm:p-6 space-y-4 shadow-2xl animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-ivory-300 pb-3">
               <h3 className="font-serif font-bold text-brand-950 text-base">Edit Member Profile ({editingUser.profileId})</h3>
               <button onClick={() => setEditingUser(null)} className="p-1 rounded-full text-gray-400 hover:bg-gray-100">
@@ -780,13 +877,13 @@ export const AdminPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setEditingUser(null)}
-                  className="px-4 py-2 border rounded-xl text-gray-600 font-semibold"
+                  className="px-4 py-2 border rounded-xl text-gray-600 font-semibold cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-brand-900 text-gold-300 font-bold rounded-xl"
+                  className="px-4 py-2 bg-brand-900 text-gold-300 font-bold rounded-xl cursor-pointer"
                 >
                   Save Changes
                 </button>
@@ -796,10 +893,10 @@ export const AdminPage: React.FC = () => {
         </div>
       )}
 
-      {/* ADD / EDIT SUCCESS STORY MODAL */}
+      {/* ADD / EDIT SUCCESS STORY MODAL (Mobile Responsive) */}
       {showAddStory && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-4 sm:p-6 space-y-4 shadow-2xl animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-ivory-300 pb-3">
               <h3 className="font-serif font-bold text-brand-950 text-base">
                 {editingStory ? 'Edit Success Story' : 'Add New Success Story to Homepage'}
@@ -810,7 +907,7 @@ export const AdminPage: React.FC = () => {
             </div>
 
             <form onSubmit={handleSaveStory} className="space-y-3 text-xs">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-semibold text-gray-700 mb-1">Names (English)</label>
                   <input
@@ -835,7 +932,7 @@ export const AdminPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-semibold text-gray-700 mb-1">Location & Date (EN)</label>
                   <input
@@ -895,13 +992,13 @@ export const AdminPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowAddStory(false)}
-                  className="px-4 py-2 border rounded-xl text-gray-600 font-semibold"
+                  className="px-4 py-2 border rounded-xl text-gray-600 font-semibold cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-brand-900 text-gold-300 font-bold rounded-xl"
+                  className="px-4 py-2 bg-brand-900 text-gold-300 font-bold rounded-xl cursor-pointer"
                 >
                   {editingStory ? 'Save Changes' : 'Publish Story'}
                 </button>
