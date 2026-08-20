@@ -718,6 +718,13 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     return { message: 'All read' };
   }
 
+  if (endpoint === '/notifications/clear-all') {
+    const notifications = getItem(NOTIFICATIONS_KEY, []);
+    const remainingNotifs = notifications.filter((n: any) => n.userId !== currentUser?.id);
+    setItem(NOTIFICATIONS_KEY, remainingNotifs);
+    return { message: 'All notifications cleared' };
+  }
+
   // --- 8. MESSAGING ENDPOINTS (Cloud Firestore Synced) ---
   if (endpoint === '/messages/conversations') {
     let conversations = getItem(CONVERSATIONS_KEY, []);

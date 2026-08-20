@@ -21,6 +21,7 @@ interface NotificationContextType {
   fetchNotifications: () => Promise<void>;
   markAsRead: (id: string) => Promise<void>;
   markAllAsRead: () => Promise<void>;
+  clearAllNotifications: () => Promise<void>;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -67,17 +68,35 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const markAllAsRead = async () => {
     try {
-      await fetchApi('/notifications/read-all', { method: 'PUT' });
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       setUnreadCount(0);
+      await fetchApi('/notifications/read-all', { method: 'PUT' });
     } catch (error) {
       console.error('Error marking all read:', error);
     }
   };
 
+  const clearAllNotifications = async () => {
+    try {
+      setNotifications([]);
+      setUnreadCount(0);
+      await fetchApi('/notifications/clear-all', { method: 'POST' });
+    } catch (error) {
+      console.error('Error clearing notifications:', error);
+    }
+  };
+
   return (
     <NotificationContext.Provider
-      value={{ notifications, unreadCount, loading, fetchNotifications, markAsRead, markAllAsRead }}
+      value={{
+        notifications,
+        unreadCount,
+        loading,
+        fetchNotifications,
+        markAsRead,
+        markAllAsRead,
+        clearAllNotifications,
+      }}
     >
       {children}
     </NotificationContext.Provider>

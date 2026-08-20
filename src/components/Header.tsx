@@ -22,7 +22,7 @@ import {
 export const Header: React.FC = () => {
   const { t, language, toggleLanguage } = useLanguage();
   const { user, logout } = useAuth();
-  const { notifications, unreadCount, markAllAsRead } = useNotifications();
+  const { notifications, unreadCount, markAllAsRead, clearAllNotifications } = useNotifications();
   const [notifDropdownOpen, setNotifDropdownOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const navigate = useNavigate();
@@ -172,14 +172,24 @@ export const Header: React.FC = () => {
                           <Bell className="w-4 h-4 text-gold-600" />
                           {t('notificationTitle')}
                         </h4>
-                        {unreadCount > 0 && (
-                          <button
-                            onClick={markAllAsRead}
-                            className="text-xs text-brand-700 hover:underline font-medium cursor-pointer"
-                          >
-                            {t('markAllRead')}
-                          </button>
-                        )}
+                        <div className="flex items-center gap-2.5 text-xs">
+                          {unreadCount > 0 && (
+                            <button
+                              onClick={markAllAsRead}
+                              className="text-brand-700 hover:underline font-medium cursor-pointer"
+                            >
+                              {t('markAllRead')}
+                            </button>
+                          )}
+                          {notifications.length > 0 && (
+                            <button
+                              onClick={clearAllNotifications}
+                              className="text-red-600 hover:underline font-medium cursor-pointer"
+                            >
+                              {language === 'EN' ? 'Clear All' : 'सर्व पुसा'}
+                            </button>
+                          )}
+                        </div>
                       </div>
 
                       <div className="max-h-80 overflow-y-auto divide-y divide-gray-50">
