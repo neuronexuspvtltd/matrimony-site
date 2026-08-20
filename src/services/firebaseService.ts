@@ -37,7 +37,7 @@ export const saveProfileToFirestore = async (userId: string, profileData: any) =
   }
 };
 
-// 2. Fetch Profile from Firestore
+// 2. Fetch Profile from Firestore by User ID
 export const getProfileFromFirestore = async (userId: string) => {
   try {
     const profRef = doc(db, 'profiles', userId);
@@ -49,7 +49,39 @@ export const getProfileFromFirestore = async (userId: string) => {
   }
 };
 
-// 3. Connection Request / Interest Sending in Firestore
+// 3. Fetch All Profiles from Cloud Firestore
+export const fetchProfilesFromFirestore = async (): Promise<any[]> => {
+  try {
+    const profsRef = collection(db, 'profiles');
+    const snapshot = await getDocs(profsRef);
+    return snapshot.docs.map((docSnap) => ({
+      _id: docSnap.id,
+      ...docSnap.data(),
+    }));
+  } catch (error: any) {
+    console.warn('Firestore fetch profiles warning:', error.message);
+    return [];
+  }
+};
+
+// 4. Query Profile from Cloud Firestore by Email
+export const findProfileByEmailFirestore = async (email: string): Promise<any | null> => {
+  try {
+    const profsRef = collection(db, 'profiles');
+    const q = query(profsRef, where('user.email', '==', email.toLowerCase()));
+    const snapshot = await getDocs(q);
+    if (!snapshot.empty) {
+      const docSnap = snapshot.docs[0];
+      return { _id: docSnap.id, ...docSnap.data() };
+    }
+    return null;
+  } catch (error: any) {
+    console.warn('Firestore profile query by email warning:', error.message);
+    return null;
+  }
+};
+
+// 5. Connection Request / Interest Sending in Firestore
 export const sendInterestFirestore = async (senderId: string, receiverId: string) => {
   try {
     const interestRef = collection(db, 'connection_requests');
@@ -66,7 +98,7 @@ export const sendInterestFirestore = async (senderId: string, receiverId: string
   }
 };
 
-// 4. Real-time Live Messages Listener with Firestore onSnapshot
+// 6. Real-time Live Messages Listener with Firestore onSnapshot
 export const subscribeToMessages = (
   conversationId: string,
   callback: (messages: any[]) => void
@@ -91,7 +123,7 @@ export const subscribeToMessages = (
   }
 };
 
-// 5. Send Real-time Chat Message via Firestore
+// 7. Send Real-time Chat Message via Firestore
 export const sendMessageFirestore = async (conversationId: string, senderId: string, content: string) => {
   try {
     await addDoc(collection(db, 'messages'), {

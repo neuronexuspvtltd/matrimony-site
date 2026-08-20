@@ -1,5 +1,10 @@
 import { initialProfiles, initialSuccessStories, ProfileData } from './mockData';
-import { saveProfileToFirestore, uploadPdfBiodataToStorage } from './firebaseService';
+import {
+  saveProfileToFirestore,
+  uploadPdfBiodataToStorage,
+  fetchProfilesFromFirestore,
+  findProfileByEmailFirestore,
+} from './firebaseService';
 
 const PROFILES_KEY = 'pb_profiles_data';
 const VIEWS_KEY = 'pb_views_data';
@@ -57,9 +62,30 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
   const method = (options.method || 'GET').toUpperCase();
   const body = options.body ? (typeof options.body === 'string' ? JSON.parse(options.body) : options.body) : null;
 
-  // Initialize initial mock data if empty
-  const rawProfiles: ProfileData[] = getItem(PROFILES_KEY, initialProfiles);
-  
+  // Initialize initial mock data from local storage
+  let rawProfiles: ProfileData[] = getItem(PROFILES_KEY, initialProfiles);
+
+  // Sync fresh accounts from Cloud Firestore so logins work across all laptops, phones & devices!
+  try {
+    const firestoreProfiles = await fetchProfilesFromFirestore();
+    if (firestoreProfiles && firestoreProfiles.length > 0) {
+      firestoreProfiles.forEach((fProf: any) => {
+        if (!fProf.user?.email) return;
+        const idx = rawProfiles.findIndex(
+          (p: any) => p.user?.email?.toLowerCase() === fProf.user.email.toLowerCase() || p.user?._id === fProf.user?._id
+        );
+        if (idx !== -1) {
+          rawProfiles[idx] = { ...rawProfiles[idx], ...fProf };
+        } else {
+          rawProfiles.unshift(fProf);
+        }
+      });
+      setItem(PROFILES_KEY, rawProfiles);
+    }
+  } catch (e) {
+    // Fallback gracefully to local storage
+  }
+
   // Ensure every profile in storage has valid isVerified, isFeatured, and status
   const profiles: ProfileData[] = rawProfiles.map((p: any) => ({
     ...p,
@@ -77,13 +103,20 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
   const storedUser = localStorage.getItem('pb_current_user');
   const currentUser = storedUser ? JSON.parse(storedUser) : null;
 
-  // Delay simulation
-  await new Promise((res) => setTimeout(res, 150));
-
   // --- 1. AUTH ENDPOINTS ---
   if (endpoint === '/auth/login' && method === 'POST') {
     const { email } = body;
     let prof = profiles.find((p: ProfileData) => p.user.email.toLowerCase() === email.toLowerCase());
+
+    // If not found in local storage, query Cloud Firestore in real-time!
+    if (!prof) {
+      const firestoreProf = await findProfileByEmailFirestore(email).catch(() => null);
+      if (firestoreProf) {
+        prof = firestoreProf;
+        profiles.unshift(firestoreProf);
+        setItem(PROFILES_KEY, profiles);
+      }
+    }
 
     if (!prof) {
       if (email.includes('admin')) {
@@ -126,7 +159,12 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
   if (endpoint === '/auth/register' && method === 'POST') {
     const { fullName, email, mobile, gender, dateOfBirth, city, religion, caste, education, occupation, maritalStatus } = body;
 
-    const existing = profiles.find((p: ProfileData) => p.user.email.toLowerCase() === email.toLowerCase());
+    // Check both local profiles & Cloud Firestore for existing account
+    let existing = profiles.find((p: ProfileData) => p.user.email.toLowerCase() === email.toLowerCase());
+    if (!existing) {
+      existing = await findProfileByEmailFirestore(email).catch(() => null);
+    }
+
     if (existing) {
       throw new Error('An account with this email already exists.');
     }
