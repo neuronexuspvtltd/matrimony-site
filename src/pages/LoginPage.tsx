@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
-import { Lock, Mail, Sparkles, Shield } from 'lucide-react';
+import { Lock, Mail, Sparkles } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const { t, language } = useLanguage();
@@ -31,11 +31,6 @@ export const LoginPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const fillDemoAccount = (demoEmail: string, demoPass: string) => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
   };
 
   return (
@@ -100,35 +95,7 @@ export const LoginPage: React.FC = () => {
           </button>
         </form>
 
-        {/* Demo Credentials Helper Box */}
-        <div className="bg-ivory-100 p-4 rounded-2xl border border-ivory-300 space-y-2 text-xs">
-          <p className="font-bold text-gray-800 text-[11px] uppercase tracking-wider">
-            {language === 'EN' ? 'Quick Demo Login Options:' : 'त्वरित डेमो लॉग इन पर्याय:'}
-          </p>
-          <div className="flex flex-wrap gap-1.5 pt-1">
-            <button
-              onClick={() => fillDemoAccount('suyash@example.com', 'Password123')}
-              className="px-2.5 py-1 bg-white hover:bg-brand-50 border border-gray-200 rounded-lg text-brand-900 font-medium cursor-pointer"
-            >
-              Suyash (Groom)
-            </button>
-            <button
-              onClick={() => fillDemoAccount('priya@example.com', 'Password123')}
-              className="px-2.5 py-1 bg-white hover:bg-brand-50 border border-gray-200 rounded-lg text-brand-900 font-medium cursor-pointer"
-            >
-              Priya (Bride)
-            </button>
-            <button
-              onClick={() => fillDemoAccount('admin@matrimony.com', 'Admin@123')}
-              className="px-2.5 py-1 bg-brand-900 text-gold-300 rounded-lg font-bold cursor-pointer flex items-center gap-1"
-            >
-              <Shield className="w-3 h-3 text-gold-400" />
-              <span>Admin Panel</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="text-center text-xs text-gray-500 pt-2">
+        <div className="text-center text-xs text-gray-500 pt-2 border-t border-gray-100">
           {language === 'EN' ? "Don't have a profile?" : 'नवीन प्रोफाइल तयार करायचे आहे?'}{' '}
           <Link to="/register" className="text-brand-900 font-bold hover:underline">
             {t('navRegister')}
