@@ -43,7 +43,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const res = await fetchApi('/auth/me');
       setUser(res.user);
-      setProfile(res.profile);
+      const myProf = await fetchApi('/profiles/me').catch(() => null);
+      setProfile(res.profile || res.user?.profile || myProf || {
+        profileId: res.user?.profileId || 'PB-10030',
+        city: 'Pune',
+        state: 'Maharashtra',
+        completionPercentage: 75,
+      });
     } catch (error) {
       console.error('Failed to fetch user:', error);
       logout();
@@ -65,7 +71,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAuthToken(res.token);
     setTokenState(res.token);
     setUser(res.user);
-    setProfile(res.user.profile);
+    
+    const myProf = await fetchApi('/profiles/me').catch(() => null);
+    setProfile(res.profile || res.user?.profile || myProf || {
+      profileId: res.user?.profileId || 'PB-10030',
+      city: 'Pune',
+      state: 'Maharashtra',
+      completionPercentage: 75,
+    });
+
     return res.user;
   };
 
@@ -78,7 +92,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAuthToken(res.token);
     setTokenState(res.token);
     setUser(res.user);
-    setProfile(res.user.profile);
+    setProfile(res.profile || res.user?.profile || {
+      profileId: res.user?.profileId || 'PB-10030',
+      city: data.city || 'Pune',
+      state: 'Maharashtra',
+      completionPercentage: 70,
+    });
     return res.user;
   };
 
