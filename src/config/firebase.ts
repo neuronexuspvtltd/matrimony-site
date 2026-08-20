@@ -2,17 +2,17 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
-// Firebase configuration keys (Load from environment variables or fallback values)
+// User's Live Firebase Production Credentials
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSy_PAVITHRA_BANDHAN_DEMO_KEY",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "pavithra-bandhan-matrimony.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "pavithra-bandhan-matrimony",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "pavithra-bandhan-matrimony.appspot.com",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "987654321012",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:987654321012:web:abcdef1234567890"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDeTLFptLL9WXJ-4Fd0mgMGP1wBNpZdPJI",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "pavithra-bandhan.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "pavithra-bandhan",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "pavithra-bandhan.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "274283657746",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:274283657746:web:8617922cba32352fe5f6cb"
 };
 
-// Initialize Firebase App
+// Initialize Firebase App instance
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
 // Export Cloud Firestore and Firebase Storage instances
