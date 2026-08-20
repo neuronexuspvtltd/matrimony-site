@@ -1,5 +1,5 @@
 import { initialProfiles, initialSuccessStories, ProfileData } from './mockData';
-import { saveProfileToFirestore } from './firebaseService';
+import { saveProfileToFirestore, uploadPdfBiodataToStorage } from './firebaseService';
 
 const PROFILES_KEY = 'pb_profiles_data';
 const VIEWS_KEY = 'pb_views_data';
@@ -296,8 +296,15 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       if (pIndex !== -1 && body instanceof FormData) {
         const file = body.get('biodata') as File;
         if (file) {
-          const fakeUrl = URL.createObjectURL(file);
-          profiles[pIndex].biodataUrl = fakeUrl;
+          let downloadUrl = '';
+          try {
+            downloadUrl = await uploadPdfBiodataToStorage(file, currentUser?.id || profiles[pIndex].user._id);
+          } catch (storageErr) {
+            console.warn('Firebase storage upload fallback:', storageErr);
+            downloadUrl = URL.createObjectURL(file);
+          }
+
+          profiles[pIndex].biodataUrl = downloadUrl;
           profiles[pIndex].biodataFileName = file.name;
           profiles[pIndex].completionPercentage = calculateCompletion(profiles[pIndex]);
           setItem(PROFILES_KEY, profiles);
@@ -306,7 +313,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
             console.warn('Firestore profile sync error:', err)
           );
 
-          return { message: 'Biodata uploaded', biodataUrl: fakeUrl, profile: profiles[pIndex] };
+          return { message: 'Biodata uploaded to Firebase Storage', biodataUrl: downloadUrl, profile: profiles[pIndex] };
         }
       }
     }
