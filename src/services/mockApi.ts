@@ -1,4 +1,5 @@
 import { initialProfiles, initialSuccessStories, ProfileData } from './mockData';
+import { saveProfileToFirestore } from './firebaseService';
 
 const PROFILES_KEY = 'pb_profiles_data';
 const VIEWS_KEY = 'pb_views_data';
@@ -186,6 +187,11 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     profiles.unshift(newProfile);
     setItem(PROFILES_KEY, profiles);
 
+    // Save to Cloud Firestore
+    saveProfileToFirestore(newUserId, newProfile).catch((err) =>
+      console.warn('Firestore profile sync error:', err)
+    );
+
     const userData = {
       id: newUserId,
       fullName,
@@ -276,6 +282,11 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
         profiles[pIndex] = { ...profiles[pIndex], ...body };
         profiles[pIndex].completionPercentage = calculateCompletion(profiles[pIndex]);
         setItem(PROFILES_KEY, profiles);
+
+        saveProfileToFirestore(profiles[pIndex].user._id, profiles[pIndex]).catch((err) =>
+          console.warn('Firestore profile sync error:', err)
+        );
+
         return { message: 'Profile updated', profile: profiles[pIndex] };
       }
     }
@@ -290,6 +301,11 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
           profiles[pIndex].biodataFileName = file.name;
           profiles[pIndex].completionPercentage = calculateCompletion(profiles[pIndex]);
           setItem(PROFILES_KEY, profiles);
+
+          saveProfileToFirestore(profiles[pIndex].user._id, profiles[pIndex]).catch((err) =>
+            console.warn('Firestore profile sync error:', err)
+          );
+
           return { message: 'Biodata uploaded', biodataUrl: fakeUrl, profile: profiles[pIndex] };
         }
       }
@@ -301,6 +317,11 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
         profiles[pIndex].biodataUrl = '';
         profiles[pIndex].biodataFileName = '';
         setItem(PROFILES_KEY, profiles);
+
+        saveProfileToFirestore(profiles[pIndex].user._id, profiles[pIndex]).catch((err) =>
+          console.warn('Firestore profile sync error:', err)
+        );
+
         return { message: 'Biodata deleted', profile: profiles[pIndex] };
       }
     }
@@ -666,6 +687,11 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       profiles[pIdx].isVerified = newStatus;
       profiles[pIdx].user.isVerified = newStatus;
       setItem(PROFILES_KEY, profiles);
+
+      saveProfileToFirestore(profiles[pIdx].user._id, profiles[pIdx]).catch((err) =>
+        console.warn('Firestore profile sync error:', err)
+      );
+
       return { message: 'Verification toggled successfully', isVerified: newStatus };
     }
     throw new Error(`Member not found for ID: ${targetUserId}`);
@@ -678,6 +704,11 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       const newStatus = !profiles[pIdx].isFeatured;
       profiles[pIdx].isFeatured = newStatus;
       setItem(PROFILES_KEY, profiles);
+
+      saveProfileToFirestore(profiles[pIdx].user._id, profiles[pIdx]).catch((err) =>
+        console.warn('Firestore profile sync error:', err)
+      );
+
       return { message: 'Featured status toggled successfully', isFeatured: newStatus };
     }
     throw new Error(`Member not found for ID: ${targetUserId}`);
@@ -697,6 +728,11 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
         biodataVisibility: body.biodataPrivacy || profiles[pIdx].biodataVisibility,
       };
       setItem(PROFILES_KEY, profiles);
+
+      saveProfileToFirestore(profiles[pIdx].user._id, profiles[pIdx]).catch((err) =>
+        console.warn('Firestore profile sync error:', err)
+      );
+
       return { message: 'User updated successfully', profile: profiles[pIdx] };
     }
     throw new Error(`Member not found for ID: ${targetUserId}`);
@@ -708,6 +744,11 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     if (pIdx !== -1) {
       profiles[pIdx].user.status = body.status;
       setItem(PROFILES_KEY, profiles);
+
+      saveProfileToFirestore(profiles[pIdx].user._id, profiles[pIdx]).catch((err) =>
+        console.warn('Firestore profile sync error:', err)
+      );
+
       return { message: 'Status updated successfully', status: body.status };
     }
     throw new Error(`Member not found for ID: ${targetUserId}`);
