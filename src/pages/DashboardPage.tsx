@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { fetchApi } from '../services/api';
+import { uploadUserPhotoToStorage } from '../services/firebaseService';
 import { ProfileCard } from '../components/ProfileCard';
 import {
   Eye,
@@ -15,14 +16,16 @@ import {
   AlertCircle,
   ChevronRight,
   ShieldCheck,
+  Camera,
 } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
   const { t, language } = useLanguage();
-  const { user, profile } = useAuth();
+  const { user, profile, refreshUser } = useAuth();
 
   const [recentViews, setRecentViews] = useState<any[]>([]);
   const [recommendedMatches, setRecommendedMatches] = useState<any[]>([]);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [stats, setStats] = useState({
     viewsCount: 0,
     interestsReceivedCount: 0,
@@ -65,6 +68,26 @@ export const DashboardPage: React.FC = () => {
       .catch((err) => console.error(err));
   }, [user]);
 
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    setUploadingPhoto(true);
+    try {
+      const photoUrl = await uploadUserPhotoToStorage(file, user.id);
+      await fetchApi('/profiles/me', {
+        method: 'PUT',
+        body: JSON.stringify({ primaryPhoto: photoUrl }),
+      });
+      alert(language === 'EN' ? 'Profile photo uploaded successfully to Firebase Storage!' : 'प्रोफाईल फोटो बदलला व सेव्ह झाला!');
+      await refreshUser();
+    } catch (err: any) {
+      alert(err.message || 'Failed to upload photo');
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
   if (!user) {
     return (
       <div className="max-w-xl mx-auto py-16 px-4 text-center space-y-4">
@@ -106,14 +129,22 @@ export const DashboardPage: React.FC = () => {
           </p>
         </div>
 
-        {userProfile.profileId && (
-          <Link
-            to={`/profile/${userProfile.profileId}`}
-            className="z-10 px-5 py-3 rounded-2xl bg-gold-400 text-brand-950 font-bold text-xs hover:bg-gold-300 shadow-md transition-all shrink-0"
-          >
-            {t('viewProfile')}
-          </Link>
-        )}
+        <div className="flex items-center gap-3 shrink-0 z-10">
+          <label className="px-5 py-3 rounded-2xl bg-brand-800 text-gold-300 font-bold text-xs hover:bg-brand-700 shadow-md transition-all cursor-pointer flex items-center gap-2 border border-gold-400/30">
+            <Camera className="w-4 h-4 text-gold-400" />
+            <span>{uploadingPhoto ? 'Uploading...' : '📷 Add Profile Photo'}</span>
+            <input type="file" accept="image/*" onChange={handlePhotoUpload} disabled={uploadingPhoto} className="hidden" />
+          </label>
+
+          {userProfile.profileId && (
+            <Link
+              to={`/profile/${userProfile.profileId}`}
+              className="px-5 py-3 rounded-2xl bg-gold-400 text-brand-950 font-bold text-xs hover:bg-gold-300 shadow-md transition-all"
+            >
+              {t('viewProfile')}
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Profile Completion Meter */}
@@ -145,14 +176,16 @@ export const DashboardPage: React.FC = () => {
             <AlertCircle className="w-4 h-4 text-gold-600" />
             <span>Suggestions:</span>
             {!userProfile.primaryPhoto && (
-              <span className="bg-brand-50 text-brand-900 px-2.5 py-1 rounded-full font-medium">
-                + Upload Photo
-              </span>
+              <label className="bg-brand-50 text-brand-900 border border-brand-200 px-3 py-1 rounded-full font-semibold cursor-pointer hover:bg-brand-100 flex items-center gap-1">
+                <Camera className="w-3.5 h-3.5 text-brand-900" />
+                <span>+ Upload Photo</span>
+                <input type="file" accept="image/*" onChange={handlePhotoUpload} disabled={uploadingPhoto} className="hidden" />
+              </label>
             )}
             {!userProfile.biodataUrl && (
-              <span className="bg-brand-50 text-brand-900 px-2.5 py-1 rounded-full font-medium">
+              <Link to={`/profile/${userProfile.profileId}`} className="bg-brand-50 text-brand-900 px-2.5 py-1 rounded-full font-medium">
                 + Upload PDF Biodata
-              </span>
+              </Link>
             )}
           </div>
         )}

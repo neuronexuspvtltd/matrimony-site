@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { fetchApi } from '../services/api';
+import { uploadUserPhotoToStorage } from '../services/firebaseService';
 import { BiodataPdfViewer } from '../components/BiodataPdfViewer';
 import {
   Heart,
@@ -18,17 +19,20 @@ import {
   Users,
   CheckCircle2,
   MessageSquare,
+  Camera,
+  Upload,
 } from 'lucide-react';
 
 export const ProfileDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { t, language } = useLanguage();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const navigate = useNavigate();
 
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   const [interestSent, setInterestSent] = useState(false);
   const [isShortlisted, setIsShortlisted] = useState(false);
@@ -39,7 +43,6 @@ export const ProfileDetailPage: React.FC = () => {
     if (!id) return;
     setLoading(true);
     try {
-      // Endpoint automatically logs profile view and sends notification to owner if viewer is logged in!
       const data = await fetchApi(`/profiles/${id}`);
       setProfile(data);
     } catch (err: any) {
@@ -52,6 +55,30 @@ export const ProfileDetailPage: React.FC = () => {
   useEffect(() => {
     fetchProfile();
   }, [id]);
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingPhoto(true);
+    try {
+      const targetUserId = user?.id || profile?.user?._id || profile?._id || 'usr_me';
+      const photoUrl = await uploadUserPhotoToStorage(file, targetUserId);
+      
+      await fetchApi('/profiles/me', {
+        method: 'PUT',
+        body: JSON.stringify({ primaryPhoto: photoUrl }),
+      });
+
+      alert(language === 'EN' ? 'Profile photo uploaded successfully to Firebase Storage!' : 'प्रोफाईल फोटो बदलला व सेव्ह झाला!');
+      await fetchProfile();
+      await refreshUser();
+    } catch (err: any) {
+      alert(err.message || 'Failed to upload profile photo');
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -77,7 +104,7 @@ export const ProfileDetailPage: React.FC = () => {
     );
   }
 
-  const isOwnProfile = Boolean(user && user.id === (profile.user?._id || profile.user));
+  const isOwnProfile = Boolean(user && (user.id === (profile.user?._id || profile.user) || user.profileId === profile.profileId));
   const fullName = profile.user?.fullName || 'Profile Member';
 
   const handleSendInterest = async () => {
@@ -140,15 +167,33 @@ export const ProfileDetailPage: React.FC = () => {
         <div className="px-6 sm:px-10 pb-8 relative">
           <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between -mt-16 gap-6">
             
-            {/* Avatar & Main Info */}
+            {/* Avatar & Main Info with Upload Button */}
             <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5 text-center sm:text-left">
-              <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-3xl border-4 border-white shadow-xl overflow-hidden bg-ivory-200 shrink-0">
+              
+              <div className="relative group w-32 h-32 sm:w-36 sm:h-36 rounded-3xl border-4 border-white shadow-xl overflow-hidden bg-ivory-200 shrink-0">
                 {profile.primaryPhoto ? (
                   <img src={profile.primaryPhoto} alt={fullName} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center font-serif text-4xl font-bold text-brand-900 bg-ivory-100">
                     {fullName.charAt(0)}
                   </div>
+                )}
+
+                {/* Profile Photo Upload Overlay */}
+                {(isOwnProfile || user?.role === 'admin') && (
+                  <label className="absolute inset-0 bg-black/60 opacity-90 sm:opacity-0 sm:group-hover:opacity-100 flex flex-col items-center justify-center text-white cursor-pointer transition-all duration-200">
+                    <Camera className="w-6 h-6 mb-1 text-gold-300" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider">
+                      {uploadingPhoto ? 'Uploading...' : 'Upload Photo'}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoUpload}
+                      disabled={uploadingPhoto}
+                      className="hidden"
+                    />
+                  </label>
                 )}
               </div>
 
@@ -177,7 +222,19 @@ export const ProfileDetailPage: React.FC = () => {
             </div>
 
             {/* Header Action Buttons */}
-            {!isOwnProfile && (
+            {isOwnProfile || user?.role === 'admin' ? (
+              <label className="px-5 py-3 rounded-2xl bg-brand-900 text-gold-300 font-bold text-xs hover:bg-brand-950 shadow-md transition-all cursor-pointer flex items-center gap-2 shrink-0">
+                <Camera className="w-4 h-4 text-gold-400" />
+                <span>{uploadingPhoto ? 'Uploading Photo...' : '📷 Add / Change Photo'}</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoUpload}
+                  disabled={uploadingPhoto}
+                  className="hidden"
+                />
+              </label>
+            ) : (
               <div className="flex items-center gap-2 w-full sm:w-auto">
                 <button
                   onClick={handleSendInterest}
