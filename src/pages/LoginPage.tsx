@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
-import { Lock, Mail, Sparkles } from 'lucide-react';
+import { Lock, Mail, Sparkles, Shield } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const { t, language } = useLanguage();
@@ -20,8 +20,12 @@ export const LoginPage: React.FC = () => {
     setLoading(true);
 
     try {
-      await login(email, password);
-      navigate('/dashboard');
+      const loggedUser = await login(email, password);
+      if (loggedUser?.role === 'admin' || email.includes('admin')) {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err: any) {
       setError(err.message || 'Login failed. Please check credentials.');
     } finally {
@@ -90,7 +94,7 @@ export const LoginPage: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 rounded-xl bg-brand-900 text-gold-300 font-semibold text-sm hover:bg-brand-950 shadow-md transition-all cursor-pointer"
+            className="w-full py-3.5 rounded-xl bg-brand-900 text-gold-300 font-semibold text-sm hover:bg-brand-950 shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
           >
             {loading ? 'Logging in...' : t('navLogin')}
           </button>
@@ -116,9 +120,10 @@ export const LoginPage: React.FC = () => {
             </button>
             <button
               onClick={() => fillDemoAccount('admin@matrimony.com', 'Admin@123')}
-              className="px-2.5 py-1 bg-brand-900 text-gold-300 rounded-lg font-medium cursor-pointer"
+              className="px-2.5 py-1 bg-brand-900 text-gold-300 rounded-lg font-bold cursor-pointer flex items-center gap-1"
             >
-              Admin Panel
+              <Shield className="w-3 h-3 text-gold-400" />
+              <span>Admin Panel</span>
             </button>
           </div>
         </div>

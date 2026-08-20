@@ -17,8 +17,8 @@ interface AuthContextType {
   profile: any | null;
   token: string | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (data: any) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;
+  register: (data: any) => Promise<User>;
   logout: () => void;
   refreshUser: () => Promise<void>;
 }
@@ -56,7 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     refreshUser();
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<User> => {
     const res = await fetchApi('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
@@ -66,9 +66,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setTokenState(res.token);
     setUser(res.user);
     setProfile(res.user.profile);
+    return res.user;
   };
 
-  const register = async (data: any) => {
+  const register = async (data: any): Promise<User> => {
     const res = await fetchApi('/auth/register', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -78,6 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setTokenState(res.token);
     setUser(res.user);
     setProfile(res.user.profile);
+    return res.user;
   };
 
   const logout = () => {
