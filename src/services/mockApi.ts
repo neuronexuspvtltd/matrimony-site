@@ -113,12 +113,41 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
 
   // --- 1. AUTH ENDPOINTS ---
   if (endpoint === '/auth/login' && method === 'POST') {
-    const { email } = body;
-    let prof = profiles.find((p: ProfileData) => p.user.email.toLowerCase() === email.toLowerCase());
+    const { email, password } = body;
 
-    // If not found in local storage, query Cloud Firestore in real-time!
+    if (!email || !email.trim()) {
+      throw new Error('Please enter your email address.');
+    }
+    if (!password || !password.trim()) {
+      throw new Error('Please enter your password.');
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+
+    // Admin Account Authentication
+    if (cleanEmail === 'admin@matrimony.com') {
+      if (password !== 'Admin@123') {
+        throw new Error('Invalid email or password');
+      }
+      const adminUser = {
+        id: 'usr_admin',
+        fullName: 'System Administrator',
+        email: 'admin@matrimony.com',
+        role: 'admin',
+        status: 'active',
+        profileId: 'ADMIN-001',
+      };
+      const tokenStr = `mock_jwt_token_admin_${Date.now()}`;
+      localStorage.setItem('matrimony_token', tokenStr);
+      localStorage.setItem('pb_current_user', JSON.stringify(adminUser));
+      return { token: tokenStr, user: adminUser };
+    }
+
+    // Member Profile Search (Local Storage & Cloud Firestore)
+    let prof = profiles.find((p: ProfileData) => p.user.email.toLowerCase() === cleanEmail);
+
     if (!prof) {
-      const firestoreProf = await findProfileByEmailFirestore(email).catch(() => null);
+      const firestoreProf = await findProfileByEmailFirestore(cleanEmail).catch(() => null);
       if (firestoreProf) {
         prof = firestoreProf;
         profiles.unshift(firestoreProf);
@@ -127,25 +156,17 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     }
 
     if (!prof) {
-      if (email.includes('admin')) {
-        const adminUser = {
-          id: 'usr_admin',
-          fullName: 'System Administrator',
-          email: 'admin@matrimony.com',
-          role: 'admin',
-          status: 'active',
-          profileId: 'ADMIN-001',
-        };
-        const tokenStr = `mock_jwt_token_admin_${Date.now()}`;
-        localStorage.setItem('matrimony_token', tokenStr);
-        localStorage.setItem('pb_current_user', JSON.stringify(adminUser));
-        return { token: tokenStr, user: adminUser };
-      }
       throw new Error('Invalid email or password');
     }
 
     if (prof.user.status === 'suspended') {
       throw new Error('Account suspended. Please contact support.');
+    }
+
+    // Strict Password Validation
+    const expectedPassword = prof.user.password || 'Password@123';
+    if (password !== expectedPassword) {
+      throw new Error('Invalid email or password');
     }
 
     const userData = {
@@ -165,12 +186,14 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
   }
 
   if (endpoint === '/auth/register' && method === 'POST') {
-    const { fullName, email, mobile, gender, dateOfBirth, city, religion, caste, education, occupation, maritalStatus } = body;
+    const { fullName, email, password, mobile, gender, dateOfBirth, city, religion, caste, education, occupation, maritalStatus } = body;
+
+    const cleanEmail = (email || '').trim().toLowerCase();
 
     // Check both local profiles & Cloud Firestore for existing account
-    let existing = profiles.find((p: ProfileData) => p.user.email.toLowerCase() === email.toLowerCase());
+    let existing = profiles.find((p: ProfileData) => p.user.email.toLowerCase() === cleanEmail);
     if (!existing) {
-      existing = await findProfileByEmailFirestore(email).catch(() => null);
+      existing = await findProfileByEmailFirestore(cleanEmail).catch(() => null);
     }
 
     if (existing) {
@@ -188,7 +211,8 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       user: {
         _id: newUserId,
         fullName,
-        email,
+        email: cleanEmail,
+        password: password || 'Password@123',
         mobile: mobile || '9876543210',
         role: 'user',
         status: 'active',
@@ -241,7 +265,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     const userData = {
       id: newUserId,
       fullName,
-      email,
+      email: cleanEmail,
       role: 'user',
       status: 'active',
       profileId: newProfId,
