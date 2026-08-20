@@ -1,250 +1,158 @@
-import { initialProfiles, ProfileData } from './mockData';
+import { initialProfiles, initialSuccessStories, ProfileData } from './mockData';
 
-const PROFILES_KEY = 'pb_profiles';
-const VIEWS_KEY = 'pb_views';
-const NOTIFICATIONS_KEY = 'pb_notifications';
-const INTERESTS_KEY = 'pb_interests';
-const SHORTLISTS_KEY = 'pb_shortlists';
-const CONVERSATIONS_KEY = 'pb_conversations';
-const MESSAGES_KEY = 'pb_messages';
-const REPORTS_KEY = 'pb_reports';
-const BLOCKS_KEY = 'pb_blocks';
-const CURRENT_USER_KEY = 'pb_current_user';
+const PROFILES_KEY = 'pb_profiles_data';
+const VIEWS_KEY = 'pb_views_data';
+const INTERESTS_KEY = 'pb_interests_data';
+const SHORTLISTS_KEY = 'pb_shortlists_data';
+const NOTIFICATIONS_KEY = 'pb_notifications_data';
+const CONVERSATIONS_KEY = 'pb_conversations_data';
+const MESSAGES_KEY = 'pb_messages_data';
+const REPORTS_KEY = 'pb_reports_data';
+const SUCCESS_STORIES_KEY = 'pb_success_stories_data';
 
-// Helper to get stored items
-const getItem = (key: string, defaultValue: any) => {
+// Helper to load or initialize LocalStorage
+const getItem = (key: string, defaultVal: any) => {
+  const val = localStorage.getItem(key);
+  if (!val) {
+    localStorage.setItem(key, JSON.stringify(defaultVal));
+    return defaultVal;
+  }
   try {
-    const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : defaultValue;
+    return JSON.parse(val);
   } catch (e) {
-    return defaultValue;
+    return defaultVal;
   }
 };
 
-const setItem = (key: string, value: any) => {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch (e) {
-    console.error('LocalStorage set failed:', e);
-  }
-};
-
-// Init seed data in LocalStorage if empty
-export const initMockStorage = () => {
-  if (!localStorage.getItem(PROFILES_KEY)) {
-    setItem(PROFILES_KEY, initialProfiles);
-  }
-  if (!localStorage.getItem(VIEWS_KEY)) {
-    setItem(VIEWS_KEY, [
-      {
-        _id: 'view_1',
-        viewerId: 'usr_suyash',
-        profileOwnerId: 'usr_priya',
-        viewedAt: new Date(Date.now() - 3600 * 1000 * 2).toISOString(),
-      },
-    ]);
-  }
-  if (!localStorage.getItem(NOTIFICATIONS_KEY)) {
-    setItem(NOTIFICATIONS_KEY, [
-      {
-        _id: 'notif_1',
-        userId: 'usr_priya',
-        type: 'PROFILE_VIEW',
-        titleEn: '🔔 New Profile View',
-        titleMr: '🔔 नवीन प्रोफाइल व्ह्यू',
-        messageEn: 'Suyash Narade viewed your profile.',
-        messageMr: 'सुयश नारडे यांनी तुमचे प्रोफाइल पाहिले.',
-        senderId: 'usr_suyash',
-        targetProfileId: 'PB-10024',
-        isRead: false,
-        createdAt: new Date(Date.now() - 3600 * 1000 * 2).toISOString(),
-      },
-    ]);
-  }
-  if (!localStorage.getItem(INTERESTS_KEY)) {
-    setItem(INTERESTS_KEY, [
-      {
-        _id: 'interest_1',
-        senderId: 'usr_suyash',
-        receiverId: 'usr_priya',
-        status: 'accepted',
-        createdAt: new Date(Date.now() - 86400 * 1000).toISOString(),
-      },
-    ]);
-  }
-  if (!localStorage.getItem(CONVERSATIONS_KEY)) {
-    setItem(CONVERSATIONS_KEY, [
-      {
-        _id: 'conv_1',
-        participants: ['usr_suyash', 'usr_priya'],
-        lastMessage: 'Namaste Priya! Thank you for accepting my interest.',
-        lastMessageAt: new Date().toISOString(),
-      },
-    ]);
-  }
-  if (!localStorage.getItem(MESSAGES_KEY)) {
-    setItem(MESSAGES_KEY, [
-      {
-        _id: 'msg_1',
-        conversationId: 'conv_1',
-        senderId: 'usr_suyash',
-        content: 'Namaste Priya! Thank you for accepting my interest.',
-        createdAt: new Date(Date.now() - 3600 * 1000).toISOString(),
-      },
-      {
-        _id: 'msg_2',
-        conversationId: 'conv_1',
-        senderId: 'usr_priya',
-        content: 'Namaste Suyash! Glad to connect with you.',
-        createdAt: new Date(Date.now() - 1800 * 1000).toISOString(),
-      },
-    ]);
-  }
-  if (!localStorage.getItem(SHORTLISTS_KEY)) {
-    setItem(SHORTLISTS_KEY, [
-      {
-        _id: 'short_1',
-        userId: 'usr_suyash',
-        targetUserId: 'usr_priya',
-        createdAt: new Date().toISOString(),
-      },
-    ]);
-  }
-};
-
-initMockStorage();
-
-// Current User State
-export const getCurrentUser = () => {
-  return getItem(CURRENT_USER_KEY, null);
-};
-
-export const setCurrentUser = (user: any) => {
-  setItem(CURRENT_USER_KEY, user);
+const setItem = (key: string, val: any) => {
+  localStorage.setItem(key, JSON.stringify(val));
 };
 
 // Calculate profile completion percentage
-const calculateCompletion = (profile: any): number => {
-  let score = 40;
-  if (profile.aboutMe && profile.aboutMe.length > 10) score += 15;
-  if (profile.primaryPhoto) score += 20;
-  if (profile.biodataUrl) score += 15;
-  if (profile.education && profile.occupation) score += 10;
+const calculateCompletion = (p: any): number => {
+  let score = 30; // base profile info
+  if (p.primaryPhoto) score += 20;
+  if (p.biodataUrl) score += 20;
+  if (p.aboutMe && p.aboutMe.length > 20) score += 10;
+  if (p.partnerPreferences && p.partnerPreferences.minAge) score += 20;
   return Math.min(100, score);
 };
 
-// Mock API Dispatcher
-export const mockApiRequest = async (endpoint: string, options: RequestInit = {}) => {
+export const mockApiRequest = async (endpoint: string, options: RequestInit = {}): Promise<any> => {
   const method = (options.method || 'GET').toUpperCase();
-  const body = options.body ? (options.body instanceof FormData ? options.body : JSON.parse(options.body as string)) : {};
+  const body = options.body ? (typeof options.body === 'string' ? JSON.parse(options.body) : options.body) : null;
 
+  // Initialize initial mock data if empty
   const profiles: ProfileData[] = getItem(PROFILES_KEY, initialProfiles);
-  const currentUser = getCurrentUser();
+  const successStories: any[] = getItem(SUCCESS_STORIES_KEY, initialSuccessStories || []);
+
+  const storedUser = localStorage.getItem('pb_current_user');
+  const currentUser = storedUser ? JSON.parse(storedUser) : null;
+
+  // Delay simulation
+  await new Promise((res) => setTimeout(res, 150));
 
   // --- 1. AUTH ENDPOINTS ---
   if (endpoint === '/auth/login' && method === 'POST') {
-    const { email, password } = body;
-    let prof = profiles.find((p) => p.user.email.toLowerCase() === email.toLowerCase());
-
-    // Admin account login shortcut
-    if (email === 'admin@matrimony.com') {
-      const adminUser = {
-        id: 'usr_admin',
-        fullName: 'Platform Admin',
-        email: 'admin@matrimony.com',
-        mobile: '9999999999',
-        gender: 'male',
-        role: 'admin',
-        profileId: 'PB-ADMIN',
-        profile: {
-          profileId: 'PB-ADMIN',
-          city: 'Mumbai',
-          occupation: 'Administrator',
-          completionPercentage: 100,
-        },
-      };
-      setCurrentUser(adminUser);
-      return { token: 'mock_jwt_admin_token', user: adminUser };
-    }
+    const { email } = body;
+    let prof = profiles.find((p: ProfileData) => p.user.email.toLowerCase() === email.toLowerCase());
 
     if (!prof) {
+      if (email.includes('admin')) {
+        const adminUser = {
+          id: 'usr_admin',
+          fullName: 'System Administrator',
+          email: 'admin@matrimony.com',
+          role: 'admin',
+          status: 'active',
+          profileId: 'ADMIN-001',
+        };
+        const tokenStr = `mock_jwt_token_admin_${Date.now()}`;
+        localStorage.setItem('matrimony_token', tokenStr);
+        localStorage.setItem('pb_current_user', JSON.stringify(adminUser));
+        return { token: tokenStr, user: adminUser };
+      }
       throw new Error('Invalid email or password');
     }
 
     if (prof.user.status === 'suspended') {
-      throw new Error('Your account has been suspended by administration');
+      throw new Error('Account suspended. Please contact support.');
     }
 
     const userData = {
       id: prof.user._id,
       fullName: prof.user.fullName,
       email: prof.user.email,
-      mobile: prof.user.mobile,
-      gender: prof.user.gender,
-      role: 'user',
+      role: prof.user.role || 'user',
+      status: prof.user.status,
       profileId: prof.profileId,
-      profile: prof,
     };
-    setCurrentUser(userData);
 
-    return { token: `mock_jwt_token_${prof.user._id}`, user: userData };
+    const tokenStr = `mock_jwt_token_${prof.user._id}_${Date.now()}`;
+    localStorage.setItem('matrimony_token', tokenStr);
+    localStorage.setItem('pb_current_user', JSON.stringify(userData));
+
+    return { token: tokenStr, user: userData };
   }
 
   if (endpoint === '/auth/register' && method === 'POST') {
-    const { fullName, email, mobile, gender, dob, city, caste, religion, education, occupation } = body;
-    const profileId = `PB-${Math.floor(10000 + Math.random() * 90000)}`;
-    const newId = `usr_${Date.now()}`;
+    const { fullName, email, mobile, gender, dateOfBirth, city, religion, caste, education, occupation, maritalStatus } = body;
 
-    const birthYear = dob ? new Date(dob).getFullYear() : 1998;
-    const age = new Date().getFullYear() - birthYear;
+    const existing = profiles.find((p: ProfileData) => p.user.email.toLowerCase() === email.toLowerCase());
+    if (existing) {
+      throw new Error('An account with this email already exists.');
+    }
+
+    const newUserId = `usr_${Date.now()}`;
+    const newProfId = `PB-${Math.floor(10000 + Math.random() * 90000)}`;
+
+    const age = dateOfBirth ? Math.floor((Date.now() - new Date(dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : 26;
 
     const newProfile: ProfileData = {
-      _id: newId,
+      _id: `prof_${Date.now()}`,
+      profileId: newProfId,
       user: {
-        _id: newId,
+        _id: newUserId,
         fullName,
-        email: email.toLowerCase(),
-        mobile,
-        gender,
-        isVerified: false,
+        email,
+        mobile: mobile || '9876543210',
+        role: 'user',
         status: 'active',
+        isVerified: true,
       },
-      profileId,
+      gender: gender || 'male',
       age,
-      gender,
-      height: body.height || "5'7\"",
-      maritalStatus: body.maritalStatus || 'never_married',
+      height: "5'8\"",
+      maritalStatus: maritalStatus || 'Never Married',
       religion: religion || 'Hindu',
       caste: caste || 'Maratha',
-      subCaste: body.subCaste || '',
-      motherTongue: body.motherTongue || 'Marathi',
+      motherTongue: 'Marathi',
       city: city || 'Pune',
-      state: body.state || 'Maharashtra',
+      state: 'Maharashtra',
       country: 'India',
-      education: education || 'Graduate',
-      occupation: occupation || 'Employed',
-      company: body.company || '',
-      income: body.income || '8-12 LPA',
-      fatherOccupation: body.fatherOccupation || '',
-      motherOccupation: body.motherOccupation || '',
-      brothers: Number(body.brothers) || 0,
-      sisters: Number(body.sisters) || 0,
-      familyType: body.familyType || 'nuclear',
-      familyValues: body.familyValues || 'moderate',
-      aboutMe: body.aboutMe || `Hello, I am ${fullName}. Looking for a compatible life partner.`,
-      partnerPreferences: body.partnerPreferences || {
-        minAge: 21,
-        maxAge: 35,
-        education: 'Graduate',
-        occupation: 'Employed',
-        location: 'Maharashtra',
-      },
-      biodataVisibility: 'connections_only',
+      education: education || 'B.Tech',
+      occupation: occupation || 'Software Engineer',
+      income: '₹12 - ₹15 Lakhs p.a.',
+      aboutMe: `Namaste! I am ${fullName}, working in ${city}. Looking for a cultured and understanding life partner.`,
+      primaryPhoto: gender === 'female' 
+        ? 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=600&q=80'
+        : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80',
       photos: [],
-      photoVisibility: 'public',
-      completionPercentage: 75,
-      isVerified: false,
-      matchPercentage: 88,
+      biodataUrl: '',
+      biodataFileName: '',
+      biodataVisibility: 'Connections Only',
+      isVerified: true,
+      isFeatured: true,
+      completionPercentage: 70,
+      partnerPreferences: {
+        minAge: Math.max(18, age - 5),
+        maxAge: age + 5,
+        maritalStatus: 'Never Married',
+        religion: religion || 'Hindu',
+        caste: caste || 'Any',
+        education: 'Graduate / Post Graduate',
+        location: 'Any',
+      },
       createdAt: new Date().toISOString(),
     };
 
@@ -252,51 +160,50 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     setItem(PROFILES_KEY, profiles);
 
     const userData = {
-      id: newId,
+      id: newUserId,
       fullName,
       email,
-      mobile,
-      gender,
       role: 'user',
-      profileId,
-      profile: newProfile,
+      status: 'active',
+      profileId: newProfId,
     };
-    setCurrentUser(userData);
 
-    return { token: `mock_jwt_token_${newId}`, user: userData };
+    const tokenStr = `mock_jwt_token_${newUserId}_${Date.now()}`;
+    localStorage.setItem('matrimony_token', tokenStr);
+    localStorage.setItem('pb_current_user', JSON.stringify(userData));
+
+    return { token: tokenStr, user: userData, profile: newProfile };
   }
 
-  if (endpoint === '/auth/me') {
+  if (endpoint === '/auth/me' && method === 'GET') {
     if (!currentUser) throw new Error('Not authenticated');
-    const prof = profiles.find((p) => p.user._id === currentUser.id);
-    return { user: currentUser, profile: prof || currentUser.profile };
+    return { user: currentUser };
   }
 
-  // --- 2. SEARCH & DISCOVERY ENDPOINTS ---
-  if (endpoint.startsWith('/search')) {
-    if (endpoint.includes('/featured')) {
-      return profiles.slice(0, 6);
-    }
+  // --- 2. SEARCH & PROFILES ENDPOINTS ---
+  if (endpoint === '/search/featured') {
+    return profiles.filter((p: ProfileData) => p.isFeatured).slice(0, 6);
+  }
 
-    const urlParams = new URLSearchParams(endpoint.split('?')[1] || '');
-    const nameQ = urlParams.get('name')?.toLowerCase();
-    const genderQ = urlParams.get('gender');
-    const minAgeQ = Number(urlParams.get('minAge') || 0);
-    const maxAgeQ = Number(urlParams.get('maxAge') || 100);
-    const cityQ = urlParams.get('city')?.toLowerCase();
-    const religionQ = urlParams.get('religion')?.toLowerCase();
-    const casteQ = urlParams.get('caste')?.toLowerCase();
-    const maritalStatusQ = urlParams.get('maritalStatus');
+  if (endpoint.startsWith('/search') || endpoint === '/profiles') {
+    const params = new URLSearchParams(endpoint.split('?')[1] || '');
+    const gender = params.get('gender');
+    const minAge = parseInt(params.get('minAge') || '18', 10);
+    const maxAge = parseInt(params.get('maxAge') || '70', 10);
+    const city = params.get('city');
+    const caste = params.get('caste');
+    const religion = params.get('religion');
+    const maritalStatus = params.get('maritalStatus');
+    const search = params.get('search');
 
-    let filtered = profiles.filter((p) => {
-      if (currentUser && p.user._id === currentUser.id) return false;
-      if (nameQ && !p.user.fullName.toLowerCase().includes(nameQ)) return false;
-      if (genderQ && p.gender !== genderQ) return false;
-      if (p.age < minAgeQ || p.age > maxAgeQ) return false;
-      if (cityQ && !p.city.toLowerCase().includes(cityQ)) return false;
-      if (religionQ && !p.religion.toLowerCase().includes(religionQ)) return false;
-      if (casteQ && !p.caste.toLowerCase().includes(casteQ)) return false;
-      if (maritalStatusQ && p.maritalStatus !== maritalStatusQ) return false;
+    const filtered = profiles.filter((p: ProfileData) => {
+      if (gender && p.gender !== gender) return false;
+      if (p.age < minAge || p.age > maxAge) return false;
+      if (city && city !== 'All' && !p.city.toLowerCase().includes(city.toLowerCase())) return false;
+      if (caste && caste !== 'All' && p.caste.toLowerCase() !== caste.toLowerCase()) return false;
+      if (religion && religion !== 'All' && p.religion.toLowerCase() !== religion.toLowerCase()) return false;
+      if (maritalStatus && maritalStatus !== 'All' && p.maritalStatus.toLowerCase() !== maritalStatus.toLowerCase()) return false;
+      if (search && !p.user.fullName.toLowerCase().includes(search.toLowerCase()) && !p.profileId.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
 
@@ -305,7 +212,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     const myShortlistIds = currentUser ? shortlists.filter((s: any) => s.userId === currentUser.id).map((s: any) => s.targetUserId) : [];
     const mySentInterestIds = currentUser ? interests.filter((i: any) => i.senderId === currentUser.id).map((i: any) => i.receiverId) : [];
 
-    const formattedResults = filtered.map((p) => ({
+    const formattedResults = filtered.map((p: ProfileData) => ({
       ...p,
       isShortlisted: myShortlistIds.includes(p.user._id),
       interestSent: mySentInterestIds.includes(p.user._id),
@@ -320,12 +227,12 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     const targetId = endpoint.replace('/profiles/', '');
 
     if (targetId === 'me' && method === 'GET') {
-      const p = profiles.find((prof) => prof.user._id === currentUser?.id);
+      const p = profiles.find((prof: ProfileData) => prof.user._id === currentUser?.id);
       return p || {};
     }
 
     if (targetId === 'me' && method === 'PUT') {
-      const pIndex = profiles.findIndex((prof) => prof.user._id === currentUser?.id);
+      const pIndex = profiles.findIndex((prof: ProfileData) => prof.user._id === currentUser?.id);
       if (pIndex !== -1) {
         profiles[pIndex] = { ...profiles[pIndex], ...body };
         profiles[pIndex].completionPercentage = calculateCompletion(profiles[pIndex]);
@@ -334,9 +241,8 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       }
     }
 
-    // PDF Upload handling in browser (Data URL)
     if (targetId === 'upload-biodata' && method === 'POST') {
-      const pIndex = profiles.findIndex((prof) => prof.user._id === currentUser?.id);
+      const pIndex = profiles.findIndex((prof: ProfileData) => prof.user._id === currentUser?.id);
       if (pIndex !== -1 && body instanceof FormData) {
         const file = body.get('biodata') as File;
         if (file) {
@@ -351,7 +257,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     }
 
     if (targetId === 'delete-biodata' && method === 'POST') {
-      const pIndex = profiles.findIndex((prof) => prof.user._id === currentUser?.id);
+      const pIndex = profiles.findIndex((prof: ProfileData) => prof.user._id === currentUser?.id);
       if (pIndex !== -1) {
         profiles[pIndex].biodataUrl = '';
         profiles[pIndex].biodataFileName = '';
@@ -360,8 +266,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       }
     }
 
-    // Fetch Profile By ID & TRIGGER PROFILE VIEW TRACKING LOGIC (Requirement 10 & 36)!
-    let targetProf = profiles.find((p) => p.profileId === targetId || p._id === targetId || p.user._id === targetId);
+    let targetProf = profiles.find((p: ProfileData) => p.profileId === targetId || p._id === targetId || p.user._id === targetId);
     if (!targetProf) throw new Error('Profile not found');
 
     if (currentUser && currentUser.id !== targetProf.user._id) {
@@ -369,7 +274,6 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       const cooldownHours = 24;
       const cooldownTime = new Date(Date.now() - cooldownHours * 60 * 60 * 1000);
 
-      // Check if view logged within last 24 hours
       const recent = views.find(
         (v: any) =>
           v.viewerId === currentUser.id &&
@@ -378,7 +282,6 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       );
 
       if (!recent) {
-        // Record new profile view
         views.unshift({
           _id: `view_${Date.now()}`,
           viewerId: currentUser.id,
@@ -387,7 +290,6 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
         });
         setItem(VIEWS_KEY, views);
 
-        // Generate bilingual notification for owner
         const notifications = getItem(NOTIFICATIONS_KEY, []);
         notifications.unshift({
           _id: `notif_${Date.now()}`,
@@ -415,7 +317,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     const myViews = views.filter((v: any) => v.profileOwnerId === currentUser?.id);
 
     const formattedViews = myViews.map((v: any) => {
-      const viewerProf = profiles.find((p) => p.user._id === v.viewerId);
+      const viewerProf = profiles.find((p: ProfileData) => p.user._id === v.viewerId);
       return {
         _id: v._id,
         viewedAt: v.viewedAt,
@@ -451,7 +353,6 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     interests.unshift(newInterest);
     setItem(INTERESTS_KEY, interests);
 
-    // Notify Receiver
     const notifications = getItem(NOTIFICATIONS_KEY, []);
     notifications.unshift({
       _id: `notif_${Date.now()}`,
@@ -496,7 +397,6 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
           setItem(CONVERSATIONS_KEY, conversations);
         }
 
-        // Notify sender
         const notifications = getItem(NOTIFICATIONS_KEY, []);
         notifications.unshift({
           _id: `notif_${Date.now()}`,
@@ -524,7 +424,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
 
     const formatList = (list: any[], userKey: string) =>
       list.map((item) => {
-        const p = profiles.find((prof) => prof.user._id === item[userKey]);
+        const p = profiles.find((prof: ProfileData) => prof.user._id === item[userKey]);
         return {
           _id: item._id,
           status: item.status,
@@ -570,7 +470,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     const myShort = shortlists.filter((s: any) => s.userId === currentUser?.id);
 
     return myShort.map((item: any) => {
-      const p = profiles.find((prof) => prof.user._id === item.targetUserId);
+      const p = profiles.find((prof: ProfileData) => prof.user._id === item.targetUserId);
       return { _id: item._id, profile: p };
     });
   }
@@ -610,7 +510,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
 
     return myConvs.map((conv: any) => {
       const partnerId = conv.participants.find((p: string) => p !== currentUser?.id);
-      const partnerProf = profiles.find((p) => p.user._id === partnerId);
+      const partnerProf = profiles.find((p: ProfileData) => p.user._id === partnerId);
       return {
         _id: conv._id,
         lastMessage: conv.lastMessage,
@@ -654,7 +554,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     return newMsg;
   }
 
-  // --- 9. ADMIN ENDPOINTS ---
+  // --- 9. FULL ADMIN CMS & CONTENT MANAGEMENT ENDPOINTS ---
   if (endpoint === '/admin/stats') {
     const views = getItem(VIEWS_KEY, []);
     const interests = getItem(INTERESTS_KEY, []);
@@ -662,12 +562,13 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
 
     return {
       totalUsers: profiles.length,
-      activeUsers: profiles.filter((p) => p.user.status === 'active').length,
-      verifiedUsers: profiles.filter((p) => p.isVerified).length,
+      activeUsers: profiles.filter((p: ProfileData) => p.user.status === 'active').length,
+      verifiedUsers: profiles.filter((p: ProfileData) => p.isVerified).length,
       totalViews: views.length,
       totalInterests: interests.length,
       totalConnections: interests.filter((i: any) => i.status === 'accepted').length,
       pendingReports: reports.filter((r: any) => r.status === 'pending').length,
+      totalStories: successStories.length,
     };
   }
 
@@ -675,17 +576,23 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     const searchQ = new URLSearchParams(endpoint.split('?')[1] || '').get('search')?.toLowerCase();
     let filtered = profiles;
     if (searchQ) {
-      filtered = profiles.filter((p) => p.user.fullName.toLowerCase().includes(searchQ) || p.user.email.toLowerCase().includes(searchQ));
+      filtered = profiles.filter((p: ProfileData) => p.user.fullName.toLowerCase().includes(searchQ) || p.user.email.toLowerCase().includes(searchQ));
     }
     return {
-      users: filtered.map((p) => ({
+      users: filtered.map((p: ProfileData) => ({
         _id: p.user._id,
         fullName: p.user.fullName,
         email: p.user.email,
         mobile: p.user.mobile,
         profileId: p.profileId,
         city: p.city,
+        caste: p.caste,
+        occupation: p.occupation,
+        education: p.education,
         isVerified: p.isVerified,
+        isFeatured: p.isFeatured,
+        biodataUrl: p.biodataUrl,
+        biodataPrivacy: p.biodataVisibility || 'Connections Only',
         status: p.user.status,
       })),
     };
@@ -693,7 +600,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
 
   if (endpoint.includes('/admin/users/') && endpoint.endsWith('/verify')) {
     const userId = endpoint.split('/')[3];
-    const pIdx = profiles.findIndex((p) => p.user._id === userId);
+    const pIdx = profiles.findIndex((p: ProfileData) => p.user._id === userId);
     if (pIdx !== -1) {
       profiles[pIdx].isVerified = !profiles[pIdx].isVerified;
       profiles[pIdx].user.isVerified = profiles[pIdx].isVerified;
@@ -702,14 +609,83 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     }
   }
 
+  if (endpoint.includes('/admin/users/') && endpoint.endsWith('/featured')) {
+    const userId = endpoint.split('/')[3];
+    const pIdx = profiles.findIndex((p: ProfileData) => p.user._id === userId);
+    if (pIdx !== -1) {
+      profiles[pIdx].isFeatured = !profiles[pIdx].isFeatured;
+      setItem(PROFILES_KEY, profiles);
+      return { message: 'Featured status toggled', isFeatured: profiles[pIdx].isFeatured };
+    }
+  }
+
+  if (endpoint.includes('/admin/users/') && endpoint.endsWith('/edit') && method === 'PUT') {
+    const userId = endpoint.split('/')[3];
+    const pIdx = profiles.findIndex((p: ProfileData) => p.user._id === userId);
+    if (pIdx !== -1) {
+      profiles[pIdx] = {
+        ...profiles[pIdx],
+        user: { ...profiles[pIdx].user, fullName: body.fullName || profiles[pIdx].user.fullName, email: body.email || profiles[pIdx].user.email },
+        city: body.city || profiles[pIdx].city,
+        caste: body.caste || profiles[pIdx].caste,
+        occupation: body.occupation || profiles[pIdx].occupation,
+        education: body.education || profiles[pIdx].education,
+        biodataVisibility: body.biodataPrivacy || profiles[pIdx].biodataVisibility,
+      };
+      setItem(PROFILES_KEY, profiles);
+      return { message: 'User updated successfully', profile: profiles[pIdx] };
+    }
+  }
+
+  if (endpoint.includes('/admin/users/') && method === 'DELETE') {
+    const userId = endpoint.split('/')[3];
+    const pIdx = profiles.findIndex((p: ProfileData) => p.user._id === userId);
+    if (pIdx !== -1) {
+      profiles.splice(pIdx, 1);
+      setItem(PROFILES_KEY, profiles);
+      return { message: 'User deleted permanently' };
+    }
+  }
+
   if (endpoint.includes('/admin/users/') && endpoint.endsWith('/status')) {
     const userId = endpoint.split('/')[3];
-    const pIdx = profiles.findIndex((p) => p.user._id === userId);
+    const pIdx = profiles.findIndex((p: ProfileData) => p.user._id === userId);
     if (pIdx !== -1) {
       profiles[pIdx].user.status = body.status;
       setItem(PROFILES_KEY, profiles);
       return { message: 'Status updated', status: body.status };
     }
+  }
+
+  // --- Admin Success Stories Endpoints ---
+  if (endpoint === '/admin/stories' && method === 'GET') {
+    return getItem(SUCCESS_STORIES_KEY, initialSuccessStories || []);
+  }
+
+  if (endpoint === '/admin/stories' && method === 'POST') {
+    const stories = getItem(SUCCESS_STORIES_KEY, initialSuccessStories || []);
+    const newStory = {
+      id: `story_${Date.now()}`,
+      namesEn: body.namesEn,
+      namesMr: body.namesMr,
+      locationEn: body.locationEn,
+      locationMr: body.locationMr,
+      image: body.image || 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=600&q=80',
+      quoteEn: body.quoteEn,
+      quoteMr: body.quoteMr,
+      createdAt: new Date().toISOString(),
+    };
+    stories.unshift(newStory);
+    setItem(SUCCESS_STORIES_KEY, stories);
+    return { message: 'Success story added', story: newStory };
+  }
+
+  if (endpoint.startsWith('/admin/stories/') && method === 'DELETE') {
+    const storyId = endpoint.replace('/admin/stories/', '');
+    const stories = getItem(SUCCESS_STORIES_KEY, initialSuccessStories || []);
+    const filtered = stories.filter((s: any) => String(s.id) !== String(storyId));
+    setItem(SUCCESS_STORIES_KEY, filtered);
+    return { message: 'Story deleted successfully' };
   }
 
   if (endpoint === '/admin/reports') {
@@ -718,7 +694,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
 
   if (endpoint === '/admin/announcement' && method === 'POST') {
     const notifications = getItem(NOTIFICATIONS_KEY, []);
-    profiles.forEach((p) => {
+    profiles.forEach((p: ProfileData) => {
       notifications.unshift({
         _id: `notif_sys_${Date.now()}_${p.user._id}`,
         userId: p.user._id,

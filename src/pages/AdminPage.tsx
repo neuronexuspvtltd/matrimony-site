@@ -1,7 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { fetchApi } from '../services/api';
-import { Shield, Users, ShieldCheck, Eye, AlertTriangle, Send, Search, Check, Ban } from 'lucide-react';
+import {
+  Shield,
+  Users,
+  ShieldCheck,
+  Eye,
+  AlertTriangle,
+  Send,
+  Search,
+  Check,
+  Ban,
+  Star,
+  Edit3,
+  Trash2,
+  Plus,
+  FileCheck2,
+  Heart,
+  Globe2,
+  X,
+  Lock,
+} from 'lucide-react';
 
 export const AdminPage: React.FC = () => {
   const { t, language } = useLanguage();
@@ -9,29 +28,47 @@ export const AdminPage: React.FC = () => {
   const [stats, setStats] = useState<any>(null);
   const [usersList, setUsersList] = useState<any[]>([]);
   const [reportsList, setReportsList] = useState<any[]>([]);
-  const [tab, setTab] = useState<'users' | 'reports' | 'announcement'>('users');
+  const [storiesList, setStoriesList] = useState<any[]>([]);
+  const [tab, setTab] = useState<'users' | 'stories' | 'announcement' | 'reports'>('users');
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
 
+  // Edit User Modal State
+  const [editingUser, setEditingUser] = useState<any | null>(null);
+
+  // Add Success Story Modal State
+  const [showAddStory, setShowAddStory] = useState(false);
+  const [newStory, setNewStory] = useState({
+    namesEn: '',
+    namesMr: '',
+    locationEn: '',
+    locationMr: '',
+    quoteEn: '',
+    quoteMr: '',
+    image: '',
+  });
+
   // Announcement state
   const [announcement, setAnnouncement] = useState({
-    titleEn: 'Platform Update',
-    titleMr: 'महत्त्वाची सूचना',
-    messageEn: 'Welcome to Pavithra Bandhan! Upload your PDF biodata to receive more responses.',
+    titleEn: 'Festive Offer: Free Profile Verification',
+    titleMr: 'उत्सव विशेष: मोफत प्रोफाईल पडताळणी',
+    messageEn: 'Welcome to Pavithra Bandhan! Upload your PDF biodata to get 5x more responses from verified families.',
     messageMr: 'पावित्र्य बंधन मध्ये स्वागत आहे! अधिक प्रतिसादांसाठी आपला PDF बायोडाटा अपलोड करा.',
   });
 
   const fetchAdminData = async () => {
     setLoading(true);
     try {
-      const [sRes, uRes, rRes] = await Promise.all([
+      const [sRes, uRes, rRes, stRes] = await Promise.all([
         fetchApi('/admin/stats'),
         fetchApi(`/admin/users?search=${encodeURIComponent(search)}`),
         fetchApi('/admin/reports'),
+        fetchApi('/admin/stories'),
       ]);
       setStats(sRes);
       setUsersList(uRes.users || []);
       setReportsList(rRes || []);
+      setStoriesList(stRes || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -43,12 +80,22 @@ export const AdminPage: React.FC = () => {
     fetchAdminData();
   }, [search]);
 
+  // Actions
   const handleToggleVerify = async (userId: string) => {
     try {
       await fetchApi(`/admin/users/${userId}/verify`, { method: 'PUT' });
       fetchAdminData();
     } catch (err: any) {
       alert(err.message || 'Error updating verification');
+    }
+  };
+
+  const handleToggleFeatured = async (userId: string) => {
+    try {
+      await fetchApi(`/admin/users/${userId}/featured`, { method: 'PUT' });
+      fetchAdminData();
+    } catch (err: any) {
+      alert(err.message || 'Error updating featured status');
     }
   };
 
@@ -62,6 +109,57 @@ export const AdminPage: React.FC = () => {
       fetchAdminData();
     } catch (err: any) {
       alert(err.message || 'Error updating user status');
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!window.confirm('Are you sure you want to permanently delete this member profile?')) return;
+    try {
+      await fetchApi(`/admin/users/${userId}`, { method: 'DELETE' });
+      fetchAdminData();
+    } catch (err: any) {
+      alert(err.message || 'Error deleting user');
+    }
+  };
+
+  const handleSaveUserEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    try {
+      await fetchApi(`/admin/users/${editingUser._id}/edit`, {
+        method: 'PUT',
+        body: JSON.stringify(editingUser),
+      });
+      setEditingUser(null);
+      fetchAdminData();
+    } catch (err: any) {
+      alert(err.message || 'Error updating user profile');
+    }
+  };
+
+  const handleAddStory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newStory.namesEn || !newStory.quoteEn) return;
+    try {
+      await fetchApi('/admin/stories', {
+        method: 'POST',
+        body: JSON.stringify(newStory),
+      });
+      setShowAddStory(false);
+      setNewStory({ namesEn: '', namesMr: '', locationEn: '', locationMr: '', quoteEn: '', quoteMr: '', image: '' });
+      fetchAdminData();
+    } catch (err: any) {
+      alert(err.message || 'Error adding success story');
+    }
+  };
+
+  const handleDeleteStory = async (id: string) => {
+    if (!window.confirm('Delete this success story from the homepage?')) return;
+    try {
+      await fetchApi(`/admin/stories/${id}`, { method: 'DELETE' });
+      fetchAdminData();
+    } catch (err: any) {
+      alert(err.message || 'Error deleting story');
     }
   };
 
@@ -82,88 +180,105 @@ export const AdminPage: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       
       {/* Header */}
-      <div className="border-b border-ivory-300 pb-4 flex items-center justify-between">
+      <div className="border-b border-ivory-300 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="font-serif text-3xl font-bold text-brand-950 flex items-center gap-2">
             <Shield className="w-7 h-7 text-brand-700" />
-            <span>{t('adminDashboardTitle')}</span>
+            <span>Website Content & Admin Management Panel</span>
           </h1>
           <p className="text-xs text-gray-500 mt-1">
-            Platform moderation, verification, reports, and system broadcasts
+            Complete administrative control over profiles, PDF biodatas, homepage success stories, and site notifications.
           </p>
         </div>
       </div>
 
-      {/* 4 Admin Stat Cards */}
+      {/* 5 Real-Time Admin Stat Cards */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-          <div className="bg-white p-5 rounded-2xl border border-ivory-300 space-y-2">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="bg-white p-5 rounded-2xl border border-ivory-300 space-y-2 shadow-xs">
             <div className="flex items-center justify-between text-brand-900">
               <Users className="w-5 h-5 text-gold-600" />
               <span className="text-[10px] uppercase font-bold text-gray-400">Total</span>
             </div>
             <div className="font-serif text-2xl font-bold text-gray-900">{stats.totalUsers}</div>
-            <div className="text-xs text-gray-500">{t('adminTotalUsers')}</div>
+            <div className="text-xs text-gray-500">Registered Members</div>
           </div>
 
-          <div className="bg-white p-5 rounded-2xl border border-ivory-300 space-y-2">
+          <div className="bg-white p-5 rounded-2xl border border-ivory-300 space-y-2 shadow-xs">
             <div className="flex items-center justify-between text-emerald-600">
               <ShieldCheck className="w-5 h-5" />
               <span className="text-[10px] uppercase font-bold text-gray-400">Verified</span>
             </div>
             <div className="font-serif text-2xl font-bold text-gray-900">{stats.verifiedUsers}</div>
-            <div className="text-xs text-gray-500">{t('adminVerifiedUsers')}</div>
+            <div className="text-xs text-gray-500">Verified Profiles</div>
           </div>
 
-          <div className="bg-white p-5 rounded-2xl border border-ivory-300 space-y-2">
+          <div className="bg-white p-5 rounded-2xl border border-ivory-300 space-y-2 shadow-xs">
             <div className="flex items-center justify-between text-brand-700">
-              <Eye className="w-5 h-5 text-brand-700" />
+              <Heart className="w-5 h-5 text-brand-700 fill-brand-700/20" />
+              <span className="text-[10px] uppercase font-bold text-gray-400">Stories</span>
+            </div>
+            <div className="font-serif text-2xl font-bold text-gray-900">{stats.totalStories}</div>
+            <div className="text-xs text-gray-500">Homepage Stories</div>
+          </div>
+
+          <div className="bg-white p-5 rounded-2xl border border-ivory-300 space-y-2 shadow-xs">
+            <div className="flex items-center justify-between text-gold-700">
+              <Eye className="w-5 h-5 text-gold-600" />
               <span className="text-[10px] uppercase font-bold text-gray-400">Views</span>
             </div>
             <div className="font-serif text-2xl font-bold text-gray-900">{stats.totalViews}</div>
-            <div className="text-xs text-gray-500">{t('adminTotalViews')}</div>
+            <div className="text-xs text-gray-500">Profile Views Logged</div>
           </div>
 
-          <div className="bg-white p-5 rounded-2xl border border-ivory-300 space-y-2">
+          <div className="bg-white p-5 rounded-2xl border border-ivory-300 space-y-2 shadow-xs col-span-2 md:col-span-1">
             <div className="flex items-center justify-between text-amber-600">
               <AlertTriangle className="w-5 h-5" />
               <span className="text-[10px] uppercase font-bold text-gray-400">Reports</span>
             </div>
             <div className="font-serif text-2xl font-bold text-gray-900">{stats.pendingReports}</div>
-            <div className="text-xs text-gray-500">{t('adminPendingReports')}</div>
+            <div className="text-xs text-gray-500">Pending Reviews</div>
           </div>
         </div>
       )}
 
       {/* Tabs */}
-      <div className="flex border-b border-ivory-300 gap-4">
+      <div className="flex border-b border-ivory-300 gap-6 overflow-x-auto">
         <button
           onClick={() => setTab('users')}
-          className={`pb-3 text-xs font-bold transition-colors cursor-pointer ${
+          className={`pb-3 text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
             tab === 'users' ? 'border-b-2 border-brand-900 text-brand-900' : 'text-gray-500 hover:text-gray-800'
           }`}
         >
-          User Management ({usersList.length})
+          Member & Profile Management ({usersList.length})
         </button>
         <button
-          onClick={() => setTab('reports')}
-          className={`pb-3 text-xs font-bold transition-colors cursor-pointer ${
-            tab === 'reports' ? 'border-b-2 border-brand-900 text-brand-900' : 'text-gray-500 hover:text-gray-800'
+          onClick={() => setTab('stories')}
+          className={`pb-3 text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
+            tab === 'stories' ? 'border-b-2 border-brand-900 text-brand-900' : 'text-gray-500 hover:text-gray-800'
           }`}
         >
-          Reports Review ({reportsList.length})
+          Success Stories CMS ({storiesList.length})
         </button>
         <button
           onClick={() => setTab('announcement')}
-          className={`pb-3 text-xs font-bold transition-colors cursor-pointer ${
+          className={`pb-3 text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
             tab === 'announcement' ? 'border-b-2 border-brand-900 text-brand-900' : 'text-gray-500 hover:text-gray-800'
           }`}
         >
-          System Announcement
+          Site Announcements & Banners
+        </button>
+        <button
+          onClick={() => setTab('reports')}
+          className={`pb-3 text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
+            tab === 'reports' ? 'border-b-2 border-brand-900 text-brand-900' : 'text-gray-500 hover:text-gray-800'
+          }`}
+        >
+          Safety Reports ({reportsList.length})
         </button>
       </div>
 
-      {/* TAB 1: User Management */}
+      {/* TAB 1: User & Profile Management */}
       {tab === 'users' && (
         <div className="bg-white rounded-3xl border border-ivory-300 p-6 space-y-4 shadow-sm">
           <div className="flex items-center justify-between gap-4">
@@ -173,8 +288,8 @@ export const AdminPage: React.FC = () => {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search user by name, email, or mobile..."
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 text-xs"
+                placeholder="Search by name, email, profile ID, city, or caste..."
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 text-xs focus:ring-2 focus:ring-brand-900"
               />
             </div>
           </div>
@@ -183,10 +298,11 @@ export const AdminPage: React.FC = () => {
             <table className="w-full text-left text-xs">
               <thead className="bg-ivory-100 text-gray-700 font-semibold border-b border-ivory-200">
                 <tr>
-                  <th className="p-3">User</th>
+                  <th className="p-3">User Details</th>
                   <th className="p-3">Profile ID</th>
-                  <th className="p-3">City</th>
-                  <th className="p-3">Verified</th>
+                  <th className="p-3">Caste & Location</th>
+                  <th className="p-3">PDF Privacy</th>
+                  <th className="p-3">Badges</th>
                   <th className="p-3">Status</th>
                   <th className="p-3">Actions</th>
                 </tr>
@@ -198,16 +314,25 @@ export const AdminPage: React.FC = () => {
                       <div className="font-semibold text-gray-900">{u.fullName}</div>
                       <div className="text-gray-400 text-[10px]">{u.email} • {u.mobile}</div>
                     </td>
-                    <td className="p-3 font-mono font-semibold text-gold-700">{u.profileId || 'N/A'}</td>
-                    <td className="p-3">{u.city || 'Maharashtra'}</td>
+                    <td className="p-3 font-mono font-bold text-brand-900">{u.profileId || 'N/A'}</td>
                     <td className="p-3">
-                      {u.isVerified ? (
+                      <div className="font-medium text-gray-800">{u.caste || 'Maratha'}</div>
+                      <div className="text-gray-500 text-[10px]">{u.city || 'Pune'}</div>
+                    </td>
+                    <td className="p-3">
+                      <span className="bg-ivory-200 text-brand-950 text-[10px] font-semibold px-2 py-0.5 rounded-md border border-ivory-300">
+                        {u.biodataPrivacy || 'Connections Only'}
+                      </span>
+                    </td>
+                    <td className="p-3 space-x-1">
+                      {u.isVerified && (
                         <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded">
                           Verified ✓
                         </span>
-                      ) : (
-                        <span className="bg-gray-100 text-gray-500 text-[10px] px-2 py-0.5 rounded">
-                          Unverified
+                      )}
+                      {u.isFeatured && (
+                        <span className="bg-gold-100 text-gold-900 text-[10px] font-bold px-2 py-0.5 rounded border border-gold-300">
+                          Featured ⭐
                         </span>
                       )}
                     </td>
@@ -218,22 +343,55 @@ export const AdminPage: React.FC = () => {
                         {u.status}
                       </span>
                     </td>
-                    <td className="p-3 flex items-center gap-2">
-                      <button
-                        onClick={() => handleToggleVerify(u._id)}
-                        className="px-2.5 py-1 bg-brand-900 text-gold-300 rounded-lg text-[11px] font-semibold cursor-pointer"
-                      >
-                        {u.isVerified ? t('unverifyUserBtn') : t('verifyUserBtn')}
-                      </button>
+                    <td className="p-3">
+                      <div className="flex items-center gap-1.5">
+                        {/* Verify */}
+                        <button
+                          onClick={() => handleToggleVerify(u._id)}
+                          className="px-2 py-1 bg-brand-900 text-gold-300 rounded-lg text-[10px] font-semibold cursor-pointer"
+                          title="Toggle Verification"
+                        >
+                          {u.isVerified ? 'Unverify' : 'Verify'}
+                        </button>
 
-                      <button
-                        onClick={() => handleToggleStatus(u._id, u.status)}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold cursor-pointer ${
-                          u.status === 'active' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700'
-                        }`}
-                      >
-                        {u.status === 'active' ? t('suspendUserBtn') : t('activateUserBtn')}
-                      </button>
+                        {/* Featured */}
+                        <button
+                          onClick={() => handleToggleFeatured(u._id)}
+                          className="px-2 py-1 bg-gold-400 text-brand-950 rounded-lg text-[10px] font-bold cursor-pointer"
+                          title="Toggle Featured on Homepage"
+                        >
+                          {u.isFeatured ? 'Unstar' : 'Feature ⭐'}
+                        </button>
+
+                        {/* Edit */}
+                        <button
+                          onClick={() => setEditingUser(u)}
+                          className="p-1 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 cursor-pointer"
+                          title="Edit Profile Content"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+
+                        {/* Status Suspend */}
+                        <button
+                          onClick={() => handleToggleStatus(u._id, u.status)}
+                          className={`p-1 rounded-lg cursor-pointer ${
+                            u.status === 'active' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
+                          }`}
+                          title={u.status === 'active' ? 'Suspend Member' : 'Activate Member'}
+                        >
+                          <Ban className="w-3.5 h-3.5" />
+                        </button>
+
+                        {/* Delete */}
+                        <button
+                          onClick={() => handleDeleteUser(u._id)}
+                          className="p-1 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 cursor-pointer"
+                          title="Delete Member"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -243,35 +401,51 @@ export const AdminPage: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 2: Reports Review */}
-      {tab === 'reports' && (
-        <div className="bg-white rounded-3xl border border-ivory-300 p-6 space-y-4 shadow-sm">
-          {reportsList.length === 0 ? (
-            <p className="text-xs text-gray-500 text-center py-6">No reported profiles to review.</p>
-          ) : (
-            <div className="divide-y divide-gray-100">
-              {reportsList.map((r) => (
-                <div key={r._id} className="py-4 space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-red-600">Reason: {r.reason}</span>
-                    <span className="text-gray-400">{new Date(r.createdAt).toLocaleDateString()}</span>
-                  </div>
-                  <p className="text-xs text-gray-700">
-                    Reporter: <strong>{r.reporterId?.fullName}</strong> ({r.reporterId?.email}) reported User:{' '}
-                    <strong>{r.reportedUserId?.fullName}</strong> ({r.reportedUserId?.email})
-                  </p>
-                  {r.details && <p className="text-xs text-gray-500 bg-ivory-100 p-2.5 rounded-xl">{r.details}</p>}
-                </div>
-              ))}
+      {/* TAB 2: Success Stories CMS (Homepage Content) */}
+      {tab === 'stories' && (
+        <div className="bg-white rounded-3xl border border-ivory-300 p-6 space-y-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-serif font-bold text-brand-950 text-lg">Homepage Success Stories CMS</h3>
+              <p className="text-xs text-gray-500">Manage happy couple testimonials displayed on the homepage.</p>
             </div>
-          )}
+            <button
+              onClick={() => setShowAddStory(true)}
+              className="px-4 py-2 bg-brand-900 text-gold-300 font-bold text-xs rounded-xl flex items-center gap-1.5 cursor-pointer shadow-sm hover:bg-brand-950"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add Success Story</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {storiesList.map((story) => (
+              <div key={story.id} className="border border-ivory-300 rounded-2xl p-4 space-y-3 relative bg-ivory-50/50">
+                <button
+                  onClick={() => handleDeleteStory(story.id)}
+                  className="absolute top-3 right-3 p-1.5 bg-red-100 text-red-700 rounded-full hover:bg-red-200 cursor-pointer"
+                  title="Delete Story"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+                <div className="font-bold text-brand-950 text-base">{story.namesEn} ({story.namesMr})</div>
+                <div className="text-xs text-gray-500 font-medium">{story.locationEn}</div>
+                <p className="text-xs text-gray-700 italic bg-white p-3 rounded-xl border border-ivory-200">
+                  "{story.quoteEn}"
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* TAB 3: System Announcement */}
+      {/* TAB 3: System Announcements & Banners */}
       {tab === 'announcement' && (
         <form onSubmit={handleBroadcastAnnouncement} className="bg-white rounded-3xl border border-ivory-300 p-6 space-y-4 max-w-2xl shadow-sm">
-          <h3 className="font-serif font-bold text-brand-950 text-base">{t('sendAnnouncement')}</h3>
+          <h3 className="font-serif font-bold text-brand-950 text-base">Broadcast System Notification & Banner</h3>
+          <p className="text-xs text-gray-500">
+            Sends an instant notification alert to all registered members on their header bell dropdown.
+          </p>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -324,6 +498,209 @@ export const AdminPage: React.FC = () => {
             <span>Broadcast Notification</span>
           </button>
         </form>
+      )}
+
+      {/* TAB 4: Reports Review */}
+      {tab === 'reports' && (
+        <div className="bg-white rounded-3xl border border-ivory-300 p-6 space-y-4 shadow-sm">
+          {reportsList.length === 0 ? (
+            <p className="text-xs text-gray-500 text-center py-6">No reported profiles to review.</p>
+          ) : (
+            <div className="divide-y divide-gray-100">
+              {reportsList.map((r) => (
+                <div key={r._id} className="py-4 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-red-600">Reason: {r.reason}</span>
+                    <span className="text-gray-400">{new Date(r.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <p className="text-xs text-gray-700">
+                    Reporter: <strong>{r.reporterId?.fullName}</strong> ({r.reporterId?.email}) reported User:{' '}
+                    <strong>{r.reportedUserId?.fullName}</strong> ({r.reportedUserId?.email})
+                  </p>
+                  {r.details && <p className="text-xs text-gray-500 bg-ivory-100 p-2.5 rounded-xl">{r.details}</p>}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* EDIT MEMBER MODAL */}
+      {editingUser && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-ivory-300 pb-3">
+              <h3 className="font-serif font-bold text-brand-950 text-base">Edit Member Profile ({editingUser.profileId})</h3>
+              <button onClick={() => setEditingUser(null)} className="p-1 rounded-full text-gray-400 hover:bg-gray-100">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveUserEdit} className="space-y-3 text-xs">
+              <div>
+                <label className="block font-semibold text-gray-700 mb-1">Full Name</label>
+                <input
+                  type="text"
+                  value={editingUser.fullName}
+                  onChange={(e) => setEditingUser({ ...editingUser, fullName: e.target.value })}
+                  className="w-full p-2.5 border rounded-xl"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-gray-700 mb-1">City</label>
+                <input
+                  type="text"
+                  value={editingUser.city}
+                  onChange={(e) => setEditingUser({ ...editingUser, city: e.target.value })}
+                  className="w-full p-2.5 border rounded-xl"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-gray-700 mb-1">Caste</label>
+                <input
+                  type="text"
+                  value={editingUser.caste}
+                  onChange={(e) => setEditingUser({ ...editingUser, caste: e.target.value })}
+                  className="w-full p-2.5 border rounded-xl"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-gray-700 mb-1">PDF Biodata Privacy</label>
+                <select
+                  value={editingUser.biodataPrivacy || 'Connections Only'}
+                  onChange={(e) => setEditingUser({ ...editingUser, biodataPrivacy: e.target.value })}
+                  className="w-full p-2.5 border rounded-xl"
+                >
+                  <option value="Connections Only">Connections Only (Recommended)</option>
+                  <option value="Visible to All">Visible to All</option>
+                  <option value="Private">Private</option>
+                </select>
+              </div>
+
+              <div className="pt-3 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingUser(null)}
+                  className="px-4 py-2 border rounded-xl text-gray-600 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-brand-900 text-gold-300 font-bold rounded-xl"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ADD SUCCESS STORY MODAL */}
+      {showAddStory && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-ivory-300 pb-3">
+              <h3 className="font-serif font-bold text-brand-950 text-base">Add New Success Story to Homepage</h3>
+              <button onClick={() => setShowAddStory(false)} className="p-1 rounded-full text-gray-400 hover:bg-gray-100">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddStory} className="space-y-3 text-xs">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">Names (English)</label>
+                  <input
+                    type="text"
+                    value={newStory.namesEn}
+                    onChange={(e) => setNewStory({ ...newStory, namesEn: e.target.value })}
+                    placeholder="e.g. Suyash & Priya"
+                    className="w-full p-2.5 border rounded-xl"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">Names (मराठी)</label>
+                  <input
+                    type="text"
+                    value={newStory.namesMr}
+                    onChange={(e) => setNewStory({ ...newStory, namesMr: e.target.value })}
+                    placeholder="e.g. सुयश आणि प्रिया"
+                    className="w-full p-2.5 border rounded-xl"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">Location & Date (EN)</label>
+                  <input
+                    type="text"
+                    value={newStory.locationEn}
+                    onChange={(e) => setNewStory({ ...newStory, locationEn: e.target.value })}
+                    placeholder="e.g. Married Dec 2025 • Pune"
+                    className="w-full p-2.5 border rounded-xl"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">Location & Date (मराठी)</label>
+                  <input
+                    type="text"
+                    value={newStory.locationMr}
+                    onChange={(e) => setNewStory({ ...newStory, locationMr: e.target.value })}
+                    placeholder="e.g. विवाह: डिसेंबर २०२५ • पुणे"
+                    className="w-full p-2.5 border rounded-xl"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-gray-700 mb-1">Quote (English)</label>
+                <textarea
+                  value={newStory.quoteEn}
+                  onChange={(e) => setNewStory({ ...newStory, quoteEn: e.target.value })}
+                  rows={2}
+                  className="w-full p-2.5 border rounded-xl"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-gray-700 mb-1">Quote (मराठी)</label>
+                <textarea
+                  value={newStory.quoteMr}
+                  onChange={(e) => setNewStory({ ...newStory, quoteMr: e.target.value })}
+                  rows={2}
+                  className="w-full p-2.5 border rounded-xl"
+                  required
+                />
+              </div>
+
+              <div className="pt-3 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddStory(false)}
+                  className="px-4 py-2 border rounded-xl text-gray-600 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-brand-900 text-gold-300 font-bold rounded-xl"
+                >
+                  Publish Story
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
     </div>
