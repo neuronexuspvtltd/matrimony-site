@@ -57,7 +57,20 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
   const body = options.body ? (typeof options.body === 'string' ? JSON.parse(options.body) : options.body) : null;
 
   // Initialize initial mock data if empty
-  const profiles: ProfileData[] = getItem(PROFILES_KEY, initialProfiles);
+  const rawProfiles: ProfileData[] = getItem(PROFILES_KEY, initialProfiles);
+  
+  // Ensure every profile in storage has valid isVerified, isFeatured, and status
+  const profiles: ProfileData[] = rawProfiles.map((p: any) => ({
+    ...p,
+    isVerified: p.isVerified ?? p.user?.isVerified ?? true,
+    isFeatured: p.isFeatured ?? true,
+    user: {
+      ...p.user,
+      isVerified: p.user?.isVerified ?? p.isVerified ?? true,
+      status: p.user?.status || 'active',
+    },
+  }));
+
   const successStories: any[] = getItem(SUCCESS_STORIES_KEY, initialSuccessStories || []);
 
   const storedUser = localStorage.getItem('pb_current_user');
@@ -606,7 +619,20 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     };
   }
 
-  if (endpoint.startsWith('/admin/users')) {
+  // Helpers for Admin User route matching
+  const findUserIndex = (id: string) =>
+    profiles.findIndex((p: ProfileData) => p.user._id === id || p._id === id || p.profileId === id);
+
+  const getAdminUserIdFromUrl = (url: string) => {
+    const parts = url.split('?')[0].split('/');
+    const uIdx = parts.indexOf('users');
+    if (uIdx !== -1 && uIdx + 1 < parts.length) {
+      return parts[uIdx + 1];
+    }
+    return '';
+  };
+
+  if (endpoint.startsWith('/admin/users') && !endpoint.includes('/verify') && !endpoint.includes('/featured') && !endpoint.includes('/edit') && !endpoint.includes('/status') && method === 'GET') {
     const searchQ = new URLSearchParams(endpoint.split('?')[1] || '').get('search')?.toLowerCase();
     let filtered = profiles;
     if (searchQ) {
@@ -632,30 +658,34 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     };
   }
 
-  if (endpoint.includes('/admin/users/') && endpoint.endsWith('/verify')) {
-    const userId = endpoint.split('/')[3];
-    const pIdx = profiles.findIndex((p: ProfileData) => p.user._id === userId);
+  if (endpoint.includes('/admin/users/') && endpoint.endsWith('/verify') && (method === 'PUT' || method === 'POST')) {
+    const targetUserId = getAdminUserIdFromUrl(endpoint);
+    const pIdx = findUserIndex(targetUserId);
     if (pIdx !== -1) {
-      profiles[pIdx].isVerified = !profiles[pIdx].isVerified;
-      profiles[pIdx].user.isVerified = profiles[pIdx].isVerified;
+      const newStatus = !profiles[pIdx].isVerified;
+      profiles[pIdx].isVerified = newStatus;
+      profiles[pIdx].user.isVerified = newStatus;
       setItem(PROFILES_KEY, profiles);
-      return { message: 'Verification toggled', isVerified: profiles[pIdx].isVerified };
+      return { message: 'Verification toggled successfully', isVerified: newStatus };
     }
+    throw new Error(`Member not found for ID: ${targetUserId}`);
   }
 
-  if (endpoint.includes('/admin/users/') && endpoint.endsWith('/featured')) {
-    const userId = endpoint.split('/')[3];
-    const pIdx = profiles.findIndex((p: ProfileData) => p.user._id === userId);
+  if (endpoint.includes('/admin/users/') && endpoint.endsWith('/featured') && (method === 'PUT' || method === 'POST')) {
+    const targetUserId = getAdminUserIdFromUrl(endpoint);
+    const pIdx = findUserIndex(targetUserId);
     if (pIdx !== -1) {
-      profiles[pIdx].isFeatured = !profiles[pIdx].isFeatured;
+      const newStatus = !profiles[pIdx].isFeatured;
+      profiles[pIdx].isFeatured = newStatus;
       setItem(PROFILES_KEY, profiles);
-      return { message: 'Featured status toggled', isFeatured: profiles[pIdx].isFeatured };
+      return { message: 'Featured status toggled successfully', isFeatured: newStatus };
     }
+    throw new Error(`Member not found for ID: ${targetUserId}`);
   }
 
-  if (endpoint.includes('/admin/users/') && endpoint.endsWith('/edit') && method === 'PUT') {
-    const userId = endpoint.split('/')[3];
-    const pIdx = profiles.findIndex((p: ProfileData) => p.user._id === userId);
+  if (endpoint.includes('/admin/users/') && endpoint.endsWith('/edit') && (method === 'PUT' || method === 'POST')) {
+    const targetUserId = getAdminUserIdFromUrl(endpoint);
+    const pIdx = findUserIndex(targetUserId);
     if (pIdx !== -1) {
       profiles[pIdx] = {
         ...profiles[pIdx],
@@ -669,26 +699,29 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       setItem(PROFILES_KEY, profiles);
       return { message: 'User updated successfully', profile: profiles[pIdx] };
     }
+    throw new Error(`Member not found for ID: ${targetUserId}`);
+  }
+
+  if (endpoint.includes('/admin/users/') && endpoint.endsWith('/status') && (method === 'PUT' || method === 'POST')) {
+    const targetUserId = getAdminUserIdFromUrl(endpoint);
+    const pIdx = findUserIndex(targetUserId);
+    if (pIdx !== -1) {
+      profiles[pIdx].user.status = body.status;
+      setItem(PROFILES_KEY, profiles);
+      return { message: 'Status updated successfully', status: body.status };
+    }
+    throw new Error(`Member not found for ID: ${targetUserId}`);
   }
 
   if (endpoint.includes('/admin/users/') && method === 'DELETE') {
-    const userId = endpoint.split('/')[3];
-    const pIdx = profiles.findIndex((p: ProfileData) => p.user._id === userId);
+    const targetUserId = getAdminUserIdFromUrl(endpoint);
+    const pIdx = findUserIndex(targetUserId);
     if (pIdx !== -1) {
       profiles.splice(pIdx, 1);
       setItem(PROFILES_KEY, profiles);
       return { message: 'User deleted permanently' };
     }
-  }
-
-  if (endpoint.includes('/admin/users/') && endpoint.endsWith('/status')) {
-    const userId = endpoint.split('/')[3];
-    const pIdx = profiles.findIndex((p: ProfileData) => p.user._id === userId);
-    if (pIdx !== -1) {
-      profiles[pIdx].user.status = body.status;
-      setItem(PROFILES_KEY, profiles);
-      return { message: 'Status updated', status: body.status };
-    }
+    throw new Error(`Member not found for ID: ${targetUserId}`);
   }
 
   // --- Admin Success Stories Endpoints ---
