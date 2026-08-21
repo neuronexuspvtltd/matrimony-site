@@ -17,9 +17,9 @@ export const Footer: React.FC = () => {
           <div className="col-span-2 md:col-span-1 space-y-3 md:space-y-4">
             <Link to="/" className="inline-block bg-white/95 p-2 rounded-2xl shadow-md">
               <img
-                src="/v_brothers_logo.png"
+                src="/v_brothers_logo_clean.png"
                 alt="V Brothers Marriage Bureau"
-                className="h-10 md:h-12 w-auto object-contain"
+                className="h-12 md:h-14 w-auto object-contain"
               />
             </Link>
             <p className="text-[11px] md:text-xs text-ivory-300 leading-relaxed max-w-xs">

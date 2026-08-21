@@ -31,16 +31,16 @@ export const Header: React.FC = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-ivory-300 shadow-xs transition-all">
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 sm:h-20">
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-ivory-300 shadow-sm transition-all">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-20 sm:h-24 py-2">
           
           {/* Logo Section */}
-          <Link to="/" className="flex items-center group shrink-0">
+          <Link to="/" className="flex items-center group shrink-0 py-1">
             <img
-              src="/v_brothers_logo.png"
+              src="/v_brothers_logo_clean.png"
               alt="V Brothers Marriage Bureau"
-              className="h-10 sm:h-12 md:h-14 w-auto object-contain transition-transform group-hover:scale-[1.02]"
+              className="h-14 sm:h-16 md:h-20 lg:h-22 w-auto object-contain max-w-[260px] sm:max-w-[340px] md:max-w-[420px] transition-transform group-hover:scale-[1.02]"
             />
           </Link>
 
