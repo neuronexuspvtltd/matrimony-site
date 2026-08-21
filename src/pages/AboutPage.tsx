@@ -30,7 +30,7 @@ export const AboutPage: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 text-center relative z-10 space-y-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-gold-400/20 text-gold-300 text-xs font-semibold border border-gold-400/30">
             <Sparkles className="w-3.5 h-3.5 fill-gold-400" />
-            <span>{language === 'EN' ? 'About Pavithra Bandhan' : 'पावित्र्य बंधन बद्दल'}</span>
+            <span>{language === 'EN' ? 'About V Brothers Marriage Bureau' : 'व्ही ब्रदर्स विवाह संस्था बद्दल'}</span>
           </div>
 
           <h1 className="font-serif text-4xl sm:text-5xl font-bold text-gold-300">
@@ -39,8 +39,8 @@ export const AboutPage: React.FC = () => {
 
           <p className="text-sm sm:text-base text-ivory-200 max-w-2xl mx-auto leading-relaxed">
             {language === 'EN'
-              ? 'Pavithra Bandhan is Maharashtra’s premier matrimonial platform dedicated to creating meaningful, authentic, and lifelong connections for families worldwide.'
-              : 'पावित्र्य बंधन हे महाराष्ट्रातील अग्रगण्य विवाह व्यासपीठ आहे जे जगभरातील कुटुंबांसाठी प्रामाणिक आणि पवित्र नाते जोडण्यासाठी समर्पित आहे.'}
+              ? 'V Brothers Marriage Bureau is Maharashtra’s premier matrimonial platform dedicated to creating meaningful, authentic, and lifelong connections for families worldwide.'
+              : 'व्ही ब्रदर्स विवाह संस्था हे महाराष्ट्रातील अग्रगण्य विवाह व्यासपीठ आहे जे जगभरातील कुटुंबांसाठी प्रामाणिक आणि पवित्र नाते जोडण्यासाठी समर्पित आहे.'}
           </p>
         </div>
       </section>

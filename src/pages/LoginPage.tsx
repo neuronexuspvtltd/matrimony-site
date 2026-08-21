@@ -45,7 +45,7 @@ export const LoginPage: React.FC = () => {
             {t('navLogin')}
           </h1>
           <p className="text-xs text-gray-500">
-            {language === 'EN' ? 'Welcome back to Pavithra Bandhan Matrimony' : 'पावित्र्य बंधन मॅट्रीमोनी मध्ये आपले स्वागत आहे'}
+            {language === 'EN' ? 'Welcome back to V Brothers Marriage Bureau' : 'व्ही ब्रदर्स विवाह संस्थेमध्ये आपले स्वागत आहे'}
           </p>
         </div>
 

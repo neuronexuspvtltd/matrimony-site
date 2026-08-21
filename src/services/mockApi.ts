@@ -32,8 +32,8 @@ const defaultSiteContent = {
   heroSubtitleMr: 'तुमच्या आवडीनुसार आणि विश्वासाने शोधा सुयोग्य स्थळे',
   supportPhone: '+91 98765 43210',
   supportPhoneAlt: '+91 98765 43211',
-  supportEmail: 'support@pavithrabandhan.com',
-  helpEmail: 'help@pavithrabandhan.com',
+  supportEmail: 'support@vbrothersmarry.com',
+  helpEmail: 'help@vbrothersmarry.com',
   puneOffice: 'FC Road, Shivajinagar, Pune',
   mumbaiOffice: 'Nariman Point, Mumbai',
 };

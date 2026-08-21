@@ -36,18 +36,12 @@ export const Header: React.FC = () => {
         <div className="flex items-center justify-between h-16 sm:h-20">
           
           {/* Logo Section */}
-          <Link to="/" className="flex items-center gap-2 sm:gap-3 group shrink-0">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 rounded-full bg-gradient-to-tr from-brand-900 to-brand-700 flex items-center justify-center text-gold-300 shadow-md group-hover:scale-105 transition-transform shrink-0">
-              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 fill-gold-400 stroke-brand-900" />
-            </div>
-            <div className="flex flex-col justify-center">
-              <span className="font-serif text-base sm:text-xl md:text-2xl font-bold text-brand-900 tracking-tight whitespace-nowrap leading-tight">
-                {t('brandName')}
-              </span>
-              <span className="text-[8px] sm:text-[10px] tracking-wider sm:tracking-widest text-gold-700 font-medium uppercase block leading-none">
-                {language === 'EN' ? 'Matrimony' : 'विवाह संस्था'}
-              </span>
-            </div>
+          <Link to="/" className="flex items-center group shrink-0">
+            <img
+              src="/v_brothers_logo.png"
+              alt="V Brothers Marriage Bureau"
+              className="h-10 sm:h-12 md:h-14 w-auto object-contain transition-transform group-hover:scale-[1.02]"
+            />
           </Link>
 
           {/* Desktop Navigation Links (Spacious & Clean Layout for Logged-In Users) */}

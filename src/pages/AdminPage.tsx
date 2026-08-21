@@ -65,10 +65,10 @@ export const AdminPage: React.FC = () => {
 
   // Announcement state
   const [announcement, setAnnouncement] = useState({
-    titleEn: 'Festive Offer: Free Profile Verification',
-    titleMr: 'उत्सव विशेष: मोफत प्रोफाईल पडताळणी',
-    messageEn: 'Welcome to Pavithra Bandhan! Upload your PDF biodata to get 5x more responses from verified families.',
-    messageMr: 'पावित्र्य बंधन मध्ये स्वागत आहे! अधिक प्रतिसादांसाठी आपला PDF बायोडाटा अपलोड करा.',
+    titleEn: '📢 Welcome to V Brothers Marriage Bureau!',
+    titleMr: '📢 व्ही ब्रदर्स विवाह संस्थेमध्ये आपले स्वागत आहे!',
+    messageEn: 'Welcome to V Brothers Marriage Bureau! Upload your PDF biodata to get 5x more responses from verified families.',
+    messageMr: 'व्ही ब्रदर्स विवाह संस्थेमध्ये स्वागत आहे! अधिक प्रतिसादांसाठी आपला PDF बायोडाटा अपलोड करा.',
   });
 
   const fetchAdminData = async () => {

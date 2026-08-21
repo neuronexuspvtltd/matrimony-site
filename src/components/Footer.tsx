@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
-import { Sparkles, Shield, Heart, Globe, Phone, Mail } from 'lucide-react';
+import { Shield, Heart, Globe, Phone, Mail } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   const { t, language, toggleLanguage } = useLanguage();
@@ -10,19 +10,18 @@ export const Footer: React.FC = () => {
     <footer className="bg-brand-950 text-ivory-200 py-8 md:pt-16 md:pb-8 border-t border-gold-600/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Grid: 2 cols on Mobile (compact), 4 cols on Desktop (untouched) */}
+        {/* Grid: 2 cols on Mobile (compact), 4 cols on Desktop */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10 pb-6 md:pb-12 border-b border-brand-900">
           
-          {/* Brand Col: Spans 2 cols on mobile for a neat centered/compact layout */}
+          {/* Brand Col */}
           <div className="col-span-2 md:col-span-1 space-y-3 md:space-y-4">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gold-400/20 border border-gold-400 flex items-center justify-center text-gold-300 shrink-0">
-                <Sparkles className="w-4 h-4 md:w-5 md:h-5 fill-gold-400 stroke-brand-950" />
-              </div>
-              <span className="font-serif text-xl md:text-2xl font-bold text-gold-300 tracking-tight">
-                {t('brandName')}
-              </span>
-            </div>
+            <Link to="/" className="inline-block bg-white/95 p-2 rounded-2xl shadow-md">
+              <img
+                src="/v_brothers_logo.png"
+                alt="V Brothers Marriage Bureau"
+                className="h-10 md:h-12 w-auto object-contain"
+              />
+            </Link>
             <p className="text-[11px] md:text-xs text-ivory-300 leading-relaxed max-w-xs">
               {t('brandSubtitle')}
             </p>
@@ -69,17 +68,17 @@ export const Footer: React.FC = () => {
             <ul className="space-y-1.5 md:space-y-2 text-[11px] md:text-xs text-ivory-300">
               <li className="flex items-center gap-1.5">
                 <Shield className="w-3 h-3 md:w-3.5 md:h-3.5 text-gold-400 shrink-0" />
-                <span>{language === 'EN' ? '100% Verified Profiles' : '१००% पडताळणी স্থळे'}</span>
+                <span>{language === 'EN' ? '100% Verified Profiles' : '१००% पडताळणी स्थळे'}</span>
               </li>
               <li className="flex items-center gap-1.5">
                 <Heart className="w-3 h-3 md:w-3.5 md:h-3.5 text-brand-400 shrink-0" />
                 <span>{language === 'EN' ? 'Strict PDF Privacy' : 'बायोडाटा सुरक्षा'}</span>
               </li>
               <li>
-                <a href="/privacy" className="hover:text-gold-300 transition-colors underline-offset-2 hover:underline">{t('footerPrivacy')}</a>
+                <Link to="/privacy" className="hover:text-gold-300 transition-colors underline-offset-2 hover:underline">{t('footerPrivacy')}</Link>
               </li>
               <li>
-                <a href="/terms" className="hover:text-gold-300 transition-colors underline-offset-2 hover:underline">{t('footerTerms')}</a>
+                <Link to="/terms" className="hover:text-gold-300 transition-colors underline-offset-2 hover:underline">{t('footerTerms')}</Link>
               </li>
             </ul>
           </div>
@@ -96,7 +95,7 @@ export const Footer: React.FC = () => {
               </div>
               <div className="flex items-center gap-1.5">
                 <Mail className="w-3.5 h-3.5 text-gold-400" />
-                <span>support@pavithrabandhan.com</span>
+                <span>support@vbrothersmarry.com</span>
               </div>
               <p className="text-[10px] md:text-[11px] text-ivory-400 w-full pt-0.5 md:pt-2">
                 {language === 'EN' ? 'Headquarters: Pune & Mumbai, Maharashtra' : 'मुख्य कार्यालय: पुणे आणि मुंबई, महाराष्ट्र'}

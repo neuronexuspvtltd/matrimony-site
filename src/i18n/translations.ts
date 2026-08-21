@@ -3,7 +3,7 @@ export type Language = 'EN' | 'MR';
 export const translations = {
   EN: {
     // Brand & Tagline
-    brandName: 'Pavithra Bandhan',
+    brandName: 'V Brothers Marriage Bureau',
     brandTagline: 'Find Your Perfect Life Partner',
     brandSubtitle: 'Trusted & Premium Matrimonial Platform for Meaningful Connections',
     
@@ -40,7 +40,7 @@ export const translations = {
     step4Desc: 'Send interest, connect securely, and start your lifelong conversation.',
 
     // Why Choose Us
-    whyTitle: 'Why Choose Pavithra Bandhan',
+    whyTitle: 'Why Choose V Brothers Marriage Bureau',
     whySubtitle: 'Built for trust, safety, and authentic family connections',
     why1Title: 'Verified Profiles',
     why1Desc: 'Strict profile review and phone/email verification process.',
@@ -63,7 +63,7 @@ export const translations = {
 
     // CTA Section
     ctaTitle: 'Your journey to a meaningful relationship starts here.',
-    ctaSubtitle: 'Join thousands of families who found true compatibility on Pavithra Bandhan.',
+    ctaSubtitle: 'Join thousands of families who found true compatibility on V Brothers Marriage Bureau.',
 
     // Common Buttons & Labels
     viewProfile: 'View Profile',
@@ -183,13 +183,13 @@ export const translations = {
     footerPrivacy: 'Privacy Policy',
     footerTerms: 'Terms of Service',
     footerContact: 'Contact Us',
-    copyright: '© 2026 Pavithra Bandhan Matrimony. All rights reserved.',
+    copyright: '© 2026 V Brothers Marriage Bureau. All rights reserved.',
   },
   MR: {
     // Brand & Tagline
-    brandName: 'पावित्र्य बंधन',
+    brandName: 'व्ही ब्रदर्स विवाह संस्था',
     brandTagline: 'तुमचा योग्य जीवनसाथी शोधा',
-    brandSubtitle: 'विश्वासू आणि अत्याधुनिक मराठी विवाह संस्था प्लॅटफॉर्म',
+    brandSubtitle: 'विश्वासू आणि अत्याधुनिक विवाह संस्था प्लॅटफॉर्म',
     
     // Navbar
     navHome: 'मुखपृष्ठ',
@@ -224,7 +224,7 @@ export const translations = {
     step4Desc: 'पसंती (Interest) पाठवा, बोलणी करा आणि नवीन आयुष्याला सुरुवात करा.',
 
     // Why Choose Us
-    whyTitle: 'पावित्र्य बंधन का निवडावे?',
+    whyTitle: 'व्ही ब्रदर्स विवाह संस्था का निवडावी?',
     whySubtitle: 'विश्वास, सुरक्षितता आणि कौटुंबिक जोडणीसाठी समर्पित',
     why1Title: 'सत्यापित प्रोफाईल्स (Verified Profiles)',
     why1Desc: 'मोबाईल व ईमेलद्वारे तपासलेले १००% खरी स्थळे.',
@@ -247,24 +247,24 @@ export const translations = {
 
     // CTA Section
     ctaTitle: 'तुमच्या नवीन आयुष्याचा प्रवास येथून सुरू होतो.',
-    ctaSubtitle: 'हजारो कुटुंबांचा विश्वास असलेल्या पावित्र्य बंधन मध्ये आजच सामील व्हा.',
+    ctaSubtitle: 'हजारो कुटुंबांचा विश्वास असलेल्या व्ही ब्रदर्स विवाह संस्थेमध्ये आजच सामील व्हा.',
 
     // Common Buttons & Labels
-    viewProfile: 'प्रोफाइल पहा',
-    sendInterest: 'आवड पाठवा (Interest)',
-    interestSent: 'आवड पाठवली',
-    shortlist: 'पसंतीत जोडा',
-    shortlisted: 'पसंतीत जोडले',
+    viewProfile: 'प्रोफाईल पहा',
+    sendInterest: 'पसंती पाठवा',
+    interestSent: 'पसंती पाठवली',
+    shortlist: 'पसंती यादी',
+    shortlisted: 'पसंती केलेले',
     accept: 'स्वीकारा',
     reject: 'नाकारा',
     connect: 'संपर्क साधा',
-    chatNow: 'संभाषण करा',
+    chatNow: 'चॅट करा',
     uploadBiodata: 'बायोडाटा अपलोड करा (PDF)',
     downloadBiodata: 'बायोडाटा डाउनलोड करा',
     viewBiodata: 'PDF बायोडाटा पहा',
-    matchScore: 'अनुकूलता',
-    verifiedBadge: 'सत्यापित (Verified) ✓',
-    
+    matchScore: 'सुसंगतता',
+    verifiedBadge: 'सत्यापित ✓',
+
     // Profile Fields
     age: 'वय',
     height: 'उंची',
@@ -278,9 +278,9 @@ export const translations = {
     state: 'राज्य',
     country: 'देश',
     education: 'शिक्षण',
-    college: 'महाविद्यालय / विद्यापीठ',
+    college: 'कॉलेज / युनिव्हर्सिटी',
     occupation: 'नोकरी / व्यवसाय',
-    company: 'कंपनी / संस्था',
+    company: 'कंपनीचे नाव',
     income: 'वार्षिक उत्पन्न',
     familyDetails: 'कौटुंबिक माहिती',
     fatherOccupation: 'वडिलांचा व्यवसाय',
@@ -289,19 +289,19 @@ export const translations = {
     sisters: 'बहीण',
     familyType: 'कुटुंब प्रकार',
     familyValues: 'कौटुंबिक मूल्ये',
-    aboutMe: 'माझ्याबद्दल (About Me)',
-    partnerPreferences: 'अपेक्षित साथीदार (Partner Preferences)',
+    aboutMe: 'माझ्याबद्दल माहिती',
+    partnerPreferences: 'अपेक्षित साथीदार',
     preferredAge: 'अपेक्षित वय',
     preferredHeight: 'अपेक्षित उंची',
     preferredEducation: 'अपेक्षित शिक्षण',
     preferredOccupation: 'अपेक्षित व्यवसाय',
-    preferredLocation: 'अपेक्षित स्थान',
+    preferredLocation: 'अपेक्षित ठिकाण',
 
     // Registration Form
     regTitle: 'विवाह प्रोफाइल तयार करा',
-    regStep1: 'खाते माहिती',
+    regStep1: 'खात्याची माहिती',
     regStep2: 'वैयक्तिक माहिती',
-    regStep3: 'शिक्षण व कारकीर्द',
+    regStep3: 'शिक्षण व करियर',
     regStep4: 'कौटुंबिक माहिती',
     regStep5: 'अपेक्षित साथीदार',
     fullName: 'पूर्ण नाव',
@@ -313,60 +313,60 @@ export const translations = {
     male: 'वर (पुरुष)',
     female: 'वधू (स्त्री)',
     dateOfBirth: 'जन्म तारीख',
-    next: 'पुढील पायरी',
+    next: 'पुढील टप्पा',
     previous: 'मागील',
-    submit: 'प्रोफाइल नोंदणी पूर्ण करा',
+    submit: 'नोंदणी पूर्ण करा',
 
     // Search & Filter
-    searchTitle: 'सुयोग्य स्थळांचा शोध घ्या',
-    searchPlaceholder: 'नाव, शहर किंवा व्यवसायानुसार शोधा...',
-    clearFilters: 'फिल्टर साफ करा',
+    searchTitle: 'सुयोग्य स्थळे शोधा',
+    searchPlaceholder: 'नाव, शहर किंवा व्यवसायाने शोधा...',
+    clearFilters: 'फिल्टर रिसेट करा',
     applyFilters: 'फिल्टर लागू करा',
     allReligions: 'सर्व धर्म',
     allCastes: 'सर्व जाती',
     allCities: 'सर्व शहरे',
-    minAgeLabel: 'किमान वय',
-    maxAgeLabel: 'कमाल वय',
-    noResultsTitle: 'कुठलेही प्रोफाइल आढळले नाही',
-    noResultsDesc: 'कृपया तुमचे फिल्टर बदलून पुन्हा प्रयत्न करा.',
+    minAgeLabel: 'कमीत कमी वय',
+    maxAgeLabel: 'जास्तीत जास्त वय',
+    noResultsTitle: 'कोणतीही स्थळे आढळली नाहीत',
+    noResultsDesc: 'कृपया तुमचे शोधाचे पर्याय किंवा फिल्टर बदलून पहा.',
 
     // Notifications
     notificationTitle: 'सूचना (Notifications)',
-    markAllRead: 'सर्व वाचलेले चिन्हांकित करा',
+    markAllRead: 'सर्व वाचल्याचे चिन्हांकित करा',
     noNotifications: 'अद्याप कोणत्याही सूचना नाहीत',
     recentProfileViews: 'तुमचे प्रोफाइल कोणी पाहिले',
     viewedYourProfile: 'यांनी तुमचे प्रोफाइल पाहिले.',
-    
+
     // Dashboard
     dashboardTitle: 'सदस्य डॅशबोर्ड',
     welcomeBack: 'पुन्हा स्वागत आहे',
-    profileCompletion: 'प्रोफाइल पूर्णता',
-    completeProfileTip: 'फोटो व PDF बायोडाटा अपलोड केल्यास ३ पट जास्त प्रतिसाद मिळतात!',
+    profileCompletion: 'प्रोफाईल पूर्णता',
+    completeProfileTip: '३ पट अधिक प्रतिसाद मिळवण्यासाठी फोटो आणि PDF बायोडाटा अपलोड करा!',
     dashboardViews: 'प्रोफाइल व्ह्यूज',
-    dashboardInterests: 'प्राप्त आवडी (Interests)',
+    dashboardInterests: 'प्राप्त झालेल्या आवडी',
     dashboardSent: 'पाठवलेल्या आवडी',
-    dashboardShortlists: 'पसंतीचे प्रोफाइल',
-    recommendedMatches: 'तुमच्यासाठी सुयोग्य शिफारसी',
+    dashboardShortlists: 'पसंतीची स्थळे',
+    recommendedMatches: 'तुमच्यासाठी सुचवलेली स्थळे',
 
     // Admin Panel
     adminDashboardTitle: 'ॲडमिन व्यवस्थापन डॅशबोर्ड',
     adminTotalUsers: 'एकूण सदस्य',
     adminActiveUsers: 'सक्रिय सदस्य',
     adminVerifiedUsers: 'सत्यापित प्रोफाईल्स',
-    adminTotalViews: 'एकूण प्रोफाइल व्ह्यूज',
+    adminTotalViews: 'एकूण व्ह्यूज',
     adminPendingReports: 'प्रलंबित तक्रारी',
-    verifyUserBtn: 'सत्यापित करा',
-    unverifyUserBtn: 'सत्यापन काढा',
+    verifyUserBtn: 'सत्यापित (Verify) करा',
+    unverifyUserBtn: 'सत्यापन काढून टाका',
     suspendUserBtn: 'खाते निलंबित करा',
     activateUserBtn: 'खाते सक्रिय करा',
     sendAnnouncement: 'सर्व सदस्यांना सूचना पाठवा',
 
     // Safety & Footer
     footerAbout: 'आमच्याबद्दल',
-    footerSafety: 'सुरक्षा मार्गदर्शक',
+    footerSafety: 'सुरक्षिततेच्या टिप्स',
     footerPrivacy: 'गोपनीयता धोरण',
-    footerTerms: 'नियम आणि अटी',
+    footerTerms: 'सेवा अटी',
     footerContact: 'संपर्क साधा',
-    copyright: '© २०२६ पावित्र्य बंधन मॅट्रीमोनी. सर्व हक्क सुरक्षित.',
+    copyright: '© २०२६ व्ही ब्रदर्स विवाह संस्था. सर्व हक्क सुरक्षित.',
   },
 };

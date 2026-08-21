@@ -27,7 +27,7 @@ export const PrivacyPolicyPage: React.FC = () => {
         <div className="bg-brand-950 text-white rounded-3xl p-8 sm:p-12 shadow-xl space-y-4 relative overflow-hidden">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-gold-400/20 text-gold-300 text-xs font-semibold border border-gold-400/30">
             <ShieldCheck className="w-4 h-4 fill-gold-400 text-brand-950" />
-            <span>{language === 'EN' ? 'Pavithra Bandhan Official Policy' : 'पावित्र्य बंधन अधिकृत धोरण'}</span>
+            <span>{language === 'EN' ? 'V Brothers Marriage Bureau Official Policy' : 'व्ही ब्रदर्स विवाह संस्था अधिकृत धोरण'}</span>
           </div>
 
           <h1 className="font-serif text-3xl sm:text-5xl font-bold text-gold-300 tracking-tight">
@@ -36,7 +36,7 @@ export const PrivacyPolicyPage: React.FC = () => {
 
           <p className="text-xs sm:text-sm text-ivory-200 max-w-2xl leading-relaxed">
             {language === 'EN'
-              ? 'Your privacy, PDF biodata security, and photo confidentiality are fundamental to everything we build at Pavithra Bandhan.'
+              ? 'Your privacy, PDF biodata security, and photo confidentiality are fundamental to everything we build at V Brothers Marriage Bureau.'
               : 'तुमची गोपनीयता, PDF बायोडाटा सुरक्षा आणि फोटोंची गोपनीयता यावर आमचा पूर्ण विश्वास आहे.'}
           </p>
         </div>
@@ -51,7 +51,7 @@ export const PrivacyPolicyPage: React.FC = () => {
               <span>1. Information Collection & Purpose</span>
             </h2>
             <p>
-              Pavithra Bandhan collects personal information solely for facilitating authentic matrimonial matchmaking among verified Maharashtrian families and individuals. Collected details include:
+              V Brothers Marriage Bureau collects personal information solely for facilitating authentic matrimonial matchmaking among verified Maharashtrian families and individuals. Collected details include:
             </p>
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-600 pt-1">
               <li className="flex items-center gap-2 bg-ivory-50 p-2.5 rounded-xl border border-ivory-200">

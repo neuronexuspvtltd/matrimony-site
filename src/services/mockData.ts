@@ -66,8 +66,8 @@ export const initialSuccessStories = [
     locationEn: 'Married Dec 2025 • Kolhapur & Pune',
     locationMr: 'विवाह: डिसेंबर २०२५ • कोल्हापूर व पुणे',
     image: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=600&q=80',
-    quoteEn: 'We connected on Pavithra Bandhan and exchanged PDF biodatas securely. Within 3 months, our families met and fixed our wedding! Highly recommend the profile view alerts and privacy controls.',
-    quoteMr: 'आम्ही पावित्र्य बंधन द्वारे जोडलो गेलो आणि सुरक्षितपणे PDF बायोडाटा शेअर केला. ३ महिन्यातच आमचे कुटुंब भेटले आणि लग्न जमले!',
+    quoteEn: 'We connected on V Brothers Marriage Bureau and exchanged PDF biodatas securely. Within 3 months, our families met and fixed our wedding! Highly recommend the profile view alerts and privacy controls.',
+    quoteMr: 'आम्ही व्ही ब्रदर्स विवाह संस्थे द्वारे जोडलो गेलो आणि सुरक्षितपणे PDF बायोडाटा शेअर केला. ३ महिन्यातच आमचे कुटुंब भेटले आणि लग्न जमले!',
     createdAt: new Date().toISOString(),
   },
   {
@@ -77,8 +77,8 @@ export const initialSuccessStories = [
     locationEn: 'Married Feb 2026 • Mumbai & Nashik',
     locationMr: 'विवाह: फेब्रुवारी २०२६ • मुंबई व नाशिक',
     image: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=600&q=80',
-    quoteEn: 'The bilingual Marathi interface and smart caste & profession filters made our search so smooth. Thank you Pavithra Bandhan for helping us find our soulmate!',
-    quoteMr: 'मराठी भाषेची सोय आणि सुयोग्य फिल्टरमुळे आमचा शोध अतिशय सोपा झाला. पावित्र्य बंधन चे मनापासून आभार!',
+    quoteEn: 'The bilingual Marathi interface and smart caste & profession filters made our search so smooth. Thank you V Brothers Marriage Bureau for helping us find our soulmate!',
+    quoteMr: 'मराठी भाषेची सोय आणि सुयोग्य फिल्टरमुळे आमचा शोध अतिशय सोपा झाला. व्ही ब्रदर्स विवाह संस्थेचे मनापासून आभार!',
     createdAt: new Date().toISOString(),
   },
   {

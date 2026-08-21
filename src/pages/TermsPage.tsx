@@ -27,7 +27,7 @@ export const TermsPage: React.FC = () => {
         <div className="bg-brand-950 text-white rounded-3xl p-8 sm:p-12 shadow-xl space-y-4 relative overflow-hidden">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-gold-400/20 text-gold-300 text-xs font-semibold border border-gold-400/30">
             <Scale className="w-4 h-4 text-gold-400" />
-            <span>{language === 'EN' ? 'Pavithra Bandhan Terms of Service' : 'पावित्र्य बंधन सेवा अटी'}</span>
+            <span>{language === 'EN' ? 'V Brothers Marriage Bureau Terms of Service' : 'व्ही ब्रदर्स विवाह संस्था सेवा अटी'}</span>
           </div>
 
           <h1 className="font-serif text-3xl sm:text-5xl font-bold text-gold-300 tracking-tight">
@@ -51,7 +51,7 @@ export const TermsPage: React.FC = () => {
               <span>1. Member Eligibility & Truthful Profiles</span>
             </h2>
             <p>
-              By creating a profile on Pavithra Bandhan, you represent and warrant that you are legally competent and meet the legal marriage age requirements under Indian Law (minimum 18 years for females and 21 years for males).
+              By creating a profile on V Brothers Marriage Bureau, you represent and warrant that you are legally competent and meet the legal marriage age requirements under Indian Law (minimum 18 years for females and 21 years for males).
             </p>
             <p className="text-xs text-gray-600">
               Members are required to provide truthful details regarding age, education, marital status, and profession. Submitting fraudulent profile details will result in permanent account termination.
@@ -65,7 +65,7 @@ export const TermsPage: React.FC = () => {
               <span>2. Code of Conduct & Family Dignity</span>
             </h2>
             <p>
-              Pavithra Bandhan is designed specifically for respect-driven matrimonial matchmaking. The following actions are strictly prohibited:
+              V Brothers Marriage Bureau is designed specifically for respect-driven matrimonial matchmaking. The following actions are strictly prohibited:
             </p>
             <ul className="space-y-2 text-xs text-gray-600 pt-1">
               <li className="flex items-start gap-2 bg-red-50/50 p-3 rounded-xl border border-red-100">

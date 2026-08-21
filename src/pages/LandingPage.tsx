@@ -39,8 +39,8 @@ export const LandingPage: React.FC = () => {
       locationEn: 'Married Dec 2025 • Kolhapur & Pune',
       locationMr: 'विवाह: डिसेंबर २०२५ • कोल्हापूर व पुणे',
       image: successCouple1,
-      quoteEn: 'We connected on Pavithra Bandhan and exchanged PDF biodatas securely. Within 3 months, our families met and fixed our wedding! Highly recommend the profile view alerts and privacy controls.',
-      quoteMr: 'आम्ही पावित्र्य बंधन द्वारे जोडलो गेलो आणि सुरक्षितपणे PDF बायोडाटा शेअर केला. ३ महिन्यातच आमचे कुटुंब भेटले आणि लग्न जमले!',
+      quoteEn: 'We connected on V Brothers Marriage Bureau and exchanged PDF biodatas securely. Within 3 months, our families met and fixed our wedding! Highly recommend the profile view alerts and privacy controls.',
+      quoteMr: 'आम्ही व्ही ब्रदर्स विवाह संस्थे द्वारे जोडलो गेलो आणि सुरक्षितपणे PDF बायोडाटा शेअर केला. ३ महिन्यातच आमचे कुटुंब भेटले आणि लग्न जमले!',
     },
     {
       id: 2,
@@ -49,8 +49,8 @@ export const LandingPage: React.FC = () => {
       locationEn: 'Married Feb 2026 • Mumbai & Nashik',
       locationMr: 'विवाह: फेब्रुवारी २०२६ • मुंबई व नाशिक',
       image: successCouple2,
-      quoteEn: 'The bilingual Marathi interface and smart caste & profession filters made our search so smooth. Thank you Pavithra Bandhan for helping us find our soulmate!',
-      quoteMr: 'मराठी भाषेची सोय आणि सुयोग्य फिल्टरमुळे आमचा शोध अतिशय सोपा झाला. पावित्र्य बंधन चे मनापासून आभार!',
+      quoteEn: 'The bilingual Marathi interface and smart caste & profession filters made our search so smooth. Thank you V Brothers Marriage Bureau for helping us find our soulmate!',
+      quoteMr: 'मराठी भाषेची सोय आणि सुयोग्य फिल्टरमुळे आमचा शोध अतिशय सोपा झाला. व्ही ब्रदर्स विवाह संस्थेचे मनापासून आभार!',
     },
     {
       id: 3,
@@ -266,8 +266,8 @@ export const LandingPage: React.FC = () => {
           </h2>
           <p className="text-gray-600 text-xs sm:text-sm">
             {language === 'EN'
-              ? 'Real Maharashtrian couples who met and built their soulmate connections on Pavithra Bandhan'
-              : 'पावित्र्य बंधन द्वारे एकत्र आलेली आणि आनंदी संसार मांडणारी जोडपी'}
+              ? 'Real Maharashtrian couples who met and built their soulmate connections on V Brothers Marriage Bureau'
+              : 'व्ही ब्रदर्स विवाह संस्थे द्वारे एकत्र आलेली आणि आनंदी संसार मांडणारी जोडपी'}
           </p>
         </div>
 
@@ -316,7 +316,7 @@ export const LandingPage: React.FC = () => {
                   <span className="text-emerald-700 font-semibold flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> Verified Couple
                   </span>
-                  <span className="text-brand-900 font-bold">Pavithra Bandhan</span>
+                  <span className="text-brand-900 font-bold">V Brothers Marriage Bureau</span>
                 </div>
               </div>
             </div>
