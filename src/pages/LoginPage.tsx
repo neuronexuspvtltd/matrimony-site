@@ -37,9 +37,13 @@ export const LoginPage: React.FC = () => {
     <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="bg-white rounded-3xl border border-ivory-300 shadow-xl overflow-hidden max-w-md w-full p-8 sm:p-10 space-y-6">
         
-        <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-full bg-brand-900 text-gold-300 flex items-center justify-center mx-auto shadow-md">
-            <Sparkles className="w-6 h-6 fill-gold-400 stroke-brand-900" />
+        <div className="text-center space-y-3">
+          <div className="w-20 h-20 rounded-2xl bg-white border border-gold-400/40 p-2 shadow-md flex items-center justify-center mx-auto transition-transform hover:scale-105">
+            <img
+              src="/v_brothers_icon.png"
+              alt="V Brothers Emblem"
+              className="w-full h-full object-contain"
+            />
           </div>
           <h1 className="font-serif text-2xl font-bold text-brand-950">
             {t('navLogin')}

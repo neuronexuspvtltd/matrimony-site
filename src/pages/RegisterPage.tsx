@@ -123,7 +123,14 @@ export const RegisterPage: React.FC = () => {
       <div className="bg-white rounded-3xl border border-ivory-300 shadow-xl overflow-hidden p-6 sm:p-10 space-y-8">
         
         {/* Header Title */}
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-3">
+          <div className="w-16 h-16 rounded-2xl bg-white border border-gold-400/40 p-1.5 shadow-md flex items-center justify-center mx-auto transition-transform hover:scale-105">
+            <img
+              src="/v_brothers_icon.png"
+              alt="V Brothers Emblem"
+              className="w-full h-full object-contain"
+            />
+          </div>
           <h1 className="font-serif text-3xl font-bold text-brand-950">
             {t('regTitle')}
           </h1>
