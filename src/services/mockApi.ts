@@ -71,7 +71,8 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
   const body = options.body ? (typeof options.body === 'string' ? JSON.parse(options.body) : options.body) : null;
 
   // Initialize initial mock data from local storage
-  let rawProfiles: ProfileData[] = getItem(PROFILES_KEY, initialProfiles);
+  let rawProfiles: ProfileData[] = getItem(PROFILES_KEY, []);
+  rawProfiles = rawProfiles.filter(p => !['usr_suyash', 'usr_priya', 'usr_rohit', 'usr_ananya', 'usr_aditya', 'usr_sneha'].includes(p._id));
 
   // Sync fresh accounts from Cloud Firestore so logins & search work across all laptops, phones & devices!
   try {
