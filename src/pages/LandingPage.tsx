@@ -162,99 +162,7 @@ export const LandingPage: React.FC = () => {
 
       </section>
 
-      {/* How It Works Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-brand-950 mb-3">
-            {t('howItWorksTitle')}
-          </h2>
-          <p className="text-gray-600 text-sm sm:text-base">
-            {t('howItWorksSubtitle')}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {[
-            {
-              icon: Users,
-              title: t('step1Title'),
-              desc: t('step1Desc'),
-            },
-            {
-              icon: FileCheck2,
-              title: t('step2Title'),
-              desc: t('step2Desc'),
-            },
-            {
-              icon: Search,
-              title: t('step3Title'),
-              desc: t('step3Desc'),
-            },
-            {
-              icon: Heart,
-              title: t('step4Title'),
-              desc: t('step4Desc'),
-            },
-          ].map((step, idx) => (
-            <div
-              key={idx}
-              className="bg-white rounded-2xl p-8 border border-ivory-300 shadow-sm hover:shadow-md transition-all text-center space-y-4 relative group"
-            >
-              <div className="w-16 h-16 mx-auto rounded-2xl bg-brand-50 border border-brand-200 text-brand-900 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <step.icon className="w-8 h-8 text-brand-900" />
-              </div>
-              <h3 className="font-serif font-bold text-gray-900 text-base">
-                {step.title}
-              </h3>
-              <p className="text-xs text-gray-600 leading-relaxed">
-                {step.desc}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Why Choose Us Section */}
-      <section className="bg-ivory-200/60 py-16 border-y border-ivory-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-14">
-            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-brand-950 mb-3">
-              {t('whyTitle')}
-            </h2>
-            <p className="text-gray-600 text-sm sm:text-base">
-              {t('whySubtitle')}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="bg-white p-6 rounded-2xl border border-ivory-300 space-y-3">
-              <ShieldCheck className="w-8 h-8 text-emerald-600" />
-              <h4 className="font-serif font-bold text-gray-900 text-base">{t('why1Title')}</h4>
-              <p className="text-xs text-gray-600 leading-relaxed">{t('why1Desc')}</p>
-            </div>
-
-            <div className="bg-white p-6 rounded-2xl border border-ivory-300 space-y-3">
-              <FileCheck2 className="w-8 h-8 text-gold-600" />
-              <h4 className="font-serif font-bold text-gray-900 text-base">{t('why2Title')}</h4>
-              <p className="text-xs text-gray-600 leading-relaxed">{t('why2Desc')}</p>
-            </div>
-
-            <div className="bg-white p-6 rounded-2xl border border-ivory-300 space-y-3">
-              <BellRing className="w-8 h-8 text-brand-700" />
-              <h4 className="font-serif font-bold text-gray-900 text-base">{t('why3Title')}</h4>
-              <p className="text-xs text-gray-600 leading-relaxed">{t('why3Desc')}</p>
-            </div>
-
-            <div className="bg-white p-6 rounded-2xl border border-ivory-300 space-y-3">
-              <Globe2 className="w-8 h-8 text-brand-900" />
-              <h4 className="font-serif font-bold text-gray-900 text-base">{t('why4Title')}</h4>
-              <p className="text-xs text-gray-600 leading-relaxed">{t('why4Desc')}</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Success Stories Section */}
+      {/* Success Stories Section (Placed directly below Hero Section) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         <div className="text-center max-w-2xl mx-auto space-y-3">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 border border-brand-200 text-brand-900 text-xs font-semibold">
@@ -321,6 +229,46 @@ export const LandingPage: React.FC = () => {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Why Choose Us Section */}
+      <section className="bg-ivory-200/60 py-16 border-y border-ivory-300">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-brand-950 mb-3">
+              {t('whyTitle')}
+            </h2>
+            <p className="text-gray-600 text-sm sm:text-base">
+              {t('whySubtitle')}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="bg-white p-6 rounded-2xl border border-ivory-300 space-y-3">
+              <ShieldCheck className="w-8 h-8 text-emerald-600" />
+              <h4 className="font-serif font-bold text-gray-900 text-base">{t('why1Title')}</h4>
+              <p className="text-xs text-gray-600 leading-relaxed">{t('why1Desc')}</p>
+            </div>
+
+            <div className="bg-white p-6 rounded-2xl border border-ivory-300 space-y-3">
+              <FileCheck2 className="w-8 h-8 text-gold-600" />
+              <h4 className="font-serif font-bold text-gray-900 text-base">{t('why2Title')}</h4>
+              <p className="text-xs text-gray-600 leading-relaxed">{t('why2Desc')}</p>
+            </div>
+
+            <div className="bg-white p-6 rounded-2xl border border-ivory-300 space-y-3">
+              <BellRing className="w-8 h-8 text-brand-700" />
+              <h4 className="font-serif font-bold text-gray-900 text-base">{t('why3Title')}</h4>
+              <p className="text-xs text-gray-600 leading-relaxed">{t('why3Desc')}</p>
+            </div>
+
+            <div className="bg-white p-6 rounded-2xl border border-ivory-300 space-y-3">
+              <Globe2 className="w-8 h-8 text-brand-900" />
+              <h4 className="font-serif font-bold text-gray-900 text-base">{t('why4Title')}</h4>
+              <p className="text-xs text-gray-600 leading-relaxed">{t('why4Desc')}</p>
+            </div>
+          </div>
         </div>
       </section>
 
