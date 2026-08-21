@@ -1,12 +1,3 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
-  <defs>
-    <clipPath id="circularEmblemClip">
-      <circle cx="60" cy="60" r="56" />
-    </clipPath>
-  </defs>
-  <!-- Gold outer border ring -->
-  <circle cx="60" cy="60" r="58" fill="#C59B27" />
-  <circle cx="60" cy="60" r="56" fill="#FFFFFF" />
-  <!-- Embedded Circular Icon Image -->
-  <image href="/v_brothers_icon.jpg" x="4" y="4" width="112" height="112" clip-path="url(#circularEmblemClip)" preserveAspectRatio="xMidYMid slice" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <image href="/v_brothers_icon.png" x="2" y="2" width="96" height="96" preserveAspectRatio="xMidYMid meet" />
 </svg>
