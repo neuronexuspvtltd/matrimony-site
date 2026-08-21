@@ -1,6 +1,7 @@
 import { initialProfiles, initialSuccessStories, ProfileData } from './mockData';
 import {
   saveProfileToFirestore,
+  deleteProfileFromFirestore,
   uploadPdfBiodataToStorage,
   fetchProfilesFromFirestore,
   findProfileByEmailFirestore,
@@ -827,7 +828,13 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
 
   // Helpers for Admin User route matching
   const findUserIndex = (id: string) =>
-    profiles.findIndex((p: ProfileData) => p.user._id === id || p._id === id || p.profileId === id);
+    rawProfiles.findIndex(
+      (p: any) =>
+        p._id === id ||
+        p.user?._id === id ||
+        p.profileId === id ||
+        (p.user?.email && p.user.email.toLowerCase() === id.toLowerCase())
+    );
 
   const getAdminUserIdFromUrl = (url: string) => {
     const parts = url.split('?')[0].split('/');
@@ -838,28 +845,42 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     return '';
   };
 
-  if (endpoint.startsWith('/admin/users') && !endpoint.includes('/verify') && !endpoint.includes('/featured') && !endpoint.includes('/edit') && !endpoint.includes('/status') && method === 'GET') {
+  if (
+    endpoint.startsWith('/admin/users') &&
+    !endpoint.includes('/verify') &&
+    !endpoint.includes('/featured') &&
+    !endpoint.includes('/edit') &&
+    !endpoint.includes('/status') &&
+    method === 'GET'
+  ) {
     const searchQ = new URLSearchParams(endpoint.split('?')[1] || '').get('search')?.toLowerCase();
-    let filtered = profiles;
+    let filtered = rawProfiles;
     if (searchQ) {
-      filtered = profiles.filter((p: ProfileData) => p.user.fullName.toLowerCase().includes(searchQ) || p.user.email.toLowerCase().includes(searchQ));
+      filtered = rawProfiles.filter(
+        (p: any) =>
+          p.user?.fullName?.toLowerCase().includes(searchQ) ||
+          p.user?.email?.toLowerCase().includes(searchQ) ||
+          p.profileId?.toLowerCase().includes(searchQ) ||
+          p.caste?.toLowerCase().includes(searchQ) ||
+          p.city?.toLowerCase().includes(searchQ)
+      );
     }
     return {
-      users: filtered.map((p: ProfileData) => ({
-        _id: p.user._id,
-        fullName: p.user.fullName,
-        email: p.user.email,
-        mobile: p.user.mobile,
-        profileId: p.profileId,
-        city: p.city,
-        caste: p.caste,
-        occupation: p.occupation,
-        education: p.education,
-        isVerified: p.isVerified,
-        isFeatured: p.isFeatured,
-        biodataUrl: p.biodataUrl,
+      users: filtered.map((p: any) => ({
+        _id: p._id || p.user?._id,
+        fullName: p.user?.fullName || p.fullName || 'Member',
+        email: p.user?.email || p.email || '',
+        mobile: p.user?.mobile || p.mobile || '',
+        profileId: p.profileId || '',
+        city: p.city || '',
+        caste: p.caste || '',
+        occupation: p.occupation || '',
+        education: p.education || '',
+        isVerified: p.isVerified ?? p.user?.isVerified ?? false,
+        isFeatured: p.isFeatured ?? false,
+        biodataUrl: p.biodataUrl || '',
         biodataPrivacy: p.biodataVisibility || 'Connections Only',
-        status: p.user.status,
+        status: p.user?.status || p.status || 'active',
       })),
     };
   }
@@ -868,12 +889,13 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     const targetUserId = getAdminUserIdFromUrl(endpoint);
     const pIdx = findUserIndex(targetUserId);
     if (pIdx !== -1) {
-      const newStatus = !profiles[pIdx].isVerified;
-      profiles[pIdx].isVerified = newStatus;
-      profiles[pIdx].user.isVerified = newStatus;
-      setItem(PROFILES_KEY, profiles);
+      const newStatus = !rawProfiles[pIdx].isVerified;
+      rawProfiles[pIdx].isVerified = newStatus;
+      if (rawProfiles[pIdx].user) rawProfiles[pIdx].user.isVerified = newStatus;
+      setItem(PROFILES_KEY, rawProfiles);
 
-      saveProfileToFirestore(profiles[pIdx].user._id, profiles[pIdx]).catch((err) =>
+      const targetId = rawProfiles[pIdx]._id || rawProfiles[pIdx].user?._id || targetUserId;
+      saveProfileToFirestore(targetId, rawProfiles[pIdx]).catch((err) =>
         console.warn('Firestore profile sync error:', err)
       );
 
@@ -886,11 +908,12 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     const targetUserId = getAdminUserIdFromUrl(endpoint);
     const pIdx = findUserIndex(targetUserId);
     if (pIdx !== -1) {
-      const newStatus = !profiles[pIdx].isFeatured;
-      profiles[pIdx].isFeatured = newStatus;
-      setItem(PROFILES_KEY, profiles);
+      const newStatus = !rawProfiles[pIdx].isFeatured;
+      rawProfiles[pIdx].isFeatured = newStatus;
+      setItem(PROFILES_KEY, rawProfiles);
 
-      saveProfileToFirestore(profiles[pIdx].user._id, profiles[pIdx]).catch((err) =>
+      const targetId = rawProfiles[pIdx]._id || rawProfiles[pIdx].user?._id || targetUserId;
+      saveProfileToFirestore(targetId, rawProfiles[pIdx]).catch((err) =>
         console.warn('Firestore profile sync error:', err)
       );
 
@@ -903,22 +926,28 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     const targetUserId = getAdminUserIdFromUrl(endpoint);
     const pIdx = findUserIndex(targetUserId);
     if (pIdx !== -1) {
-      profiles[pIdx] = {
-        ...profiles[pIdx],
-        user: { ...profiles[pIdx].user, fullName: body.fullName || profiles[pIdx].user.fullName, email: body.email || profiles[pIdx].user.email },
-        city: body.city || profiles[pIdx].city,
-        caste: body.caste || profiles[pIdx].caste,
-        occupation: body.occupation || profiles[pIdx].occupation,
-        education: body.education || profiles[pIdx].education,
-        biodataVisibility: body.biodataPrivacy || profiles[pIdx].biodataVisibility,
+      rawProfiles[pIdx] = {
+        ...rawProfiles[pIdx],
+        user: {
+          ...rawProfiles[pIdx].user,
+          fullName: body.fullName || rawProfiles[pIdx].user?.fullName,
+          email: body.email || rawProfiles[pIdx].user?.email,
+          mobile: body.mobile || rawProfiles[pIdx].user?.mobile,
+        },
+        city: body.city || rawProfiles[pIdx].city,
+        caste: body.caste || rawProfiles[pIdx].caste,
+        occupation: body.occupation || rawProfiles[pIdx].occupation,
+        education: body.education || rawProfiles[pIdx].education,
+        biodataVisibility: body.biodataPrivacy || rawProfiles[pIdx].biodataVisibility,
       };
-      setItem(PROFILES_KEY, profiles);
+      setItem(PROFILES_KEY, rawProfiles);
 
-      saveProfileToFirestore(profiles[pIdx].user._id, profiles[pIdx]).catch((err) =>
+      const targetId = rawProfiles[pIdx]._id || rawProfiles[pIdx].user?._id || targetUserId;
+      saveProfileToFirestore(targetId, rawProfiles[pIdx]).catch((err) =>
         console.warn('Firestore profile sync error:', err)
       );
 
-      return { message: 'User updated successfully', profile: profiles[pIdx] };
+      return { message: 'User updated successfully', profile: rawProfiles[pIdx] };
     }
     throw new Error(`Member not found for ID: ${targetUserId}`);
   }
@@ -927,14 +956,17 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     const targetUserId = getAdminUserIdFromUrl(endpoint);
     const pIdx = findUserIndex(targetUserId);
     if (pIdx !== -1) {
-      profiles[pIdx].user.status = body.status;
-      setItem(PROFILES_KEY, profiles);
+      const newStatus = body.status;
+      rawProfiles[pIdx].status = newStatus;
+      if (rawProfiles[pIdx].user) rawProfiles[pIdx].user.status = newStatus;
+      setItem(PROFILES_KEY, rawProfiles);
 
-      saveProfileToFirestore(profiles[pIdx].user._id, profiles[pIdx]).catch((err) =>
+      const targetId = rawProfiles[pIdx]._id || rawProfiles[pIdx].user?._id || targetUserId;
+      saveProfileToFirestore(targetId, rawProfiles[pIdx]).catch((err) =>
         console.warn('Firestore profile sync error:', err)
       );
 
-      return { message: 'Status updated successfully', status: body.status };
+      return { message: 'Status updated successfully', status: newStatus };
     }
     throw new Error(`Member not found for ID: ${targetUserId}`);
   }
@@ -943,8 +975,12 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     const targetUserId = getAdminUserIdFromUrl(endpoint);
     const pIdx = findUserIndex(targetUserId);
     if (pIdx !== -1) {
-      profiles.splice(pIdx, 1);
-      setItem(PROFILES_KEY, profiles);
+      const targetId = rawProfiles[pIdx]._id || rawProfiles[pIdx].user?._id || targetUserId;
+      rawProfiles.splice(pIdx, 1);
+      setItem(PROFILES_KEY, rawProfiles);
+      deleteProfileFromFirestore(targetId).catch((err) =>
+        console.warn('Firestore profile delete error:', err)
+      );
       return { message: 'User deleted permanently' };
     }
     throw new Error(`Member not found for ID: ${targetUserId}`);

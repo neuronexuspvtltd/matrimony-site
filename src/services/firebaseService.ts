@@ -4,6 +4,7 @@ import {
   getDoc,
   getDocs,
   setDoc,
+  deleteDoc,
   updateDoc,
   addDoc,
   query,
@@ -46,6 +47,18 @@ export const getProfileFromFirestore = async (userId: string) => {
   } catch (error: any) {
     console.warn('Firestore get profile warning:', error.message);
     return null;
+  }
+};
+
+// Delete Member Profile from Cloud Firestore
+export const deleteProfileFromFirestore = async (userId: string) => {
+  try {
+    const profRef = doc(db, 'profiles', userId);
+    await deleteDoc(profRef);
+    return { success: true };
+  } catch (error: any) {
+    console.warn('Firestore profile delete warning:', error.message);
+    return { success: false, error: error.message };
   }
 };
 
