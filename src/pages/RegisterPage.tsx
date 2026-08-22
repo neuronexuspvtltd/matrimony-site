@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
+import { fetchApi } from '../services/api';
 import { Check, ChevronLeft, ChevronRight, User, Heart, Briefcase, Users, Sliders, Eye, EyeOff } from 'lucide-react';
 
 export const RegisterPage: React.FC = () => {
@@ -71,7 +72,7 @@ export const RegisterPage: React.FC = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep === 1) {
       if (!formData.fullName || !formData.email || !formData.mobile || !formData.password) {
         setError(language === 'EN' ? 'Please fill in all required fields' : 'कृपया सर्व आवश्यक माहिती भरा');
@@ -90,7 +91,30 @@ export const RegisterPage: React.FC = () => {
         setError(language === 'EN' ? 'Passwords do not match' : 'पासवर्ड जुळत नाहीत');
         return;
       }
+
+      setLoading(true);
+      setError('');
+      try {
+        const checkRes = await fetchApi('/auth/check-email', {
+          method: 'POST',
+          body: JSON.stringify({ email: formData.email, mobile: formData.mobile }),
+        });
+
+        if (checkRes.exists) {
+          const errMsg = language === 'EN'
+            ? (checkRes.message || 'An account with this email address already exists. Please log in or use a different email.')
+            : 'हा ईमेल आयडी वापरून आधीच खाते तयार केले आहे. कृपया दुसरा ईमेल वापरा किंवा लॉगिन करा.';
+          setError(errMsg);
+          alert(errMsg);
+          return;
+        }
+      } catch (err: any) {
+        console.warn('Check email warning:', err);
+      } finally {
+        setLoading(false);
+      }
     }
+
     setError('');
     setCurrentStep((prev) => Math.min(5, prev + 1));
   };

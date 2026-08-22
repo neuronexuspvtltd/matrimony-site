@@ -247,6 +247,30 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     return { token: tokenStr, user: userData };
   }
 
+  if (endpoint === '/auth/check-email' && method === 'POST') {
+    const { email, mobile } = body;
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanMobile = (mobile || '').trim();
+
+    let existingEmail = profiles.find((p: ProfileData) => p.user.email?.toLowerCase() === cleanEmail);
+    if (!existingEmail) {
+      existingEmail = await findProfileByEmailFirestore(cleanEmail).catch(() => null);
+    }
+
+    if (existingEmail) {
+      return { exists: true, field: 'email', message: 'An account with this email address already exists. Please log in or use a different email.' };
+    }
+
+    if (cleanMobile) {
+      const existingMobile = profiles.find((p: ProfileData) => p.user.mobile === cleanMobile);
+      if (existingMobile) {
+        return { exists: true, field: 'mobile', message: 'An account with this mobile number already exists.' };
+      }
+    }
+
+    return { exists: false };
+  }
+
   if (endpoint === '/auth/register' && method === 'POST') {
     const { fullName, email, password, mobile, gender, dateOfBirth, city, religion, caste, education, occupation, maritalStatus } = body;
 
