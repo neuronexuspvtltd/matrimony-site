@@ -71,6 +71,7 @@ export const InterestsPage: React.FC = () => {
   const pendingReceived = allReceived.filter((item) => item.status === 'pending');
   const acceptedReceived = allReceived.filter((item) => item.status === 'accepted');
   const acceptedSent = sent.filter((item) => item.status === 'accepted');
+  const pendingSent = sent.filter((item) => item.status === 'pending');
 
   // Connected tab shows all accepted mutual connections (both received and sent)
   const allConnected = [...acceptedReceived, ...acceptedSent];
@@ -78,7 +79,7 @@ export const InterestsPage: React.FC = () => {
   const getActiveList = () => {
     if (tab === 'received') return pendingReceived;
     if (tab === 'accepted') return allConnected;
-    return sent;
+    return pendingSent;
   };
 
   const list = getActiveList();
@@ -126,7 +127,7 @@ export const InterestsPage: React.FC = () => {
               tab === 'sent' ? 'bg-brand-900 text-gold-300 shadow-sm' : 'text-gray-600 hover:text-gray-900'
             }`}
           >
-            {t('dashboardSent')} ({sent.length})
+            {t('dashboardSent')} ({pendingSent.length})
           </button>
         </div>
       </div>
