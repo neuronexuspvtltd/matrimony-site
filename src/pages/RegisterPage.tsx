@@ -62,13 +62,28 @@ export const RegisterPage: React.FC = () => {
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === 'mobile') {
+      const cleanMobile = value.replace(/\D/g, '').slice(0, 10);
+      setFormData({ ...formData, mobile: cleanMobile });
+      return;
+    }
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleNext = () => {
     if (currentStep === 1) {
       if (!formData.fullName || !formData.email || !formData.mobile || !formData.password) {
         setError(language === 'EN' ? 'Please fill in all required fields' : 'कृपया सर्व आवश्यक माहिती भरा');
+        return;
+      }
+      const mobileRegex = /^[6-9]\d{9}$/;
+      if (!mobileRegex.test(formData.mobile)) {
+        setError(
+          language === 'EN'
+            ? 'Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9'
+            : 'कृपया ६, ७, ८ किंवा ९ ने सुरू होणारा वैध १० अंकी मोबाईल नंबर टाका'
+        );
         return;
       }
       if (formData.password !== formData.confirmPassword) {
@@ -186,7 +201,7 @@ export const RegisterPage: React.FC = () => {
                   name="fullName"
                   value={formData.fullName}
                   onChange={handleChange}
-                  placeholder="e.g. Suyash Narade"
+                  placeholder="e.g. Rahul Patil"
                   className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm"
                   required
                 />
@@ -199,7 +214,7 @@ export const RegisterPage: React.FC = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="suyash@example.com"
+                  placeholder="user@gmail.com"
                   className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm"
                   required
                 />
@@ -212,6 +227,8 @@ export const RegisterPage: React.FC = () => {
                   name="mobile"
                   value={formData.mobile}
                   onChange={handleChange}
+                  maxLength={10}
+                  inputMode="numeric"
                   placeholder="9876543210"
                   className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm"
                   required
