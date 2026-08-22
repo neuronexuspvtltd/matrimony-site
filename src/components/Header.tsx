@@ -23,7 +23,7 @@ import {
 export const Header: React.FC = () => {
   const { t, language, toggleLanguage } = useLanguage();
   const { user, logout } = useAuth();
-  const { notifications, unreadCount, markAllAsRead, clearAllNotifications } = useNotifications();
+  const { notifications, unreadCount, markAsRead, markAllAsRead, clearAllNotifications } = useNotifications();
   const [notifDropdownOpen, setNotifDropdownOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [msgUnreadCount, setMsgUnreadCount] = useState<number>(0);
@@ -219,7 +219,14 @@ export const Header: React.FC = () => {
                               key={n._id}
                               onClick={() => {
                                 setNotifDropdownOpen(false);
-                                if (n.targetProfileId) {
+                                if (!n.isRead) {
+                                  markAsRead(n._id);
+                                }
+                                if (n.type === 'INTEREST_RECEIVED' || n.type === 'INTEREST_ACCEPTED') {
+                                  navigate('/interests');
+                                } else if (n.type === 'MESSAGE_RECEIVED') {
+                                  navigate('/messages');
+                                } else if (n.targetProfileId) {
                                   navigate(`/profile/${n.targetProfileId}`);
                                 } else {
                                   navigate('/dashboard');

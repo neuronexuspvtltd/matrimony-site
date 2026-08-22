@@ -14,6 +14,9 @@ import {
   fetchMessagesFirestore,
   sendMessageFirestore,
   markMessagesReadFirestore,
+  markNotificationReadFirestore,
+  markAllNotificationsReadFirestore,
+  clearAllNotificationsFirestore,
 } from './firebaseService';
 
 const PROFILES_KEY = 'pb_profiles_data';
@@ -801,6 +804,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       notifications[idx].isRead = true;
       setItem(NOTIFICATIONS_KEY, notifications);
     }
+    markNotificationReadFirestore(id).catch(() => {});
     return { message: 'Marked read' };
   }
 
@@ -810,6 +814,9 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       if (n.userId === currentUser?.id) n.isRead = true;
     });
     setItem(NOTIFICATIONS_KEY, notifications);
+    if (currentUser?.id) {
+      markAllNotificationsReadFirestore(currentUser.id).catch(() => {});
+    }
     return { message: 'All read' };
   }
 
@@ -817,6 +824,9 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     const notifications = getItem(NOTIFICATIONS_KEY, []);
     const remainingNotifs = notifications.filter((n: any) => n.userId !== currentUser?.id);
     setItem(NOTIFICATIONS_KEY, remainingNotifs);
+    if (currentUser?.id) {
+      clearAllNotificationsFirestore(currentUser.id).catch(() => {});
+    }
     return { message: 'All notifications cleared' };
   }
 

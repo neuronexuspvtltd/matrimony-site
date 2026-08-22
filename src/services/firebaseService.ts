@@ -230,6 +230,39 @@ export const fetchNotificationsFirestore = async (userId: string): Promise<any[]
   }
 };
 
+export const markNotificationReadFirestore = async (notifId: string) => {
+  try {
+    const docRef = doc(db, 'notifications', notifId);
+    await setDoc(docRef, { isRead: true }, { merge: true });
+  } catch (e) {
+    console.warn('Firestore mark notification read warning:', e);
+  }
+};
+
+export const markAllNotificationsReadFirestore = async (userId: string) => {
+  try {
+    const q = query(collection(db, 'notifications'), where('userId', '==', userId));
+    const snap = await getDocs(q);
+    const batchPromises = snap.docs.map((docSnap) =>
+      setDoc(doc(db, 'notifications', docSnap.id), { isRead: true }, { merge: true })
+    );
+    await Promise.all(batchPromises);
+  } catch (e) {
+    console.warn('Firestore mark all notifications read warning:', e);
+  }
+};
+
+export const clearAllNotificationsFirestore = async (userId: string) => {
+  try {
+    const q = query(collection(db, 'notifications'), where('userId', '==', userId));
+    const snap = await getDocs(q);
+    const deletePromises = snap.docs.map((docSnap) => deleteDoc(doc(db, 'notifications', docSnap.id)));
+    await Promise.all(deletePromises);
+  } catch (e) {
+    console.warn('Firestore clear all notifications warning:', e);
+  }
+};
+
 // 9. Real-time Live Messages Listener with Firestore onSnapshot
 export const subscribeToMessages = (
   conversationId: string,
