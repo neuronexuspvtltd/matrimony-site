@@ -862,27 +862,50 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       const fsMsgs = await fetchMessagesFirestore(convId);
       if (fsMsgs && fsMsgs.length > 0) {
         const mMap = new Map();
-        [...messages, ...fsMsgs].forEach((m: any) => mMap.set(m._id || m.id, m));
+        [...messages, ...fsMsgs].forEach((m: any) => {
+          if (m && (!m.conversationId || m.conversationId === convId)) {
+            // Deduplicate by ID and content time window (within 5 seconds)
+            const timeKey = Math.floor(new Date(m.createdAt || Date.now()).getTime() / 5000);
+            const dedupKey = m._id || `${m.senderId}_${m.content}_${timeKey}`;
+            if (!mMap.has(dedupKey)) {
+              mMap.set(dedupKey, { ...m, _id: m._id || dedupKey });
+            }
+          }
+        });
         messages = Array.from(mMap.values());
         setItem(MESSAGES_KEY, messages);
       }
     } catch (e) {}
 
-    return messages.filter((m: any) => m.conversationId === convId);
+    const filtered = messages.filter((m: any) => m.conversationId === convId);
+    filtered.sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    return filtered;
   }
 
   if (endpoint === '/messages/send' && method === 'POST') {
     const { conversationId, content } = body;
     const messages = getItem(MESSAGES_KEY, []);
     const newMsg = {
-      _id: `msg_${Date.now()}`,
+      _id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
       conversationId,
       senderId: currentUser.id,
       content,
       createdAt: new Date().toISOString(),
     };
-    messages.push(newMsg);
-    setItem(MESSAGES_KEY, messages);
+    
+    // Check if duplicate message exists in local storage within last 3 seconds
+    const isDup = messages.some(
+      (m: any) =>
+        m.conversationId === conversationId &&
+        m.senderId === currentUser.id &&
+        m.content === content &&
+        Math.abs(new Date(m.createdAt).getTime() - new Date(newMsg.createdAt).getTime()) < 3000
+    );
+
+    if (!isDup) {
+      messages.push(newMsg);
+      setItem(MESSAGES_KEY, messages);
+    }
 
     const conversations = getItem(CONVERSATIONS_KEY, []);
     const cIdx = conversations.findIndex((c: any) => c._id === conversationId || c.id === conversationId);
@@ -893,7 +916,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     }
 
     // Push real-time message to Cloud Firestore database!
-    sendMessageFirestore(conversationId, currentUser.id, content).catch((err) =>
+    sendMessageFirestore(conversationId, currentUser.id, content, newMsg._id).catch((err) =>
       console.warn('Firestore message send error:', err)
     );
 

@@ -16,7 +16,13 @@ export const MessagesPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [showMobileChat, setShowMobileChat] = useState(false);
-  const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  };
 
   const fetchConversations = async () => {
     try {
@@ -35,7 +41,15 @@ export const MessagesPage: React.FC = () => {
   const fetchMessages = async (convId: string) => {
     try {
       const data = await fetchApi(`/messages/conversations/${convId}`);
-      setMessages(data || []);
+      if (Array.isArray(data)) {
+        const map = new Map();
+        data.forEach((m) => {
+          const key = m._id || `${m.senderId}_${m.content}_${m.createdAt}`;
+          map.set(key, m);
+        });
+        const cleanList = Array.from(map.values());
+        setMessages(cleanList);
+      }
     } catch (err) {
       console.error(err);
     }
@@ -48,30 +62,35 @@ export const MessagesPage: React.FC = () => {
   useEffect(() => {
     if (activeConv?._id) {
       fetchMessages(activeConv._id);
+      setTimeout(scrollToBottom, 100);
       const interval = setInterval(() => fetchMessages(activeConv._id), 4000); // live polling chat
       return () => clearInterval(interval);
     }
   }, [activeConv]);
 
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMsg.trim() || !activeConv) return;
 
+    const textToSend = newMsg.trim();
+    setNewMsg('');
     setSending(true);
+
     try {
       const msg = await fetchApi('/messages/send', {
         method: 'POST',
         body: JSON.stringify({
           conversationId: activeConv._id,
-          content: newMsg.trim(),
+          content: textToSend,
         }),
       });
-      setMessages((prev) => [...prev, msg]);
-      setNewMsg('');
+
+      setMessages((prev) => {
+        const exists = prev.some((m) => m._id === msg._id || (m.content === msg.content && m.senderId === msg.senderId));
+        return exists ? prev : [...prev, msg];
+      });
+
+      setTimeout(scrollToBottom, 50);
       fetchConversations();
     } catch (err: any) {
       alert(err.message || 'Error sending message');
@@ -201,7 +220,7 @@ export const MessagesPage: React.FC = () => {
               </div>
 
               {/* Messages Body */}
-              <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-ivory-50/30">
+              <div ref={chatContainerRef} className="flex-1 p-4 overflow-y-auto space-y-3 bg-ivory-50/30">
                 {messages.length === 0 ? (
                   <p className="text-center text-xs text-gray-400 pt-10">
                     No messages exchanged yet. Say Namaste!
@@ -231,7 +250,6 @@ export const MessagesPage: React.FC = () => {
                     );
                   })
                 )}
-                <div ref={chatEndRef} />
               </div>
 
               {/* Chat Input Form */}

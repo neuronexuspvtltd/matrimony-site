@@ -272,7 +272,10 @@ export const fetchMessagesFirestore = async (conversationId: string): Promise<an
   try {
     const q = query(collection(db, 'messages'), where('conversationId', '==', conversationId));
     const snap = await getDocs(q);
-    return snap.docs.map((d) => ({ _id: d.id, ...d.data() }));
+    return snap.docs.map((d) => {
+      const data = d.data();
+      return { _id: data._id || d.id, ...data };
+    });
   } catch (error: any) {
     console.warn('Firestore fetch messages warning:', error.message);
     return [];
@@ -280,14 +283,17 @@ export const fetchMessagesFirestore = async (conversationId: string): Promise<an
 };
 
 // 12. Send Real-time Chat Message via Firestore
-export const sendMessageFirestore = async (conversationId: string, senderId: string, content: string) => {
+export const sendMessageFirestore = async (conversationId: string, senderId: string, content: string, msgId?: string) => {
   try {
-    await addDoc(collection(db, 'messages'), {
+    const docId = msgId || `msg_${Date.now()}`;
+    const msgRef = doc(db, 'messages', docId);
+    await setDoc(msgRef, {
+      _id: docId,
       conversationId,
       senderId,
       content,
       createdAt: new Date().toISOString(),
-    });
+    }, { merge: true });
 
     const convRef = doc(db, 'conversations', conversationId);
     await setDoc(convRef, {
