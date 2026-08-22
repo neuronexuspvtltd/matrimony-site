@@ -13,6 +13,7 @@ import {
   fetchConversationsFirestore,
   fetchMessagesFirestore,
   sendMessageFirestore,
+  markMessagesReadFirestore,
 } from './firebaseService';
 
 const PROFILES_KEY = 'pb_profiles_data';
@@ -871,6 +872,13 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
             const dedupKey = m._id || `${m.senderId}_${m.content}_${timeKey}`;
             if (!mMap.has(dedupKey)) {
               mMap.set(dedupKey, { ...m, _id: m._id || dedupKey });
+            } else {
+              const existing = mMap.get(dedupKey);
+              mMap.set(dedupKey, {
+                ...existing,
+                ...m,
+                isRead: existing.isRead === true || m.isRead === true,
+              });
             }
           }
         });
@@ -920,6 +928,13 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
             const dedupKey = m._id || `${m.senderId}_${m.content}_${timeKey}`;
             if (!mMap.has(dedupKey)) {
               mMap.set(dedupKey, { ...m, _id: m._id || dedupKey });
+            } else {
+              const existing = mMap.get(dedupKey);
+              mMap.set(dedupKey, {
+                ...existing,
+                ...m,
+                isRead: existing.isRead === true || m.isRead === true,
+              });
             }
           }
         });
@@ -927,6 +942,11 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
         setItem(MESSAGES_KEY, messages);
       }
     } catch (e) {}
+
+    // Find conversation partner ID
+    const conversations = getItem(CONVERSATIONS_KEY, []);
+    const activeC = conversations.find((c: any) => (c._id === convId || c.id === convId));
+    const partnerId = activeC?.participants?.find((p: string) => p !== currentUser?.id);
 
     // Mark messages from partner in this conversation as read
     let markedRead = false;
@@ -940,6 +960,9 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
 
     if (markedRead) {
       setItem(MESSAGES_KEY, messages);
+      if (partnerId) {
+        markMessagesReadFirestore(convId, partnerId).catch(() => {});
+      }
     }
 
     const filtered = messages.filter((m: any) => m.conversationId === convId);

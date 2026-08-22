@@ -140,6 +140,9 @@ export const MessagesPage: React.FC = () => {
                   onClick={() => {
                     setActiveConv(conv);
                     setShowMobileChat(true);
+                    setConversations((prev) =>
+                      prev.map((c) => (c._id === conv._id ? { ...c, unreadCount: 0 } : c))
+                    );
                   }}
                   className={`p-4 cursor-pointer hover:bg-white transition-colors flex items-center gap-3 ${
                     activeConv?._id === conv._id ? 'bg-white border-l-4 border-brand-900 shadow-xs' : ''

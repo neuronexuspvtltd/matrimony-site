@@ -300,11 +300,29 @@ export const sendMessageFirestore = async (conversationId: string, senderId: str
       lastMessage: content,
       lastMessageAt: new Date().toISOString(),
     }, { merge: true });
-
     return { success: true };
   } catch (error: any) {
     console.warn('Firestore message send warning:', error.message);
     return { success: false, error: error.message };
+  }
+};
+export const markMessagesReadFirestore = async (conversationId: string, partnerId: string) => {
+  try {
+    const q = query(
+      collection(db, 'messages'),
+      where('conversationId', '==', conversationId),
+      where('senderId', '==', partnerId)
+    );
+    const snap = await getDocs(q);
+    const promises: Promise<any>[] = [];
+    snap.docs.forEach((docSnap) => {
+      if (!docSnap.data().isRead) {
+        promises.push(setDoc(doc(db, 'messages', docSnap.id), { isRead: true }, { merge: true }));
+      }
+    });
+    await Promise.all(promises);
+  } catch (e) {
+    console.warn('Firestore mark read warning:', e);
   }
 };
 
