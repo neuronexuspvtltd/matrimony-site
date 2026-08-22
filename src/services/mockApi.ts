@@ -77,11 +77,21 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
   let rawProfiles: ProfileData[] = getItem(PROFILES_KEY, []);
   const deletedIds: string[] = getItem(DELETED_PROFILES_KEY, []);
   
-  rawProfiles = rawProfiles.filter(p => 
-    !['usr_suyash', 'usr_priya', 'usr_rohit', 'usr_ananya', 'usr_aditya', 'usr_sneha'].includes(p._id) &&
-    !deletedIds.includes(p._id) &&
-    !deletedIds.includes(p.user?._id)
-  );
+  rawProfiles = rawProfiles.filter(p => {
+    if (!p || !p._id) return false;
+    if (['usr_suyash', 'usr_priya', 'usr_rohit', 'usr_ananya', 'usr_aditya', 'usr_sneha'].includes(p._id)) return false;
+    if ((p as any).isDeleted === true || (p as any).status === 'deleted') return false;
+    
+    const isBlacklisted = deletedIds.some((dId: string) => 
+      dId && (
+        dId === p._id || 
+        dId === p.user?._id || 
+        dId === p.profileId || 
+        (p.user?.email && dId.toLowerCase() === p.user.email.toLowerCase())
+      )
+    );
+    return !isBlacklisted;
+  });
 
   // Sync fresh accounts from Cloud Firestore so logins & search work across all laptops, phones & devices!
   try {
@@ -89,8 +99,17 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     if (firestoreProfiles && firestoreProfiles.length > 0) {
       firestoreProfiles.forEach((fProf: any) => {
         if (!fProf.user?.email) return;
-        const fId = fProf._id || fProf.user?._id;
-        if (deletedIds.includes(fId) || deletedIds.includes(fProf.user?._id)) return;
+        if (fProf.isDeleted === true || fProf.status === 'deleted') return;
+
+        const isDel = deletedIds.some((dId: string) => 
+          dId && (
+            dId === fProf._id || 
+            dId === fProf.user?._id || 
+            dId === fProf.profileId || 
+            (fProf.user?.email && dId.toLowerCase() === fProf.user.email.toLowerCase())
+          )
+        );
+        if (isDel) return;
 
         const idx = rawProfiles.findIndex(
           (p: any) => p.user?.email?.toLowerCase() === fProf.user.email.toLowerCase() || p.user?._id === fProf.user?._id || p._id === fProf._id
@@ -321,7 +340,9 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
 
   // --- 2. SEARCH & PROFILES ENDPOINTS ---
   if (endpoint === '/search/featured') {
-    return profiles.filter((p: ProfileData) => p.isFeatured).slice(0, 6);
+    return profiles
+      .filter((p: any) => p.isFeatured && p.status !== 'suspended' && p.status !== 'deleted' && (p as any).isDeleted !== true)
+      .slice(0, 6);
   }
 
   if (endpoint.startsWith('/search') || endpoint === '/profiles') {
@@ -335,7 +356,9 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     const maritalStatus = params.get('maritalStatus');
     const search = params.get('search');
 
-    const filtered = profiles.filter((p: ProfileData) => {
+    const filtered = profiles.filter((p: any) => {
+      // Exclude suspended or deleted profiles from public site views
+      if (p.status === 'suspended' || p.status === 'deleted' || (p as any).isDeleted === true) return false;
       if (gender && p.gender !== gender) return false;
       if (p.age < minAge || p.age > maxAge) return false;
       if (city && city !== 'All' && !p.city.toLowerCase().includes(city.toLowerCase())) return false;
