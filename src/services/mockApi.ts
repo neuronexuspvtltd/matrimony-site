@@ -820,8 +820,15 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
   }
 
   // --- 8. MESSAGING ENDPOINTS (Cloud Firestore Synced) ---
+  if (endpoint === '/messages/unread-count') {
+    const messages = getItem(MESSAGES_KEY, []);
+    const count = messages.filter((m: any) => m.senderId !== currentUser?.id && !m.isRead).length;
+    return { unreadCount: count };
+  }
+
   if (endpoint === '/messages/conversations') {
     let conversations = getItem(CONVERSATIONS_KEY, []);
+    const allMessages = getItem(MESSAGES_KEY, []);
 
     if (currentUser?.id) {
       try {
@@ -838,12 +845,19 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     const myConvs = conversations.filter((c: any) => c.participants && c.participants.includes(currentUser?.id));
 
     return myConvs.map((conv: any) => {
+      const convId = conv._id || conv.id;
       const partnerId = conv.participants.find((p: string) => p !== currentUser?.id);
       const partnerProf = profiles.find((p: ProfileData) => p.user._id === partnerId || p._id === partnerId);
+
+      const unreadCount = allMessages.filter(
+        (m: any) => m.conversationId === convId && m.senderId !== currentUser?.id && !m.isRead
+      ).length;
+
       return {
-        _id: conv._id || conv.id,
+        _id: convId,
         lastMessage: conv.lastMessage,
         lastMessageAt: conv.lastMessageAt,
+        unreadCount,
         partner: partnerProf ? {
           id: partnerProf.user._id,
           fullName: partnerProf.user.fullName,
@@ -877,6 +891,20 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       }
     } catch (e) {}
 
+    // Mark messages from partner in this conversation as read
+    let markedRead = false;
+    messages = messages.map((m: any) => {
+      if (m.conversationId === convId && m.senderId !== currentUser?.id && !m.isRead) {
+        markedRead = true;
+        return { ...m, isRead: true };
+      }
+      return m;
+    });
+
+    if (markedRead) {
+      setItem(MESSAGES_KEY, messages);
+    }
+
     const filtered = messages.filter((m: any) => m.conversationId === convId);
     filtered.sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     return filtered;
@@ -890,6 +918,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       conversationId,
       senderId: currentUser.id,
       content,
+      isRead: false,
       createdAt: new Date().toISOString(),
     };
     

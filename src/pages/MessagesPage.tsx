@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { fetchApi } from '../services/api';
-import { MessageSquare, Send, User, Lock, ShieldCheck, ArrowLeft } from 'lucide-react';
+import { MessageSquare, Send, User, Lock, ShieldCheck, ArrowLeft, Check, CheckCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const MessagesPage: React.FC = () => {
@@ -155,14 +155,21 @@ export const MessagesPage: React.FC = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-semibold text-xs text-gray-900 truncate">
+                      <h4 className={`text-xs truncate ${conv.unreadCount > 0 ? 'font-bold text-brand-950' : 'font-semibold text-gray-900'}`}>
                         {conv.partner?.fullName}
                       </h4>
-                      <span className="text-[10px] text-gray-400">
-                        {new Date(conv.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className={`text-[10px] ${conv.unreadCount > 0 ? 'text-emerald-700 font-bold' : 'text-gray-400'}`}>
+                          {new Date(conv.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                        {conv.unreadCount > 0 && (
+                          <span className="min-w-[18px] h-4 px-1.5 bg-emerald-600 text-white font-bold text-[10px] rounded-full flex items-center justify-center shadow-xs">
+                            {conv.unreadCount}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <p className="text-[11px] text-gray-500 truncate mt-0.5">
+                    <p className={`text-[11px] truncate mt-0.5 ${conv.unreadCount > 0 ? 'font-bold text-gray-900' : 'text-gray-500'}`}>
                       {conv.lastMessage || 'Connected! Start conversation.'}
                     </p>
                   </div>
@@ -239,11 +246,18 @@ export const MessagesPage: React.FC = () => {
                         >
                           <p className="leading-relaxed">{m.content}</p>
                           <div
-                            className={`text-[9px] text-right ${
-                              isMine ? 'text-gold-300' : 'text-gray-400'
+                            className={`text-[9px] flex items-center justify-end gap-1 ${
+                              isMine ? 'text-gold-300/90' : 'text-gray-400'
                             }`}
                           >
-                            {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            <span>{new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            {isMine && (
+                              m.isRead ? (
+                                <CheckCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                              ) : (
+                                <Check className="w-3 h-3 text-gold-300/70 shrink-0" />
+                              )
+                            )}
                           </div>
                         </div>
                       </div>

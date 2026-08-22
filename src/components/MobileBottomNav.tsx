@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
+import { fetchApi } from '../services/api';
 import { Home, Search, Plus, Heart, User as UserIcon, MessageSquare } from 'lucide-react';
 
 export const MobileBottomNav: React.FC = () => {
@@ -10,6 +11,20 @@ export const MobileBottomNav: React.FC = () => {
   const { user } = useAuth();
   const { unreadCount } = useNotifications();
   const location = useLocation();
+
+  const [msgUnreadCount, setMsgUnreadCount] = useState<number>(0);
+
+  useEffect(() => {
+    if (!user) return;
+    const checkMsgUnread = () => {
+      fetchApi('/messages/unread-count')
+        .then((res) => setMsgUnreadCount(res.unreadCount || 0))
+        .catch(() => {});
+    };
+    checkMsgUnread();
+    const interval = setInterval(checkMsgUnread, 4000);
+    return () => clearInterval(interval);
+  }, [user, location.pathname]);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -54,6 +69,11 @@ export const MobileBottomNav: React.FC = () => {
                 title={t('navMessages')}
               >
                 <MessageSquare className="w-5 h-5 stroke-[2.5]" />
+                {msgUnreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-emerald-600 text-white font-bold text-[10px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-md animate-pulse">
+                    {msgUnreadCount > 9 ? '9+' : msgUnreadCount}
+                  </span>
+                )}
               </Link>
               <span className={`text-[10px] font-bold mt-6 truncate max-w-[64px] ${isActive('/messages') ? 'text-brand-900' : 'text-brand-900'}`}>
                 {language === 'EN' ? 'Messages' : 'संदेश'}
