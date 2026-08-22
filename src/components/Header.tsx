@@ -105,11 +105,6 @@ export const Header: React.FC = () => {
                     )}
                   </div>
                   <span>{t('navMessages')}</span>
-                  {msgUnreadCount > 0 && !isActive('/messages') && (
-                    <span className="bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full min-w-[16px] text-center shadow-xs">
-                      {msgUnreadCount}
-                    </span>
-                  )}
                 </Link>
               </>
             ) : (
