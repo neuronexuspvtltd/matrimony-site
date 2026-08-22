@@ -67,13 +67,21 @@ const calculateCompletion = (p: any): number => {
   return Math.min(100, score);
 };
 
+const DELETED_PROFILES_KEY = 'pb_deleted_profiles';
+
 export const mockApiRequest = async (endpoint: string, options: RequestInit = {}): Promise<any> => {
   const method = (options.method || 'GET').toUpperCase();
   const body = options.body ? (typeof options.body === 'string' ? JSON.parse(options.body) : options.body) : null;
 
   // Initialize initial mock data from local storage
   let rawProfiles: ProfileData[] = getItem(PROFILES_KEY, []);
-  rawProfiles = rawProfiles.filter(p => !['usr_suyash', 'usr_priya', 'usr_rohit', 'usr_ananya', 'usr_aditya', 'usr_sneha'].includes(p._id));
+  const deletedIds: string[] = getItem(DELETED_PROFILES_KEY, []);
+  
+  rawProfiles = rawProfiles.filter(p => 
+    !['usr_suyash', 'usr_priya', 'usr_rohit', 'usr_ananya', 'usr_aditya', 'usr_sneha'].includes(p._id) &&
+    !deletedIds.includes(p._id) &&
+    !deletedIds.includes(p.user?._id)
+  );
 
   // Sync fresh accounts from Cloud Firestore so logins & search work across all laptops, phones & devices!
   try {
@@ -81,11 +89,25 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     if (firestoreProfiles && firestoreProfiles.length > 0) {
       firestoreProfiles.forEach((fProf: any) => {
         if (!fProf.user?.email) return;
+        const fId = fProf._id || fProf.user?._id;
+        if (deletedIds.includes(fId) || deletedIds.includes(fProf.user?._id)) return;
+
         const idx = rawProfiles.findIndex(
-          (p: any) => p.user?.email?.toLowerCase() === fProf.user.email.toLowerCase() || p.user?._id === fProf.user?._id
+          (p: any) => p.user?.email?.toLowerCase() === fProf.user.email.toLowerCase() || p.user?._id === fProf.user?._id || p._id === fProf._id
         );
         if (idx !== -1) {
-          rawProfiles[idx] = { ...rawProfiles[idx], ...fProf };
+          rawProfiles[idx] = { 
+            ...fProf, 
+            ...rawProfiles[idx], // Preserve local updates
+            isVerified: rawProfiles[idx].isVerified ?? fProf.isVerified ?? fProf.user?.isVerified ?? false,
+            isFeatured: rawProfiles[idx].isFeatured ?? fProf.isFeatured ?? false,
+            user: {
+              ...fProf.user,
+              ...rawProfiles[idx].user,
+              isVerified: rawProfiles[idx].user?.isVerified ?? rawProfiles[idx].isVerified ?? fProf.user?.isVerified ?? false,
+              status: rawProfiles[idx].user?.status || rawProfiles[idx].status || fProf.user?.status || fProf.status || 'active',
+            }
+          };
         } else {
           rawProfiles.unshift(fProf);
         }
@@ -96,15 +118,15 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     // Fallback gracefully to local storage
   }
 
-  // Ensure every profile in storage has valid isVerified, isFeatured, and status
+  // Ensure every profile in storage has valid boolean flags
   const profiles: ProfileData[] = rawProfiles.map((p: any) => ({
     ...p,
-    isVerified: p.isVerified ?? p.user?.isVerified ?? true,
-    isFeatured: p.isFeatured ?? true,
+    isVerified: p.isVerified === true || p.user?.isVerified === true,
+    isFeatured: p.isFeatured === true,
     user: {
       ...p.user,
-      isVerified: p.user?.isVerified ?? p.isVerified ?? true,
-      status: p.user?.status || 'active',
+      isVerified: p.user?.isVerified === true || p.isVerified === true,
+      status: p.user?.status || p.status || 'active',
     },
   }));
 
@@ -895,9 +917,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       setItem(PROFILES_KEY, rawProfiles);
 
       const targetId = rawProfiles[pIdx]._id || rawProfiles[pIdx].user?._id || targetUserId;
-      saveProfileToFirestore(targetId, rawProfiles[pIdx]).catch((err) =>
-        console.warn('Firestore profile sync error:', err)
-      );
+      await saveProfileToFirestore(targetId, rawProfiles[pIdx]);
 
       return { message: 'Verification toggled successfully', isVerified: newStatus };
     }
@@ -913,9 +933,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       setItem(PROFILES_KEY, rawProfiles);
 
       const targetId = rawProfiles[pIdx]._id || rawProfiles[pIdx].user?._id || targetUserId;
-      saveProfileToFirestore(targetId, rawProfiles[pIdx]).catch((err) =>
-        console.warn('Firestore profile sync error:', err)
-      );
+      await saveProfileToFirestore(targetId, rawProfiles[pIdx]);
 
       return { message: 'Featured status toggled successfully', isFeatured: newStatus };
     }
@@ -943,9 +961,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       setItem(PROFILES_KEY, rawProfiles);
 
       const targetId = rawProfiles[pIdx]._id || rawProfiles[pIdx].user?._id || targetUserId;
-      saveProfileToFirestore(targetId, rawProfiles[pIdx]).catch((err) =>
-        console.warn('Firestore profile sync error:', err)
-      );
+      await saveProfileToFirestore(targetId, rawProfiles[pIdx]);
 
       return { message: 'User updated successfully', profile: rawProfiles[pIdx] };
     }
@@ -962,9 +978,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       setItem(PROFILES_KEY, rawProfiles);
 
       const targetId = rawProfiles[pIdx]._id || rawProfiles[pIdx].user?._id || targetUserId;
-      saveProfileToFirestore(targetId, rawProfiles[pIdx]).catch((err) =>
-        console.warn('Firestore profile sync error:', err)
-      );
+      await saveProfileToFirestore(targetId, rawProfiles[pIdx]);
 
       return { message: 'Status updated successfully', status: newStatus };
     }
@@ -976,11 +990,17 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     const pIdx = findUserIndex(targetUserId);
     if (pIdx !== -1) {
       const targetId = rawProfiles[pIdx]._id || rawProfiles[pIdx].user?._id || targetUserId;
+
+      const currentDeleted = getItem(DELETED_PROFILES_KEY, []);
+      if (!currentDeleted.includes(targetId)) currentDeleted.push(targetId);
+      if (rawProfiles[pIdx].user?._id && !currentDeleted.includes(rawProfiles[pIdx].user._id)) {
+        currentDeleted.push(rawProfiles[pIdx].user._id);
+      }
+      setItem(DELETED_PROFILES_KEY, currentDeleted);
+
       rawProfiles.splice(pIdx, 1);
       setItem(PROFILES_KEY, rawProfiles);
-      deleteProfileFromFirestore(targetId).catch((err) =>
-        console.warn('Firestore profile delete error:', err)
-      );
+      await deleteProfileFromFirestore(targetId);
       return { message: 'User deleted permanently' };
     }
     throw new Error(`Member not found for ID: ${targetUserId}`);

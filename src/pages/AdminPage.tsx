@@ -99,25 +99,36 @@ export const AdminPage: React.FC = () => {
 
   // Actions
   const handleToggleVerify = async (userId: string) => {
+    setUsersList((prev) =>
+      prev.map((u) => (u._id === userId ? { ...u, isVerified: !u.isVerified } : u))
+    );
     try {
       await fetchApi(`/admin/users/${userId}/verify`, { method: 'PUT' });
       fetchAdminData();
     } catch (err: any) {
       alert(err.message || 'Error updating verification');
+      fetchAdminData();
     }
   };
 
   const handleToggleFeatured = async (userId: string) => {
+    setUsersList((prev) =>
+      prev.map((u) => (u._id === userId ? { ...u, isFeatured: !u.isFeatured } : u))
+    );
     try {
       await fetchApi(`/admin/users/${userId}/featured`, { method: 'PUT' });
       fetchAdminData();
     } catch (err: any) {
       alert(err.message || 'Error updating featured status');
+      fetchAdminData();
     }
   };
 
   const handleToggleStatus = async (userId: string, currentStatus: string) => {
     const newStatus = currentStatus === 'active' ? 'suspended' : 'active';
+    setUsersList((prev) =>
+      prev.map((u) => (u._id === userId ? { ...u, status: newStatus } : u))
+    );
     try {
       await fetchApi(`/admin/users/${userId}/status`, {
         method: 'PUT',
@@ -126,24 +137,31 @@ export const AdminPage: React.FC = () => {
       fetchAdminData();
     } catch (err: any) {
       alert(err.message || 'Error updating user status');
+      fetchAdminData();
     }
   };
 
   const handleDeleteUser = async (userId: string) => {
     if (!window.confirm('Are you sure you want to permanently delete this member profile?')) return;
+    setUsersList((prev) => prev.filter((u) => u._id !== userId));
     try {
       await fetchApi(`/admin/users/${userId}`, { method: 'DELETE' });
       fetchAdminData();
     } catch (err: any) {
       alert(err.message || 'Error deleting user');
+      fetchAdminData();
     }
   };
 
   const handleSaveUserEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingUser) return;
+    const targetId = editingUser._id;
+    setUsersList((prev) =>
+      prev.map((u) => (u._id === targetId ? { ...u, ...editingUser } : u))
+    );
     try {
-      await fetchApi(`/admin/users/${editingUser._id}/edit`, {
+      await fetchApi(`/admin/users/${targetId}/edit`, {
         method: 'PUT',
         body: JSON.stringify(editingUser),
       });
@@ -151,6 +169,7 @@ export const AdminPage: React.FC = () => {
       fetchAdminData();
     } catch (err: any) {
       alert(err.message || 'Error updating user profile');
+      fetchAdminData();
     }
   };
 
