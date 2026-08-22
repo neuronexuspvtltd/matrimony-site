@@ -710,8 +710,15 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
         if (firestoreInterests && firestoreInterests.length > 0) {
           const map = new Map();
           [...interests, ...firestoreInterests].forEach((item: any) => {
-            const key = item._id || item.id || `${item.senderId}_${item.receiverId}`;
-            map.set(key, item);
+            const pairKey = `${item.senderId}_${item.receiverId}`;
+            if (!map.has(pairKey)) {
+              map.set(pairKey, item);
+            } else {
+              const existing = map.get(pairKey);
+              if (item.status === 'accepted' || (existing.status === 'pending' && item.status !== 'pending')) {
+                map.set(pairKey, { ...existing, ...item });
+              }
+            }
           });
           interests = Array.from(map.values());
           setItem(INTERESTS_KEY, interests);

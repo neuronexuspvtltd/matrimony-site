@@ -70,10 +70,14 @@ export const InterestsPage: React.FC = () => {
   // Filter lists based on tab
   const pendingReceived = allReceived.filter((item) => item.status === 'pending');
   const acceptedReceived = allReceived.filter((item) => item.status === 'accepted');
+  const acceptedSent = sent.filter((item) => item.status === 'accepted');
+
+  // Connected tab shows all accepted mutual connections (both received and sent)
+  const allConnected = [...acceptedReceived, ...acceptedSent];
 
   const getActiveList = () => {
     if (tab === 'received') return pendingReceived;
-    if (tab === 'accepted') return acceptedReceived;
+    if (tab === 'accepted') return allConnected;
     return sent;
   };
 
@@ -113,7 +117,7 @@ export const InterestsPage: React.FC = () => {
               tab === 'accepted' ? 'bg-brand-900 text-gold-300 shadow-sm' : 'text-gray-600 hover:text-gray-900'
             }`}
           >
-            {language === 'EN' ? 'Connected' : 'स्वीकारलेले'} ({acceptedReceived.length})
+            {language === 'EN' ? 'Connected' : 'स्वीकारलेले'} ({allConnected.length})
           </button>
 
           <button
