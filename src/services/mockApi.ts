@@ -5,6 +5,8 @@ import {
   uploadPdfBiodataToStorage,
   fetchProfilesFromFirestore,
   findProfileByEmailFirestore,
+  saveProfileViewFirestore,
+  fetchProfileViewsFirestore,
   sendInterestFirestore,
   fetchInterestsFirestore,
   respondInterestFirestore,
@@ -520,6 +522,8 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
         });
         setItem(VIEWS_KEY, views);
 
+        saveProfileViewFirestore({ viewerId: currentUser.id, profileOwnerId: targetProf.user._id }).catch(() => {});
+
         const notifications = getItem(NOTIFICATIONS_KEY, []);
         const notifObj = {
           _id: `notif_${Date.now()}`,
@@ -547,15 +551,60 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
 
   // --- 4. PROFILE VIEWS LOG ENDPOINT ---
   if (endpoint === '/profile-views/recent') {
-    const views = getItem(VIEWS_KEY, []);
+    let views = getItem(VIEWS_KEY, []);
+
+    if (currentUser?.id) {
+      try {
+        const [fsViews, fsNotifs] = await Promise.all([
+          fetchProfileViewsFirestore(currentUser.id),
+          fetchNotificationsFirestore(currentUser.id),
+        ]);
+
+        const map = new Map();
+
+        views.forEach((v: any) => {
+          if (v.profileOwnerId === currentUser.id) {
+            const timeKey = (v.viewedAt || '').substring(0, 13);
+            map.set(`${v.viewerId}_${timeKey}`, v);
+          }
+        });
+
+        if (fsViews) {
+          fsViews.forEach((v: any) => {
+            const timeKey = (v.viewedAt || '').substring(0, 13);
+            map.set(`${v.viewerId}_${timeKey}`, v);
+          });
+        }
+
+        if (fsNotifs) {
+          fsNotifs.filter((n: any) => n.type === 'PROFILE_VIEW' && n.senderId).forEach((n: any) => {
+            const timeKey = (n.createdAt || '').substring(0, 13);
+            const key = `${n.senderId}_${timeKey}`;
+            if (!map.has(key)) {
+              map.set(key, {
+                _id: n._id || `v_${Date.now()}`,
+                viewerId: n.senderId,
+                profileOwnerId: currentUser.id,
+                viewedAt: n.createdAt || new Date().toISOString(),
+              });
+            }
+          });
+        }
+
+        views = Array.from(map.values());
+        setItem(VIEWS_KEY, views);
+      } catch (e) {}
+    }
+
     const myViews = views.filter((v: any) => v.profileOwnerId === currentUser?.id);
 
     const formattedViews = myViews.map((v: any) => {
-      const viewerProf = profiles.find((p: ProfileData) => p.user._id === v.viewerId);
+      const viewerProf = profiles.find((p: ProfileData) => p.user._id === v.viewerId || p._id === v.viewerId);
       return {
         _id: v._id,
         viewedAt: v.viewedAt,
         viewer: viewerProf ? {
+          _id: viewerProf.user._id,
           fullName: viewerProf.user.fullName,
           profileId: viewerProf.profileId,
           city: viewerProf.city,

@@ -205,7 +205,32 @@ export const respondInterestFirestore = async (docId: string, action: 'accept' |
   }
 };
 
-// 8. Notifications Firestore Sync
+// 8. Profile Views Firestore Sync
+export const saveProfileViewFirestore = async (viewData: { viewerId: string; profileOwnerId: string }) => {
+  try {
+    await addDoc(collection(db, 'profile_views'), {
+      ...viewData,
+      viewedAt: new Date().toISOString(),
+    });
+    return { success: true };
+  } catch (error: any) {
+    console.warn('Firestore profile view save warning:', error.message);
+    return { success: false };
+  }
+};
+
+export const fetchProfileViewsFirestore = async (profileOwnerId: string): Promise<any[]> => {
+  try {
+    const q = query(collection(db, 'profile_views'), where('profileOwnerId', '==', profileOwnerId));
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => ({ _id: d.id, ...d.data() }));
+  } catch (error: any) {
+    console.warn('Firestore fetch profile views warning:', error.message);
+    return [];
+  }
+};
+
+// 9. Notifications Firestore Sync
 export const sendNotificationFirestore = async (notifData: any) => {
   try {
     await addDoc(collection(db, 'notifications'), {
