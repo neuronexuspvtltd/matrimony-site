@@ -911,7 +911,8 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     const targetUserId = getAdminUserIdFromUrl(endpoint);
     const pIdx = findUserIndex(targetUserId);
     if (pIdx !== -1) {
-      const newStatus = !rawProfiles[pIdx].isVerified;
+      const currentVal = rawProfiles[pIdx].isVerified === true || rawProfiles[pIdx].user?.isVerified === true;
+      const newStatus = !currentVal;
       rawProfiles[pIdx].isVerified = newStatus;
       if (rawProfiles[pIdx].user) rawProfiles[pIdx].user.isVerified = newStatus;
       setItem(PROFILES_KEY, rawProfiles);
@@ -928,8 +929,10 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     const targetUserId = getAdminUserIdFromUrl(endpoint);
     const pIdx = findUserIndex(targetUserId);
     if (pIdx !== -1) {
-      const newStatus = !rawProfiles[pIdx].isFeatured;
+      const currentVal = rawProfiles[pIdx].isFeatured === true || (rawProfiles[pIdx].user as any)?.isFeatured === true;
+      const newStatus = !currentVal;
       rawProfiles[pIdx].isFeatured = newStatus;
+      if (rawProfiles[pIdx].user) (rawProfiles[pIdx].user as any).isFeatured = newStatus;
       setItem(PROFILES_KEY, rawProfiles);
 
       const targetId = rawProfiles[pIdx]._id || rawProfiles[pIdx].user?._id || targetUserId;
@@ -989,18 +992,17 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     const targetUserId = getAdminUserIdFromUrl(endpoint);
     const pIdx = findUserIndex(targetUserId);
     if (pIdx !== -1) {
-      const targetId = rawProfiles[pIdx]._id || rawProfiles[pIdx].user?._id || targetUserId;
-
+      const p = rawProfiles[pIdx];
       const currentDeleted = getItem(DELETED_PROFILES_KEY, []);
-      if (!currentDeleted.includes(targetId)) currentDeleted.push(targetId);
-      if (rawProfiles[pIdx].user?._id && !currentDeleted.includes(rawProfiles[pIdx].user._id)) {
-        currentDeleted.push(rawProfiles[pIdx].user._id);
-      }
+      const candidateIds = [p._id, p.user?._id, p.profileId, p.user?.email, targetUserId].filter(Boolean);
+      candidateIds.forEach((id: string) => {
+        if (!currentDeleted.includes(id)) currentDeleted.push(id);
+      });
       setItem(DELETED_PROFILES_KEY, currentDeleted);
 
       rawProfiles.splice(pIdx, 1);
       setItem(PROFILES_KEY, rawProfiles);
-      await deleteProfileFromFirestore(targetId);
+      await deleteProfileFromFirestore(candidateIds);
       return { message: 'User deleted permanently' };
     }
     throw new Error(`Member not found for ID: ${targetUserId}`);

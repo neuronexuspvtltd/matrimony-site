@@ -51,10 +51,18 @@ export const getProfileFromFirestore = async (userId: string) => {
 };
 
 // Delete Member Profile from Cloud Firestore
-export const deleteProfileFromFirestore = async (userId: string) => {
+export const deleteProfileFromFirestore = async (userId: string | string[]) => {
+  const idsToDelete = Array.isArray(userId) ? userId : [userId];
   try {
-    const profRef = doc(db, 'profiles', userId);
-    await deleteDoc(profRef);
+    for (const id of idsToDelete) {
+      if (!id) continue;
+      try {
+        const profRef = doc(db, 'profiles', id);
+        await deleteDoc(profRef);
+      } catch (e) {
+        // Continue deleting other matching ID forms
+      }
+    }
     return { success: true };
   } catch (error: any) {
     console.warn('Firestore profile delete warning:', error.message);
