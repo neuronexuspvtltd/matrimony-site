@@ -852,31 +852,77 @@ export const AdminPage: React.FC = () => {
                 <label className="block font-semibold text-gray-700 mb-1">Full Name</label>
                 <input
                   type="text"
-                  value={editingUser.fullName}
+                  value={editingUser.fullName || ''}
                   onChange={(e) => setEditingUser({ ...editingUser, fullName: e.target.value })}
                   className="w-full p-2.5 border rounded-xl"
                   required
                 />
               </div>
 
-              <div>
-                <label className="block font-semibold text-gray-700 mb-1">City</label>
-                <input
-                  type="text"
-                  value={editingUser.city}
-                  onChange={(e) => setEditingUser({ ...editingUser, city: e.target.value })}
-                  className="w-full p-2.5 border rounded-xl"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={editingUser.email || ''}
+                    onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
+                    className="w-full p-2.5 border rounded-xl"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">Mobile Phone</label>
+                  <input
+                    type="text"
+                    value={editingUser.mobile || ''}
+                    onChange={(e) => setEditingUser({ ...editingUser, mobile: e.target.value })}
+                    className="w-full p-2.5 border rounded-xl"
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className="block font-semibold text-gray-700 mb-1">Caste</label>
-                <input
-                  type="text"
-                  value={editingUser.caste}
-                  onChange={(e) => setEditingUser({ ...editingUser, caste: e.target.value })}
-                  className="w-full p-2.5 border rounded-xl"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">City</label>
+                  <input
+                    type="text"
+                    value={editingUser.city || ''}
+                    onChange={(e) => setEditingUser({ ...editingUser, city: e.target.value })}
+                    className="w-full p-2.5 border rounded-xl"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">Caste</label>
+                  <input
+                    type="text"
+                    value={editingUser.caste || ''}
+                    onChange={(e) => setEditingUser({ ...editingUser, caste: e.target.value })}
+                    className="w-full p-2.5 border rounded-xl"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">Education</label>
+                  <input
+                    type="text"
+                    value={editingUser.education || ''}
+                    onChange={(e) => setEditingUser({ ...editingUser, education: e.target.value })}
+                    className="w-full p-2.5 border rounded-xl"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">Occupation</label>
+                  <input
+                    type="text"
+                    value={editingUser.occupation || ''}
+                    onChange={(e) => setEditingUser({ ...editingUser, occupation: e.target.value })}
+                    className="w-full p-2.5 border rounded-xl"
+                  />
+                </div>
               </div>
 
               <div>
@@ -902,7 +948,7 @@ export const AdminPage: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-brand-900 text-gold-300 font-bold rounded-xl cursor-pointer"
+                  className="px-4 py-2 bg-brand-900 text-gold-300 font-bold rounded-xl cursor-pointer hover:bg-brand-950"
                 >
                   Save Changes
                 </button>

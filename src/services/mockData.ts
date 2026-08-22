@@ -55,6 +55,7 @@ export interface ProfileData {
   isVerified: boolean;
   isFeatured?: boolean;
   status?: 'active' | 'suspended';
+  fullName?: string;
   matchPercentage?: number;
   createdAt: string;
 }

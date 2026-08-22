@@ -983,24 +983,29 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     const targetUserId = getAdminUserIdFromUrl(endpoint);
     const pIdx = findUserIndex(targetUserId);
     if (pIdx !== -1) {
+      const updatedUser = {
+        ...rawProfiles[pIdx].user,
+        fullName: body.fullName !== undefined ? body.fullName : rawProfiles[pIdx].user?.fullName,
+        email: body.email !== undefined ? body.email : rawProfiles[pIdx].user?.email,
+        mobile: body.mobile !== undefined ? body.mobile : rawProfiles[pIdx].user?.mobile,
+      };
+
       rawProfiles[pIdx] = {
         ...rawProfiles[pIdx],
-        user: {
-          ...rawProfiles[pIdx].user,
-          fullName: body.fullName || rawProfiles[pIdx].user?.fullName,
-          email: body.email || rawProfiles[pIdx].user?.email,
-          mobile: body.mobile || rawProfiles[pIdx].user?.mobile,
-        },
-        city: body.city || rawProfiles[pIdx].city,
-        caste: body.caste || rawProfiles[pIdx].caste,
-        occupation: body.occupation || rawProfiles[pIdx].occupation,
-        education: body.education || rawProfiles[pIdx].education,
+        fullName: updatedUser.fullName,
+        city: body.city !== undefined ? body.city : rawProfiles[pIdx].city,
+        caste: body.caste !== undefined ? body.caste : rawProfiles[pIdx].caste,
+        occupation: body.occupation !== undefined ? body.occupation : rawProfiles[pIdx].occupation,
+        education: body.education !== undefined ? body.education : rawProfiles[pIdx].education,
         biodataVisibility: body.biodataPrivacy || rawProfiles[pIdx].biodataVisibility,
+        user: updatedUser,
       };
       setItem(PROFILES_KEY, rawProfiles);
 
-      const targetId = rawProfiles[pIdx]._id || rawProfiles[pIdx].user?._id || targetUserId;
-      await saveProfileToFirestore(targetId, rawProfiles[pIdx]);
+      const targetIds = Array.from(new Set([rawProfiles[pIdx]._id, rawProfiles[pIdx].user?._id, targetUserId].filter(Boolean)));
+      for (const tId of targetIds) {
+        await saveProfileToFirestore(tId as string, rawProfiles[pIdx]);
+      }
 
       return { message: 'User updated successfully', profile: rawProfiles[pIdx] };
     }
