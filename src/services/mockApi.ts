@@ -406,7 +406,28 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     const targetId = endpoint.replace('/profiles/', '');
 
     if (targetId === 'me' && method === 'GET') {
-      const p = profiles.find((prof: ProfileData) => prof.user._id === currentUser?.id);
+      let p: any = profiles.find((prof: ProfileData) => prof.user._id === currentUser?.id || prof._id === currentUser?.id || prof.profileId === currentUser?.profileId);
+
+      if (currentUser?.email) {
+        try {
+          const fsProf = await findProfileByEmailFirestore(currentUser.email);
+          if (fsProf) {
+            p = { ...p, ...fsProf };
+            const pIdx = profiles.findIndex((prof: ProfileData) => prof.user._id === currentUser?.id || prof.profileId === currentUser?.profileId);
+            if (pIdx !== -1 && p) {
+              profiles[pIdx] = p;
+            } else if (p) {
+              profiles.unshift(p);
+            }
+            setItem(PROFILES_KEY, profiles);
+          }
+        } catch (e) {}
+      }
+
+      if (p) {
+        p.completionPercentage = calculateCompletion(p);
+      }
+
       return p || {};
     }
 

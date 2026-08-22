@@ -23,6 +23,7 @@ export const DashboardPage: React.FC = () => {
   const { t, language } = useLanguage();
   const { user, profile, refreshUser } = useAuth();
 
+  const [dbProfile, setDbProfile] = useState<any>(null);
   const [recentViews, setRecentViews] = useState<any[]>([]);
   const [recommendedMatches, setRecommendedMatches] = useState<any[]>([]);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -35,6 +36,15 @@ export const DashboardPage: React.FC = () => {
 
   useEffect(() => {
     if (!user) return;
+
+    // Fetch fresh profile data directly from Cloud Firestore DB
+    fetchApi('/profiles/me')
+      .then((res) => {
+        if (res && res.profileId) {
+          setDbProfile(res);
+        }
+      })
+      .catch((err) => console.error(err));
 
     // Fetch profile views log
     fetchApi('/profile-views/recent')
@@ -80,6 +90,10 @@ export const DashboardPage: React.FC = () => {
         body: JSON.stringify({ primaryPhoto: photoUrl }),
       });
       alert(language === 'EN' ? 'Profile photo uploaded successfully to Firebase Storage!' : 'प्रोफाईल फोटो बदलला व सेव्ह झाला!');
+      const updated = await fetchApi('/profiles/me');
+      if (updated && updated.profileId) {
+        setDbProfile(updated);
+      }
       await refreshUser();
     } catch (err: any) {
       alert(err.message || 'Failed to upload photo');
@@ -100,7 +114,7 @@ export const DashboardPage: React.FC = () => {
   }
 
   // Active user profile or safe fallback
-  const userProfile = profile || {
+  const userProfile = dbProfile || profile || {
     profileId: user.profileId || 'PB-10030',
     city: 'Pune',
     state: 'Maharashtra',
