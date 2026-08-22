@@ -110,21 +110,43 @@ export const LandingPage: React.FC = () => {
 
           {/* Primary Action Buttons */}
           <div className="pt-6 flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
-            <Link
-              to="/register"
-              className="w-full sm:w-auto px-9 py-4 rounded-2xl bg-gold-400 text-brand-950 font-bold hover:bg-gold-300 shadow-2xl hover:scale-105 transition-all text-sm flex items-center justify-center gap-2 group"
-            >
-              <span>{t('heroCtaRegister')}</span>
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
+            {user ? (
+              <>
+                <Link
+                  to="/dashboard"
+                  className="w-full sm:w-auto px-9 py-4 rounded-2xl bg-gold-400 text-brand-950 font-bold hover:bg-gold-300 shadow-2xl hover:scale-105 transition-all text-sm flex items-center justify-center gap-2 group"
+                >
+                  <span>{language === 'EN' ? 'My Dashboard' : 'माझे डॅशबोर्ड'}</span>
+                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
 
-            <Link
-              to="/search"
-              className="w-full sm:w-auto px-9 py-4 rounded-2xl bg-black/40 border-2 border-white/80 text-white font-semibold hover:bg-white/20 backdrop-blur-md transition-all text-sm flex items-center justify-center gap-2"
-            >
-              <Search className="w-4 h-4 text-gold-300" />
-              <span>{t('heroCtaExplore')}</span>
-            </Link>
+                <Link
+                  to="/search"
+                  className="w-full sm:w-auto px-9 py-4 rounded-2xl bg-black/40 border-2 border-white/80 text-white font-semibold hover:bg-white/20 backdrop-blur-md transition-all text-sm flex items-center justify-center gap-2"
+                >
+                  <Search className="w-4 h-4 text-gold-300" />
+                  <span>{t('heroCtaExplore')}</span>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/register"
+                  className="w-full sm:w-auto px-9 py-4 rounded-2xl bg-gold-400 text-brand-950 font-bold hover:bg-gold-300 shadow-2xl hover:scale-105 transition-all text-sm flex items-center justify-center gap-2 group"
+                >
+                  <span>{t('heroCtaRegister')}</span>
+                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
+
+                <Link
+                  to="/search"
+                  className="w-full sm:w-auto px-9 py-4 rounded-2xl bg-black/40 border-2 border-white/80 text-white font-semibold hover:bg-white/20 backdrop-blur-md transition-all text-sm flex items-center justify-center gap-2"
+                >
+                  <Search className="w-4 h-4 text-gold-300" />
+                  <span>{t('heroCtaExplore')}</span>
+                </Link>
+              </>
+            )}
           </div>
 
         </div>
@@ -371,18 +393,37 @@ export const LandingPage: React.FC = () => {
             </p>
 
             <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link
-                to="/register"
-                className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gold-400 text-brand-950 font-bold hover:bg-gold-300 shadow-md transition-all"
-              >
-                {t('heroCtaRegister')}
-              </Link>
-              <Link
-                to="/search"
-                className="w-full sm:w-auto px-8 py-4 rounded-xl border border-gold-400/50 text-gold-300 font-semibold hover:bg-white/10 transition-colors"
-              >
-                {t('heroCtaExplore')}
-              </Link>
+              {user ? (
+                <>
+                  <Link
+                    to="/dashboard"
+                    className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gold-400 text-brand-950 font-bold hover:bg-gold-300 shadow-md transition-all"
+                  >
+                    {language === 'EN' ? 'Go to Dashboard' : 'डॅशबोर्डवर जा'}
+                  </Link>
+                  <Link
+                    to="/search"
+                    className="w-full sm:w-auto px-8 py-4 rounded-xl border border-gold-400/50 text-gold-300 font-semibold hover:bg-white/10 transition-colors"
+                  >
+                    {t('heroCtaExplore')}
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/register"
+                    className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gold-400 text-brand-950 font-bold hover:bg-gold-300 shadow-md transition-all"
+                  >
+                    {t('heroCtaRegister')}
+                  </Link>
+                  <Link
+                    to="/search"
+                    className="w-full sm:w-auto px-8 py-4 rounded-xl border border-gold-400/50 text-gold-300 font-semibold hover:bg-white/10 transition-colors"
+                  >
+                    {t('heroCtaExplore')}
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
