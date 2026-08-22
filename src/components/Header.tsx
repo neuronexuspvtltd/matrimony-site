@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
+import { fetchApi } from '../services/api';
 import {
   Heart,
   Search,
@@ -25,8 +26,21 @@ export const Header: React.FC = () => {
   const { notifications, unreadCount, markAllAsRead, clearAllNotifications } = useNotifications();
   const [notifDropdownOpen, setNotifDropdownOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [msgUnreadCount, setMsgUnreadCount] = useState<number>(0);
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    if (!user) return;
+    const checkMsgUnread = () => {
+      fetchApi('/messages/unread-count')
+        .then((res) => setMsgUnreadCount(res.unreadCount || 0))
+        .catch(() => {});
+    };
+    checkMsgUnread();
+    const interval = setInterval(checkMsgUnread, 4000);
+    return () => clearInterval(interval);
+  }, [user, location.pathname]);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -80,12 +94,22 @@ export const Header: React.FC = () => {
 
                 <Link
                   to="/messages"
-                  className={`px-3 py-2 rounded-xl text-xs lg:text-sm font-medium whitespace-nowrap flex items-center gap-1.5 transition-colors ${
+                  className={`px-3 py-2 rounded-xl text-xs lg:text-sm font-medium whitespace-nowrap flex items-center gap-1.5 transition-colors relative ${
                     isActive('/messages') ? 'bg-brand-50 text-brand-900 font-bold' : 'text-gray-700 hover:text-brand-900 hover:bg-ivory-200'
                   }`}
                 >
-                  <MessageSquare className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-gold-600 shrink-0" />
+                  <div className="relative">
+                    <MessageSquare className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-gold-600 shrink-0" />
+                    {msgUnreadCount > 0 && !isActive('/messages') && (
+                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-600 rounded-full ring-2 ring-white animate-pulse" />
+                    )}
+                  </div>
                   <span>{t('navMessages')}</span>
+                  {msgUnreadCount > 0 && !isActive('/messages') && (
+                    <span className="bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full min-w-[16px] text-center shadow-xs">
+                      {msgUnreadCount}
+                    </span>
+                  )}
                 </Link>
               </>
             ) : (

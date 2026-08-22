@@ -28,9 +28,6 @@ export const MessagesPage: React.FC = () => {
     try {
       const data = await fetchApi('/messages/conversations');
       setConversations(data || []);
-      if (data && data.length > 0 && !activeConv) {
-        setActiveConv(data[0]);
-      }
     } catch (err) {
       console.error(err);
     } finally {

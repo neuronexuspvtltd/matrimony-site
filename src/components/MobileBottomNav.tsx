@@ -69,8 +69,8 @@ export const MobileBottomNav: React.FC = () => {
                 title={t('navMessages')}
               >
                 <MessageSquare className="w-5 h-5 stroke-[2.5]" />
-                {msgUnreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-emerald-600 text-white font-bold text-[10px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-md animate-pulse">
+                {msgUnreadCount > 0 && !isActive('/messages') && (
+                  <span className="absolute -top-1 -right-1 bg-red-600 text-white font-bold text-[10px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-md animate-pulse">
                     {msgUnreadCount > 9 ? '9+' : msgUnreadCount}
                   </span>
                 )}
