@@ -148,11 +148,11 @@ export const MessagesPage: React.FC = () => {
                     activeConv?._id === conv._id ? 'bg-white border-l-4 border-brand-900 shadow-xs' : ''
                   }`}
                 >
-                  <div className="w-11 h-11 rounded-full bg-brand-900 text-gold-300 font-bold text-sm flex items-center justify-center overflow-hidden shrink-0">
+                  <div className="w-11 h-11 rounded-full bg-slate-100 text-slate-400 font-bold text-sm flex items-center justify-center overflow-hidden shrink-0 border border-slate-200">
                     {conv.partner?.primaryPhoto ? (
                       <img src={conv.partner.primaryPhoto} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      conv.partner?.fullName?.charAt(0) || 'M'
+                      <User className="w-6 h-6 text-slate-400 stroke-[1.5]" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -201,11 +201,11 @@ export const MessagesPage: React.FC = () => {
                     <ArrowLeft className="w-5 h-5 text-brand-900" />
                   </button>
 
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-brand-900 text-gold-300 font-bold text-xs flex items-center justify-center overflow-hidden shrink-0">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-100 text-slate-400 font-bold text-xs flex items-center justify-center overflow-hidden shrink-0 border border-slate-200">
                     {activeConv.partner?.primaryPhoto ? (
                       <img src={activeConv.partner.primaryPhoto} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      activeConv.partner?.fullName?.charAt(0) || 'M'
+                      <User className="w-5 h-5 text-slate-400 stroke-[1.5]" />
                     )}
                   </div>
                   <div>

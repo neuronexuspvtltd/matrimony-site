@@ -292,9 +292,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       occupation: occupation || 'Software Engineer',
       income: '₹12 - ₹15 Lakhs p.a.',
       aboutMe: `Namaste! I am ${fullName}, working in ${city}. Looking for a cultured and understanding life partner.`,
-      primaryPhoto: gender === 'female' 
-        ? 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=600&q=80'
-        : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80',
+      primaryPhoto: '',
       photos: [],
       biodataUrl: '',
       biodataFileName: '',

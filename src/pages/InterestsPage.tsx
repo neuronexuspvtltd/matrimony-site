@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { fetchApi } from '../services/api';
-import { Heart, Check, X, MessageSquare, ShieldCheck } from 'lucide-react';
+import { Heart, Check, X, MessageSquare, ShieldCheck, User } from 'lucide-react';
 
 export const InterestsPage: React.FC = () => {
   const { t, language } = useLanguage();
@@ -159,11 +159,11 @@ export const InterestsPage: React.FC = () => {
               className="bg-white rounded-2xl border border-ivory-300 p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm hover:shadow-md transition-all"
             >
               <div className="flex items-center gap-4 text-center sm:text-left">
-                <div className="w-14 h-14 rounded-2xl bg-brand-900/10 text-brand-900 font-serif font-bold text-xl flex items-center justify-center overflow-hidden shrink-0">
+                <div className="w-14 h-14 rounded-2xl bg-slate-100 text-slate-400 font-serif font-bold text-xl flex items-center justify-center overflow-hidden shrink-0 border border-slate-200">
                   {item.user?.primaryPhoto ? (
                     <img src={item.user.primaryPhoto} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    item.user?.fullName?.charAt(0) || 'M'
+                    <User className="w-7 h-7 text-slate-400 stroke-[1.5]" />
                   )}
                 </div>
 

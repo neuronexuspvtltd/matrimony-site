@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { fetchApi } from '../services/api';
-import { Heart, Star, MapPin, GraduationCap, Briefcase, ShieldCheck, FileText, Lock } from 'lucide-react';
+import { Heart, Star, MapPin, GraduationCap, Briefcase, ShieldCheck, FileText, Lock, User } from 'lucide-react';
 
 interface ProfileCardProps {
   profile: {
@@ -118,11 +118,11 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile }) => {
             }`}
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-ivory-200 to-ivory-300 text-brand-900">
-            <div className="w-16 h-16 rounded-full bg-brand-900/10 flex items-center justify-center font-serif text-2xl font-bold text-brand-900 mb-1">
-              {fullName.charAt(0)}
+          <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-slate-400 select-none">
+            <div className="w-20 h-20 rounded-full bg-slate-200/90 flex items-center justify-center border border-slate-300/60 shadow-inner">
+              <User className="w-12 h-12 text-slate-400 stroke-[1.5]" />
             </div>
-            <span className="text-xs text-gray-500 font-medium">Photo Protected</span>
+            <span className="text-[10px] text-slate-400 font-semibold mt-2 tracking-wide uppercase">No Photo Uploaded</span>
           </div>
         )}
 

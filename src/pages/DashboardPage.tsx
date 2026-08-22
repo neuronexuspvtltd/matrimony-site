@@ -247,11 +247,11 @@ export const DashboardPage: React.FC = () => {
             {recentViews.map((item) => (
               <div key={item._id} className="py-3 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-brand-900/10 text-brand-900 font-bold text-xs flex items-center justify-center overflow-hidden">
+                  <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-400 font-bold text-xs flex items-center justify-center overflow-hidden border border-slate-200">
                     {item.viewer?.primaryPhoto ? (
                       <img src={item.viewer.primaryPhoto} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      item.viewer?.fullName?.charAt(0) || 'U'
+                      <User className="w-5 h-5 text-slate-400 stroke-[1.5]" />
                     )}
                   </div>
                   <div>

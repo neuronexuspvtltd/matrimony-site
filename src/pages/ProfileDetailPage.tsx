@@ -12,6 +12,7 @@ import {
   GraduationCap,
   Briefcase,
   User as UserIcon,
+  User,
   ShieldCheck,
   Share2,
   Flag,
@@ -174,8 +175,9 @@ export const ProfileDetailPage: React.FC = () => {
                 {profile.primaryPhoto ? (
                   <img src={profile.primaryPhoto} alt={fullName} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center font-serif text-4xl font-bold text-brand-900 bg-ivory-100">
-                    {fullName.charAt(0)}
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-slate-400 select-none">
+                    <User className="w-16 h-16 text-slate-400 stroke-[1.5]" />
+                    <span className="text-[10px] text-slate-400 font-semibold mt-1">No Photo</span>
                   </div>
                 )}
 
