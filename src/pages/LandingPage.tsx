@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import { fetchApi } from '../services/api';
 import { ProfileCard } from '../components/ProfileCard';
 import cinematicHero from '../assets/cinematic_hero.jpg';
@@ -19,10 +20,12 @@ import {
   Star,
   Award,
   Quote,
+  Lock,
 } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
   const { t, language } = useLanguage();
+  const { user } = useAuth();
   const [featuredProfiles, setFeaturedProfiles] = useState<any[]>([]);
 
   useEffect(() => {
@@ -275,6 +278,34 @@ export const LandingPage: React.FC = () => {
       {/* Featured Profiles */}
       {featuredProfiles.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          {/* Guest Privacy Banner */}
+          {!user && (
+            <div className="mb-8 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-brand-950 via-brand-900 to-brand-950 text-ivory-100 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md border border-gold-400/30">
+              <div className="flex items-center gap-3.5 text-center sm:text-left">
+                <div className="w-10 h-10 rounded-full bg-gold-400 text-brand-950 flex items-center justify-center shrink-0 shadow-sm">
+                  <Lock className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-serif font-bold text-gold-300 text-sm sm:text-base">
+                    {language === 'MR' ? '🔒 सदस्यांच्या गोपनीयतेसाठी सुरक्षित प्रोफाईल्स' : '🔒 Privacy Protected Member Profiles'}
+                  </h4>
+                  <p className="text-xs text-ivory-200 mt-0.5">
+                    {language === 'MR' ? 'संपूर्ण प्रोफाईल आणि फोटो पाहण्यासाठी कृपया साइन इन करा किंवा मोफत नोंदणी करा.' : 'Full profile details, photos, and contact options are visible exclusively to signed-in members.'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-center">
+                <Link to="/login" className="px-5 py-2.5 bg-gold-400 text-brand-950 font-bold text-xs rounded-xl hover:bg-gold-300 transition-all shadow-sm">
+                  {language === 'MR' ? 'लॉगिन करा' : 'Sign In'}
+                </Link>
+                <Link to="/register" className="px-5 py-2.5 bg-brand-800 text-gold-300 font-bold text-xs rounded-xl border border-gold-400/30 hover:bg-brand-700 transition-all">
+                  {language === 'MR' ? 'मोफत नोंदणी' : 'Register Free'}
+                </Link>
+              </div>
+            </div>
+          )}
+
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-10">
             <div>
               <h2 className="font-serif text-3xl font-bold text-brand-950">
