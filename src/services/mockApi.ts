@@ -358,7 +358,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
   // --- 2. SEARCH & PROFILES ENDPOINTS ---
   if (endpoint === '/search/featured') {
     return profiles
-      .filter((p: any) => p.isFeatured && p.status !== 'suspended' && p.status !== 'deleted' && (p as any).isDeleted !== true)
+      .filter((p: any) => p.isFeatured && p.status !== 'suspended' && p.status !== 'deleted' && (p as any).isDeleted !== true && (currentUser ? (p.user._id !== currentUser.id && p._id !== currentUser.id && p.profileId !== currentUser.profileId) : true))
       .slice(0, 6);
   }
 
@@ -376,6 +376,8 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     const filtered = profiles.filter((p: any) => {
       // Exclude suspended or deleted profiles from public site views
       if (p.status === 'suspended' || p.status === 'deleted' || (p as any).isDeleted === true) return false;
+      // Exclude currently logged in user's own profile from match search results
+      if (currentUser && (p.user._id === currentUser.id || p._id === currentUser.id || p.profileId === currentUser.profileId)) return false;
       if (gender && p.gender !== gender) return false;
       if (p.age < minAge || p.age > maxAge) return false;
       if (city && city !== 'All' && !p.city.toLowerCase().includes(city.toLowerCase())) return false;
