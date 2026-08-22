@@ -259,7 +259,7 @@ export const MessagesPage: React.FC = () => {
                   value={newMsg}
                   onChange={(e) => setNewMsg(e.target.value)}
                   placeholder={language === 'EN' ? 'Type a respectful message...' : 'येथे संदेश लिहा...'}
-                  className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 text-xs focus:ring-2 focus:ring-brand-900"
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 text-base sm:text-xs focus:ring-2 focus:ring-brand-900"
                 />
                 <button
                   type="submit"
