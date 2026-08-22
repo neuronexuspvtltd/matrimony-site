@@ -591,37 +591,61 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
   }
 
   if (endpoint === '/interests/respond' && method === 'POST') {
-    const { interestId, action } = body;
+    const { interestId, action, senderId: reqSenderId } = body;
     let interests = getItem(INTERESTS_KEY, []);
 
-    let targetItem = interests.find((i: any) => i._id === interestId || i.id === interestId);
+    let targetItem = interests.find(
+      (i: any) =>
+        i._id === interestId ||
+        i.id === interestId ||
+        (reqSenderId && (i.senderId === reqSenderId || i.receiverId === reqSenderId))
+    );
 
     // Query Cloud Firestore interests if not found in local storage
     if (!targetItem && currentUser?.id) {
       try {
         const fsInterests = await fetchInterestsFirestore(currentUser.id);
-        targetItem = fsInterests.find((i: any) => i._id === interestId || i.id === interestId);
+        targetItem = fsInterests.find(
+          (i: any) =>
+            i._id === interestId ||
+            i.id === interestId ||
+            (reqSenderId && (i.senderId === reqSenderId || i.receiverId === reqSenderId))
+        );
       } catch (e) {}
     }
 
     const newStatus = action === 'accept' ? 'accepted' : 'rejected';
-    const senderId = targetItem?.senderId || '';
+    const senderId = reqSenderId || targetItem?.senderId || '';
     const receiverId = targetItem?.receiverId || currentUser?.id || '';
 
     // Update local storage
-    const idx = interests.findIndex((i: any) => i._id === interestId || i.id === interestId);
-    if (idx !== -1) {
-      interests[idx].status = newStatus;
-    } else if (targetItem) {
-      targetItem.status = newStatus;
-      interests.unshift(targetItem);
+    let updatedAny = false;
+    interests = interests.map((i: any) => {
+      if (
+        i._id === interestId ||
+        i.id === interestId ||
+        (senderId && receiverId && ((i.senderId === senderId && i.receiverId === receiverId) || (i.senderId === receiverId && i.receiverId === senderId)))
+      ) {
+        updatedAny = true;
+        return { ...i, status: newStatus };
+      }
+      return i;
+    });
+
+    if (!updatedAny && (senderId || targetItem)) {
+      const newItem = targetItem ? { ...targetItem, status: newStatus } : {
+        _id: interestId || `int_${Date.now()}`,
+        senderId,
+        receiverId,
+        status: newStatus,
+        createdAt: new Date().toISOString(),
+      };
+      interests.unshift(newItem);
     }
     setItem(INTERESTS_KEY, interests);
 
-    // Update Cloud Firestore in real time!
-    respondInterestFirestore(interestId, action, senderId, receiverId).catch((err) =>
-      console.warn('Firestore respond interest error:', err)
-    );
+    // Await Cloud Firestore update in real time!
+    await respondInterestFirestore(interestId, action, senderId, receiverId);
 
     if (action === 'accept' && senderId && currentUser?.id) {
       const convId = `conv_${[senderId, currentUser.id].sort().join('_')}`;
@@ -657,6 +681,16 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       notifications.unshift(notifObj);
       setItem(NOTIFICATIONS_KEY, notifications);
       sendNotificationFirestore(notifObj).catch(() => {});
+    }
+
+    // If rejected/declined, remove any active conversation between sender & receiver so they cannot message!
+    if (action === 'reject' && senderId && currentUser?.id) {
+      let conversations = getItem(CONVERSATIONS_KEY, []);
+      conversations = conversations.filter(
+        (c: any) =>
+          !(c.participants && c.participants.includes(senderId) && c.participants.includes(currentUser.id))
+      );
+      setItem(CONVERSATIONS_KEY, conversations);
     }
 
     return { message: `Interest ${action}ed`, interest: targetItem };

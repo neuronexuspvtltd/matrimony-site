@@ -163,25 +163,30 @@ export const fetchInterestsFirestore = async (userId: string): Promise<any[]> =>
 export const respondInterestFirestore = async (docId: string, action: 'accept' | 'reject', senderId: string, receiverId: string) => {
   try {
     const newStatus = action === 'accept' ? 'accepted' : 'rejected';
-    
-    // Update document by docId or query by sender/receiver
-    try {
-      const reqRef = doc(db, 'connection_requests', docId);
-      await setDoc(reqRef, { status: newStatus }, { merge: true });
-    } catch (e) {
-      if (senderId && receiverId) {
-        const q = query(
-          collection(db, 'connection_requests'),
-          where('senderId', '==', senderId),
-          where('receiverId', '==', receiverId)
-        );
-        const snap = await getDocs(q);
-        if (!snap.empty) {
-          await setDoc(doc(db, 'connection_requests', snap.docs[0].id), { status: newStatus }, { merge: true });
-        }
-      }
+
+    // 1. Try updating by direct docId reference
+    if (docId) {
+      try {
+        const reqRef = doc(db, 'connection_requests', docId);
+        await setDoc(reqRef, { status: newStatus }, { merge: true });
+      } catch (e) {}
     }
 
+    // 2. Query all matching connection requests between sender and receiver in both directions
+    if (senderId && receiverId) {
+      const colRef = collection(db, 'connection_requests');
+      const q1 = query(colRef, where('senderId', '==', senderId), where('receiverId', '==', receiverId));
+      const q2 = query(colRef, where('senderId', '==', receiverId), where('receiverId', '==', senderId));
+      const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+
+      const updatePromises: Promise<any>[] = [];
+      [...snap1.docs, ...snap2.docs].forEach((docSnap) => {
+        updatePromises.push(setDoc(doc(db, 'connection_requests', docSnap.id), { status: newStatus }, { merge: true }));
+      });
+      await Promise.all(updatePromises);
+    }
+
+    // 3. If accepted, create conversation in Cloud Firestore
     if (action === 'accept' && senderId && receiverId) {
       const convId = `conv_${[senderId, receiverId].sort().join('_')}`;
       const convRef = doc(db, 'conversations', convId);
@@ -192,6 +197,7 @@ export const respondInterestFirestore = async (docId: string, action: 'accept' |
         lastMessageAt: new Date().toISOString(),
       }, { merge: true });
     }
+
     return { success: true };
   } catch (error: any) {
     console.warn('Firestore respond interest warning:', error.message);

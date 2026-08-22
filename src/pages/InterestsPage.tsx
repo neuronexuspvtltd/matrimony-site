@@ -30,12 +30,12 @@ export const InterestsPage: React.FC = () => {
     fetchInterests();
   }, []);
 
-  const handleRespond = async (interestId: string, action: 'accept' | 'reject') => {
+  const handleRespond = async (interestId: string, action: 'accept' | 'reject', senderId?: string) => {
     try {
-      // Instantly remove from pending received list in UI
+      // Instantly update received list in UI
       setAllReceived((prev) =>
         prev.map((item) =>
-          (item._id === interestId || item.id === interestId)
+          (item._id === interestId || item.id === interestId || (senderId && (item.senderId === senderId || item.user?._id === senderId)))
             ? { ...item, status: action === 'accept' ? 'accepted' : 'rejected' }
             : item
         )
@@ -43,14 +43,20 @@ export const InterestsPage: React.FC = () => {
 
       await fetchApi('/interests/respond', {
         method: 'POST',
-        body: JSON.stringify({ interestId, action }),
+        body: JSON.stringify({ interestId, action, senderId }),
       });
 
       if (action === 'accept') {
         alert(
           language === 'EN'
-            ? 'Interest accepted! You can now chat in Messages.'
-            : 'आवड स्वीकारली! तुम्ही आता संदेश पाठवू शकता.'
+            ? '🎉 Interest accepted! You can now chat in Messages.'
+            : '🎉 आवड स्वीकारली! तुम्ही आता मेसेज मध्ये गप्पा मारू शकता.'
+        );
+      } else {
+        alert(
+          language === 'EN'
+            ? 'Interest request declined.'
+            : 'विनंती नाकारली.'
         );
       }
 
@@ -195,14 +201,14 @@ export const InterestsPage: React.FC = () => {
                 {tab === 'received' && item.status === 'pending' && (
                   <>
                     <button
-                      onClick={() => handleRespond(item._id || item.id, 'accept')}
+                      onClick={() => handleRespond(item._id || item.id, 'accept', item.senderId || item.user?._id || item.user?.id)}
                       className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs"
                     >
                       <Check className="w-4 h-4" />
                       <span>{t('accept')}</span>
                     </button>
                     <button
-                      onClick={() => handleRespond(item._id || item.id, 'reject')}
+                      onClick={() => handleRespond(item._id || item.id, 'reject', item.senderId || item.user?._id || item.user?.id)}
                       className="px-4 py-2 border border-gray-300 hover:bg-gray-100 text-gray-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
                     >
                       <X className="w-4 h-4 text-red-500" />
