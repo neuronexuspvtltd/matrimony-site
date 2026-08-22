@@ -821,14 +821,34 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
 
   // --- 8. MESSAGING ENDPOINTS (Cloud Firestore Synced) ---
   if (endpoint === '/messages/unread-count') {
-    const messages = getItem(MESSAGES_KEY, []);
-    const count = messages.filter((m: any) => m.senderId !== currentUser?.id && !m.isRead).length;
+    let allMessages = getItem(MESSAGES_KEY, []);
+    let conversations = getItem(CONVERSATIONS_KEY, []);
+    if (currentUser?.id) {
+      try {
+        const fsConvs = await fetchConversationsFirestore(currentUser.id);
+        const myConvs = fsConvs.filter((c: any) => c.participants && c.participants.includes(currentUser.id));
+        const fsMsgPromises = myConvs.map((c: any) => fetchMessagesFirestore(c._id || c.id).catch(() => []));
+        const fsMsgResults = await Promise.all(fsMsgPromises);
+        const mMap = new Map();
+        [...allMessages, ...fsMsgResults.flat()].forEach((m: any) => {
+          if (m && m.senderId) {
+            const timeKey = Math.floor(new Date(m.createdAt || Date.now()).getTime() / 5000);
+            const dedupKey = m._id || `${m.senderId}_${m.content}_${timeKey}`;
+            if (!mMap.has(dedupKey)) {
+              mMap.set(dedupKey, { ...m, _id: m._id || dedupKey });
+            }
+          }
+        });
+        allMessages = Array.from(mMap.values());
+      } catch (e) {}
+    }
+    const count = allMessages.filter((m: any) => m.senderId !== currentUser?.id && m.isRead !== true).length;
     return { unreadCount: count };
   }
 
   if (endpoint === '/messages/conversations') {
     let conversations = getItem(CONVERSATIONS_KEY, []);
-    const allMessages = getItem(MESSAGES_KEY, []);
+    let allMessages = getItem(MESSAGES_KEY, []);
 
     if (currentUser?.id) {
       try {
@@ -839,6 +859,23 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
           conversations = Array.from(cMap.values());
           setItem(CONVERSATIONS_KEY, conversations);
         }
+
+        // Fetch Firestore messages for conversations to accurately compute unread badges
+        const fsMsgPromises = conversations.map((c: any) => fetchMessagesFirestore(c._id || c.id).catch(() => []));
+        const fsMsgResults = await Promise.all(fsMsgPromises);
+        
+        const mMap = new Map();
+        [...allMessages, ...fsMsgResults.flat()].forEach((m: any) => {
+          if (m && m.senderId) {
+            const timeKey = Math.floor(new Date(m.createdAt || Date.now()).getTime() / 5000);
+            const dedupKey = m._id || `${m.senderId}_${m.content}_${timeKey}`;
+            if (!mMap.has(dedupKey)) {
+              mMap.set(dedupKey, { ...m, _id: m._id || dedupKey });
+            }
+          }
+        });
+        allMessages = Array.from(mMap.values());
+        setItem(MESSAGES_KEY, allMessages);
       } catch (e) {}
     }
 
@@ -850,7 +887,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       const partnerProf = profiles.find((p: ProfileData) => p.user._id === partnerId || p._id === partnerId);
 
       const unreadCount = allMessages.filter(
-        (m: any) => m.conversationId === convId && m.senderId !== currentUser?.id && !m.isRead
+        (m: any) => (m.conversationId === convId || m.id === convId) && m.senderId !== currentUser?.id && m.isRead !== true
       ).length;
 
       return {

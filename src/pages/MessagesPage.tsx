@@ -54,6 +54,8 @@ export const MessagesPage: React.FC = () => {
 
   useEffect(() => {
     fetchConversations();
+    const interval = setInterval(fetchConversations, 3000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
