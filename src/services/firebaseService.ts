@@ -51,18 +51,37 @@ export const getProfileFromFirestore = async (userId: string) => {
 };
 
 // Delete Member Profile from Cloud Firestore
-export const deleteProfileFromFirestore = async (userId: string | string[]) => {
-  const idsToDelete = Array.isArray(userId) ? userId : [userId];
+export const deleteProfileFromFirestore = async (userIdOrEmail: string | string[]) => {
+  const targets = Array.isArray(userIdOrEmail) ? userIdOrEmail : [userIdOrEmail];
   try {
-    for (const id of idsToDelete) {
-      if (!id) continue;
-      try {
-        const profRef = doc(db, 'profiles', id);
-        await deleteDoc(profRef);
-      } catch (e) {
-        // Continue deleting other matching ID forms
+    const profsRef = collection(db, 'profiles');
+    const snapshot = await getDocs(profsRef);
+    const deletePromises: Promise<any>[] = [];
+
+    snapshot.docs.forEach((docSnap) => {
+      const data = docSnap.data();
+      const docId = docSnap.id;
+      const uId = data.user?._id || data._id;
+      const pId = data.profileId;
+      const email = data.user?.email?.toLowerCase();
+
+      const isMatch = targets.some((t) => {
+        if (!t) return false;
+        const targetLower = t.toLowerCase();
+        return (
+          docId === t ||
+          uId === t ||
+          pId === t ||
+          (email && email === targetLower)
+        );
+      });
+
+      if (isMatch) {
+        deletePromises.push(deleteDoc(doc(db, 'profiles', docSnap.id)));
       }
-    }
+    });
+
+    await Promise.all(deletePromises);
     return { success: true };
   } catch (error: any) {
     console.warn('Firestore profile delete warning:', error.message);

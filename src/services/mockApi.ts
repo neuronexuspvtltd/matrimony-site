@@ -96,14 +96,27 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
   // Sync fresh accounts from Cloud Firestore so logins & search work across all laptops, phones & devices!
   try {
     const firestoreProfiles = await fetchProfilesFromFirestore();
-    if (firestoreProfiles && firestoreProfiles.length > 0) {
-      firestoreProfiles.forEach((fProf: any) => {
-        if (!fProf.user?.email) return;
-        if (fProf.isDeleted === true || fProf.status === 'deleted') return;
+    if (firestoreProfiles && Array.isArray(firestoreProfiles)) {
+      const activeFirestoreProfiles = firestoreProfiles.filter(
+        (fProf: any) => fProf.user?.email && fProf.isDeleted !== true && fProf.status !== 'deleted'
+      );
 
+      const fEmails = new Set(activeFirestoreProfiles.map((f: any) => f.user?.email?.toLowerCase()).filter(Boolean));
+      const fIds = new Set(activeFirestoreProfiles.map((f: any) => f._id || f.user?._id).filter(Boolean));
+
+      // Purge any local profiles that no longer exist in Cloud Firestore DB!
+      rawProfiles = rawProfiles.filter((p: any) => {
+        const pEmail = p.user?.email?.toLowerCase();
+        const pId = p._id || p.user?._id;
+        return (pEmail && fEmails.has(pEmail)) || (pId && fIds.has(pId));
+      });
+
+      // Merge fresh profiles from Cloud Firestore
+      activeFirestoreProfiles.forEach((fProf: any) => {
+        const fId = fProf._id || fProf.user?._id;
         const isDel = deletedIds.some((dId: string) => 
           dId && (
-            dId === fProf._id || 
+            dId === fId || 
             dId === fProf.user?._id || 
             dId === fProf.profileId || 
             (fProf.user?.email && dId.toLowerCase() === fProf.user.email.toLowerCase())
@@ -116,15 +129,15 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
         );
         if (idx !== -1) {
           rawProfiles[idx] = { 
-            ...fProf, 
-            ...rawProfiles[idx], // Preserve local updates
-            isVerified: rawProfiles[idx].isVerified ?? fProf.isVerified ?? fProf.user?.isVerified ?? false,
-            isFeatured: rawProfiles[idx].isFeatured ?? fProf.isFeatured ?? false,
+            ...rawProfiles[idx], 
+            ...fProf, // FIRESTORE OVERRIDES LOCAL STALE DATA
+            isVerified: fProf.isVerified ?? fProf.user?.isVerified ?? rawProfiles[idx].isVerified ?? false,
+            isFeatured: fProf.isFeatured ?? rawProfiles[idx].isFeatured ?? false,
             user: {
-              ...fProf.user,
               ...rawProfiles[idx].user,
-              isVerified: rawProfiles[idx].user?.isVerified ?? rawProfiles[idx].isVerified ?? fProf.user?.isVerified ?? false,
-              status: rawProfiles[idx].user?.status || rawProfiles[idx].status || fProf.user?.status || fProf.status || 'active',
+              ...fProf.user,
+              isVerified: fProf.user?.isVerified ?? fProf.isVerified ?? rawProfiles[idx].user?.isVerified ?? false,
+              status: fProf.user?.status || fProf.status || rawProfiles[idx].user?.status || rawProfiles[idx].status || 'active',
             }
           };
         } else {
