@@ -1169,6 +1169,24 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     method === 'GET'
   ) {
     const searchQ = new URLSearchParams(endpoint.split('?')[1] || '').get('search')?.toLowerCase();
+    
+    // Sync fresh profiles from Cloud Firestore
+    try {
+      const fsProfiles = await fetchProfilesFromFirestore();
+      if (fsProfiles && fsProfiles.length > 0) {
+        const map = new Map();
+        [...rawProfiles, ...fsProfiles].forEach((p: any) => {
+          const key = p._id || p.user?._id || p.profileId || p.user?.email;
+          if (key) {
+            const existing = map.get(key);
+            map.set(key, existing ? { ...existing, ...p } : p);
+          }
+        });
+        rawProfiles = Array.from(map.values());
+        setItem(PROFILES_KEY, rawProfiles);
+      }
+    } catch (e) {}
+
     let filtered = rawProfiles;
     if (searchQ) {
       filtered = rawProfiles.filter(
@@ -1202,7 +1220,15 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
 
   if (endpoint.includes('/admin/users/') && endpoint.endsWith('/verify') && (method === 'PUT' || method === 'POST')) {
     const targetUserId = getAdminUserIdFromUrl(endpoint);
-    const pIdx = findUserIndex(targetUserId);
+    let pIdx = findUserIndex(targetUserId);
+    if (pIdx === -1) {
+      const fsProfiles = await fetchProfilesFromFirestore();
+      if (fsProfiles && fsProfiles.length > 0) {
+        rawProfiles = fsProfiles;
+        setItem(PROFILES_KEY, rawProfiles);
+        pIdx = findUserIndex(targetUserId);
+      }
+    }
     if (pIdx !== -1) {
       const currentVal = rawProfiles[pIdx].isVerified === true || rawProfiles[pIdx].user?.isVerified === true;
       const newStatus = !currentVal;
@@ -1210,8 +1236,10 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       if (rawProfiles[pIdx].user) rawProfiles[pIdx].user.isVerified = newStatus;
       setItem(PROFILES_KEY, rawProfiles);
 
-      const targetId = rawProfiles[pIdx]._id || rawProfiles[pIdx].user?._id || targetUserId;
-      await saveProfileToFirestore(targetId, rawProfiles[pIdx]);
+      const targetIds = Array.from(new Set([rawProfiles[pIdx]._id, rawProfiles[pIdx].user?._id, rawProfiles[pIdx].profileId, targetUserId].filter(Boolean)));
+      for (const tId of targetIds) {
+        await saveProfileToFirestore(tId as string, rawProfiles[pIdx]);
+      }
 
       return { message: 'Verification toggled successfully', isVerified: newStatus };
     }
@@ -1220,7 +1248,15 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
 
   if (endpoint.includes('/admin/users/') && endpoint.endsWith('/featured') && (method === 'PUT' || method === 'POST')) {
     const targetUserId = getAdminUserIdFromUrl(endpoint);
-    const pIdx = findUserIndex(targetUserId);
+    let pIdx = findUserIndex(targetUserId);
+    if (pIdx === -1) {
+      const fsProfiles = await fetchProfilesFromFirestore();
+      if (fsProfiles && fsProfiles.length > 0) {
+        rawProfiles = fsProfiles;
+        setItem(PROFILES_KEY, rawProfiles);
+        pIdx = findUserIndex(targetUserId);
+      }
+    }
     if (pIdx !== -1) {
       const currentVal = rawProfiles[pIdx].isFeatured === true || (rawProfiles[pIdx].user as any)?.isFeatured === true;
       const newStatus = !currentVal;
@@ -1228,8 +1264,10 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       if (rawProfiles[pIdx].user) (rawProfiles[pIdx].user as any).isFeatured = newStatus;
       setItem(PROFILES_KEY, rawProfiles);
 
-      const targetId = rawProfiles[pIdx]._id || rawProfiles[pIdx].user?._id || targetUserId;
-      await saveProfileToFirestore(targetId, rawProfiles[pIdx]);
+      const targetIds = Array.from(new Set([rawProfiles[pIdx]._id, rawProfiles[pIdx].user?._id, rawProfiles[pIdx].profileId, targetUserId].filter(Boolean)));
+      for (const tId of targetIds) {
+        await saveProfileToFirestore(tId as string, rawProfiles[pIdx]);
+      }
 
       return { message: 'Featured status toggled successfully', isFeatured: newStatus };
     }
@@ -1238,7 +1276,15 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
 
   if (endpoint.includes('/admin/users/') && endpoint.endsWith('/edit') && (method === 'PUT' || method === 'POST')) {
     const targetUserId = getAdminUserIdFromUrl(endpoint);
-    const pIdx = findUserIndex(targetUserId);
+    let pIdx = findUserIndex(targetUserId);
+    if (pIdx === -1) {
+      const fsProfiles = await fetchProfilesFromFirestore();
+      if (fsProfiles && fsProfiles.length > 0) {
+        rawProfiles = fsProfiles;
+        setItem(PROFILES_KEY, rawProfiles);
+        pIdx = findUserIndex(targetUserId);
+      }
+    }
     if (pIdx !== -1) {
       const updatedUser = {
         ...rawProfiles[pIdx].user,
@@ -1271,15 +1317,25 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
 
   if (endpoint.includes('/admin/users/') && endpoint.endsWith('/status') && (method === 'PUT' || method === 'POST')) {
     const targetUserId = getAdminUserIdFromUrl(endpoint);
-    const pIdx = findUserIndex(targetUserId);
+    let pIdx = findUserIndex(targetUserId);
+    if (pIdx === -1) {
+      const fsProfiles = await fetchProfilesFromFirestore();
+      if (fsProfiles && fsProfiles.length > 0) {
+        rawProfiles = fsProfiles;
+        setItem(PROFILES_KEY, rawProfiles);
+        pIdx = findUserIndex(targetUserId);
+      }
+    }
     if (pIdx !== -1) {
       const newStatus = body.status;
       rawProfiles[pIdx].status = newStatus;
       if (rawProfiles[pIdx].user) rawProfiles[pIdx].user.status = newStatus;
       setItem(PROFILES_KEY, rawProfiles);
 
-      const targetId = rawProfiles[pIdx]._id || rawProfiles[pIdx].user?._id || targetUserId;
-      await saveProfileToFirestore(targetId, rawProfiles[pIdx]);
+      const targetIds = Array.from(new Set([rawProfiles[pIdx]._id, rawProfiles[pIdx].user?._id, rawProfiles[pIdx].profileId, targetUserId].filter(Boolean)));
+      for (const tId of targetIds) {
+        await saveProfileToFirestore(tId as string, rawProfiles[pIdx]);
+      }
 
       return { message: 'Status updated successfully', status: newStatus };
     }
