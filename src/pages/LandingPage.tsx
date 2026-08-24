@@ -8,6 +8,11 @@ import cinematicHero from '../assets/cinematic_hero.jpg';
 import heroBanner from '../assets/hero_banner.jpg';
 import successCouple1 from '../assets/success_couple_1.jpg';
 import successCouple2 from '../assets/success_couple_2.jpg';
+import suyashPriya1 from '../assets/suyash_priya_1.jpg';
+import suyashPriya2 from '../assets/suyash_priya_2.jpg';
+import suyashPriya3 from '../assets/suyash_priya_3.jpg';
+import suyashPriya4 from '../assets/suyash_priya_4.jpg';
+import suyashPriya5 from '../assets/suyash_priya_5.png';
 import {
   Sparkles,
   ShieldCheck,
@@ -72,15 +77,28 @@ export const LandingPage: React.FC = () => {
       namesMr: 'सुयश आणि प्रिया',
       locationEn: 'Married Dec 2025 • Kolhapur & Pune',
       locationMr: 'विवाह: डिसेंबर २०२५ • कोल्हापूर व पुणे',
-      image: successCouple1,
+      image: suyashPriya1,
       photos: [
-        successCouple1,
-        successCouple2,
-        cinematicHero,
-        heroBanner,
+        suyashPriya1,
+        suyashPriya2,
+        suyashPriya3,
+        suyashPriya4,
+        suyashPriya5,
       ],
-      photoTitlesEn: ['Wedding Mandap Ceremony', 'Reception Evening', 'Royal Heritage Shoot', 'Engagement Ceremony'],
-      photoTitlesMr: ['विवाह सोहळा', 'रिसेप्शन संध्याकाळ', 'रॉयल फोटोशूट', 'साखरपुडा सोहळा'],
+      photoTitlesEn: [
+        'Post-Wedding Shoot with Sunglasses',
+        'Romantic Forehead Kiss Ceremony',
+        'Traditional Bridal & Groom Moment',
+        'Royal Red Lehenga Bride Pose',
+        'Haldi Ceremony Floral Look',
+      ],
+      photoTitlesMr: [
+        'विवाहानंतरचे स्टायलिश फोटोशूट',
+        'शुभ आशीर्वाद व भाळ चुंबन सोहळा',
+        'पारंपारिक वधू-वर प्रेमळ क्षण',
+        'शाही लाल लेहंगा फोटोशूट',
+        'हळदी सोहळ्यातील सौंदर्य',
+      ],
       quoteEn: 'We connected on V Brothers Marriage Bureau and exchanged PDF biodatas securely. Within 3 months, our families met and fixed our wedding! Highly recommend the profile view alerts and privacy controls.',
       quoteMr: 'आम्ही व्ही ब्रदर्स विवाह संस्थे द्वारे जोडलो गेलो आणि सुरक्षितपणे PDF बायोडाटा शेअर केला. ३ महिन्यातच आमचे कुटुंब भेटले आणि लग्न जमले!',
     },
