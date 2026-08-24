@@ -8,6 +8,8 @@ import cinematicHero from '../assets/cinematic_hero.jpg';
 import heroBanner from '../assets/hero_banner.jpg';
 import successCouple1 from '../assets/success_couple_1.jpg';
 import successCouple2 from '../assets/success_couple_2.jpg';
+import suyashPriyaNightCover from '../assets/suyash_priya_night_cover.jpg';
+import suyashPriyaGoldenKiss from '../assets/suyash_priya_golden_kiss.jpg';
 import suyashPriya1 from '../assets/suyash_priya_1.jpg';
 import suyashPriya2 from '../assets/suyash_priya_2.jpg';
 import suyashPriya3 from '../assets/suyash_priya_3.jpg';
@@ -77,8 +79,10 @@ export const LandingPage: React.FC = () => {
       namesMr: 'सुयश आणि प्रिया',
       locationEn: 'Married Dec 2025 • Kolhapur & Pune',
       locationMr: 'विवाह: डिसेंबर २०२५ • कोल्हापूर व पुणे',
-      image: suyashPriya1,
+      image: suyashPriyaNightCover,
       photos: [
+        suyashPriyaNightCover,
+        suyashPriyaGoldenKiss,
         suyashPriya1,
         suyashPriya2,
         suyashPriya3,
@@ -86,15 +90,19 @@ export const LandingPage: React.FC = () => {
         suyashPriya5,
       ],
       photoTitlesEn: [
+        'Grand Night Reception & Wedding Mandap Lights',
+        'Golden Hour Forehead Kiss Ceremony',
         'Post-Wedding Shoot with Sunglasses',
-        'Romantic Forehead Kiss Ceremony',
+        'Romantic Forehead Kiss Close-Up',
         'Traditional Bridal & Groom Moment',
         'Royal Red Lehenga Bride Pose',
         'Haldi Ceremony Floral Look',
       ],
       photoTitlesMr: [
+        'भव्य नाईट रिसेप्शन व रोषणाई',
+        'गोल्डन अवर भाळ चुंबन सोहळा',
         'विवाहानंतरचे स्टायलिश फोटोशूट',
-        'शुभ आशीर्वाद व भाळ चुंबन सोहळा',
+        'प्रेमळ भाळ चुंबन क्लोज-अप',
         'पारंपारिक वधू-वर प्रेमळ क्षण',
         'शाही लाल लेहंगा फोटोशूट',
         'हळदी सोहळ्यातील सौंदर्य',
