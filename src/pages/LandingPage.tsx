@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { fetchApi } from '../services/api';
 import { ProfileCard } from '../components/ProfileCard';
 import cinematicHero from '../assets/cinematic_hero.jpg';
+import heroBanner from '../assets/hero_banner.jpg';
 import successCouple1 from '../assets/success_couple_1.jpg';
 import successCouple2 from '../assets/success_couple_2.jpg';
 import {
@@ -15,12 +16,16 @@ import {
   Search,
   Heart,
   ChevronRight,
+  ChevronLeft,
   Globe2,
   BellRing,
   Star,
   Award,
   Quote,
   Lock,
+  Camera,
+  X,
+  Images,
 } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
@@ -28,11 +33,37 @@ export const LandingPage: React.FC = () => {
   const { user } = useAuth();
   const [featuredProfiles, setFeaturedProfiles] = useState<any[]>([]);
 
+  // 🖼️ Multi-photo Lightbox Gallery State
+  const [selectedStory, setSelectedStory] = useState<any | null>(null);
+  const [activePhotoIndex, setActivePhotoIndex] = useState<number>(0);
+
   useEffect(() => {
     fetchApi('/search/featured')
       .then((data) => setFeaturedProfiles(data || []))
       .catch((err) => console.error('Error fetching featured profiles:', err));
   }, []);
+
+  // Keyboard navigation for photo gallery (Left/Right arrow & Esc)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!selectedStory) return;
+      const photos = selectedStory.photos || [selectedStory.image];
+      if (e.key === 'ArrowRight') {
+        setActivePhotoIndex((prev) => (prev + 1) % photos.length);
+      } else if (e.key === 'ArrowLeft') {
+        setActivePhotoIndex((prev) => (prev - 1 + photos.length) % photos.length);
+      } else if (e.key === 'Escape') {
+        setSelectedStory(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedStory]);
+
+  const handleOpenGallery = (story: any, initialIndex: number = 0) => {
+    setSelectedStory(story);
+    setActivePhotoIndex(initialIndex);
+  };
 
   const successStories = [
     {
@@ -42,6 +73,14 @@ export const LandingPage: React.FC = () => {
       locationEn: 'Married Dec 2025 • Kolhapur & Pune',
       locationMr: 'विवाह: डिसेंबर २०२५ • कोल्हापूर व पुणे',
       image: successCouple1,
+      photos: [
+        successCouple1,
+        successCouple2,
+        cinematicHero,
+        heroBanner,
+      ],
+      photoTitlesEn: ['Wedding Mandap Ceremony', 'Reception Evening', 'Royal Heritage Shoot', 'Engagement Ceremony'],
+      photoTitlesMr: ['विवाह सोहळा', 'रिसेप्शन संध्याकाळ', 'रॉयल फोटोशूट', 'साखरपुडा सोहळा'],
       quoteEn: 'We connected on V Brothers Marriage Bureau and exchanged PDF biodatas securely. Within 3 months, our families met and fixed our wedding! Highly recommend the profile view alerts and privacy controls.',
       quoteMr: 'आम्ही व्ही ब्रदर्स विवाह संस्थे द्वारे जोडलो गेलो आणि सुरक्षितपणे PDF बायोडाटा शेअर केला. ३ महिन्यातच आमचे कुटुंब भेटले आणि लग्न जमले!',
     },
@@ -52,6 +91,14 @@ export const LandingPage: React.FC = () => {
       locationEn: 'Married Feb 2026 • Mumbai & Nashik',
       locationMr: 'विवाह: फेब्रुवारी २०२६ • मुंबई व नाशिक',
       image: successCouple2,
+      photos: [
+        successCouple2,
+        cinematicHero,
+        heroBanner,
+        successCouple1,
+      ],
+      photoTitlesEn: ['Traditional Maharashtrian Marriage', 'Pre-Wedding Shoot', 'Sangeet Night', 'Wedding Reception'],
+      photoTitlesMr: ['पारंपारिक मराठी लग्न', 'प्री-वेडिंग फोटोशूट', 'संगीत संध्याकाळ', 'लग्न रिसेप्शन'],
       quoteEn: 'The bilingual Marathi interface and smart caste & profession filters made our search so smooth. Thank you V Brothers Marriage Bureau for helping us find our soulmate!',
       quoteMr: 'मराठी भाषेची सोय आणि सुयोग्य फिल्टरमुळे आमचा शोध अतिशय सोपा झाला. व्ही ब्रदर्स विवाह संस्थेचे मनापासून आभार!',
     },
@@ -62,6 +109,14 @@ export const LandingPage: React.FC = () => {
       locationEn: 'Married Jan 2026 • Sambhajinagar & Satara',
       locationMr: 'विवाह: जानेवारी २०२६ • संभाजीनगर व सातारा',
       image: cinematicHero,
+      photos: [
+        cinematicHero,
+        heroBanner,
+        successCouple1,
+        successCouple2,
+      ],
+      photoTitlesEn: ['Palace Wedding Ceremony', 'Mandap Rituals', 'Ring Exchange', 'Reception Celebration'],
+      photoTitlesMr: ['रॉयल पॅलेस वेडिंग', 'मंडप विधी', 'अंगठी सोहळा', 'रिसेप्शन उत्सव'],
       quoteEn: 'Finding an educated medical & finance professional partner was effortless. The view tracker notified me when Sneha viewed my profile!',
       quoteMr: 'शिक्षणाला साजेसा साथीदार शोधणे सोपे झाले. स्नेहाने माझे प्रोफाइल पाहिल्यावर मला लगेच व्ह्यू नोटिफिकेशन मिळाले होते!',
     },
@@ -210,19 +265,37 @@ export const LandingPage: React.FC = () => {
               key={story.id}
               className="bg-white rounded-3xl border border-ivory-300 shadow-sm hover:shadow-xl transition-all overflow-hidden flex flex-col justify-between group"
             >
-              {/* Couple Photo */}
-              <div className="relative aspect-[4/3] bg-ivory-200 overflow-hidden">
+              {/* Couple Photo Container with Gallery Trigger */}
+              <div
+                onClick={() => handleOpenGallery(story, 0)}
+                className="relative aspect-[4/3] bg-ivory-200 overflow-hidden cursor-pointer group"
+              >
                 <img
                   src={story.image}
                   alt={story.namesEn}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                
+                {/* Camera Badge Overlay */}
+                <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-gold-300 border border-gold-400/40 text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-md group-hover:bg-gold-400 group-hover:text-brand-950 transition-all">
+                  <Camera className="w-3.5 h-3.5" />
+                  <span>
+                    {language === 'EN'
+                      ? `${(story.photos || [story.image]).length} Photos`
+                      : `${(story.photos || [story.image]).length} फोटो`}
+                  </span>
+                </div>
+
+                {/* Couple Info Overlay */}
                 <div className="absolute bottom-3 left-4 right-4 text-white">
-                  <h3 className="font-serif text-xl font-bold">
-                    {language === 'EN' ? story.namesEn : story.namesMr}
+                  <h3 className="font-serif text-xl font-bold flex items-center justify-between">
+                    <span>{language === 'EN' ? story.namesEn : story.namesMr}</span>
+                    <span className="text-[10px] text-gold-300 font-sans font-semibold bg-white/10 px-2 py-0.5 rounded-full backdrop-blur-xs group-hover:bg-gold-400 group-hover:text-brand-950 transition-colors">
+                      {language === 'EN' ? 'View Gallery ➔' : 'गॅलरी पहा ➔'}
+                    </span>
                   </h3>
-                  <p className="text-[11px] text-ivory-200 font-medium">
+                  <p className="text-[11px] text-ivory-200 font-medium mt-0.5">
                     {language === 'EN' ? story.locationEn : story.locationMr}
                   </p>
                 </div>
@@ -428,6 +501,113 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* 🖼️ SUCCESS STORY MULTI-PHOTO GALLERY LIGHTBOX MODAL */}
+      {selectedStory && (
+        <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col justify-between p-4 sm:p-6 animate-in fade-in duration-200">
+          
+          {/* Modal Top Header */}
+          <div className="flex items-center justify-between text-white border-b border-white/10 pb-4 max-w-6xl mx-auto w-full">
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2">
+                <span className="bg-gold-400/20 text-gold-300 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-gold-400/30">
+                  {language === 'EN' ? 'Success Story Gallery' : 'यशस्वी कहाणी फोटो गॅलरी'}
+                </span>
+                <span className="text-xs text-gray-300 font-mono">
+                  {activePhotoIndex + 1} / {(selectedStory.photos || [selectedStory.image]).length}
+                </span>
+              </div>
+              <h2 className="font-serif text-xl sm:text-2xl font-bold text-white">
+                {language === 'EN' ? selectedStory.namesEn : selectedStory.namesMr}
+              </h2>
+              <p className="text-xs text-ivory-200">
+                {language === 'EN' ? selectedStory.locationEn : selectedStory.locationMr}
+              </p>
+            </div>
+
+            <button
+              onClick={() => setSelectedStory(null)}
+              className="p-2.5 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer"
+              title="Close Gallery (Esc)"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Main Photo View with Nav Arrows */}
+          <div className="relative flex-1 flex items-center justify-center my-4 max-w-5xl mx-auto w-full overflow-hidden">
+            
+            {/* Previous Arrow */}
+            {(selectedStory.photos || [selectedStory.image]).length > 1 && (
+              <button
+                onClick={() =>
+                  setActivePhotoIndex(
+                    (prev) => (prev - 1 + selectedStory.photos.length) % selectedStory.photos.length
+                  )
+                }
+                className="absolute left-2 sm:left-4 z-20 p-3 rounded-full bg-black/60 text-white hover:bg-gold-400 hover:text-brand-950 transition-all border border-white/20 shadow-xl cursor-pointer"
+                title="Previous Photo (Left Arrow)"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+            )}
+
+            {/* Main Active Image */}
+            <div className="relative max-h-[65vh] w-full flex flex-col items-center justify-center">
+              <img
+                src={(selectedStory.photos || [selectedStory.image])[activePhotoIndex]}
+                alt={`${selectedStory.namesEn} - Photo ${activePhotoIndex + 1}`}
+                className="max-h-[60vh] max-w-full object-contain rounded-2xl shadow-2xl border border-white/10 transition-all duration-300"
+              />
+
+              {/* Caption Title below Image */}
+              {selectedStory.photoTitlesEn && selectedStory.photoTitlesEn[activePhotoIndex] && (
+                <div className="mt-3 px-4 py-1.5 bg-black/70 rounded-full border border-gold-400/30 text-gold-300 text-xs font-semibold text-center backdrop-blur-md">
+                  {language === 'EN'
+                    ? selectedStory.photoTitlesEn[activePhotoIndex]
+                    : selectedStory.photoTitlesMr[activePhotoIndex]}
+                </div>
+              )}
+            </div>
+
+            {/* Next Arrow */}
+            {(selectedStory.photos || [selectedStory.image]).length > 1 && (
+              <button
+                onClick={() =>
+                  setActivePhotoIndex((prev) => (prev + 1) % selectedStory.photos.length)
+                }
+                className="absolute right-2 sm:right-4 z-20 p-3 rounded-full bg-black/60 text-white hover:bg-gold-400 hover:text-brand-950 transition-all border border-white/20 shadow-xl cursor-pointer"
+                title="Next Photo (Right Arrow)"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+            )}
+          </div>
+
+          {/* Bottom Thumbnail Strip */}
+          <div className="max-w-4xl mx-auto w-full pt-2 border-t border-white/10">
+            <div className="flex items-center justify-center gap-3 overflow-x-auto py-2">
+              {(selectedStory.photos || [selectedStory.image]).map((img: string, idx: number) => (
+                <button
+                  key={idx}
+                  onClick={() => setActivePhotoIndex(idx)}
+                  className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 transition-all cursor-pointer border-2 ${
+                    activePhotoIndex === idx
+                      ? 'border-gold-400 scale-105 ring-2 ring-gold-400/50 shadow-lg'
+                      : 'border-white/20 opacity-50 hover:opacity-100 hover:scale-100'
+                  }`}
+                >
+                  <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                  {activePhotoIndex === idx && (
+                    <div className="absolute inset-0 bg-gold-400/10 border-2 border-gold-400"></div>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
+        </div>
+      )}
 
     </div>
   );
