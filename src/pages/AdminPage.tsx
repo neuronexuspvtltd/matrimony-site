@@ -22,6 +22,8 @@ import {
   Lock,
   Save,
   FileText,
+  UploadCloud,
+  Images,
 } from 'lucide-react';
 
 export const AdminPage: React.FC = () => {
@@ -53,14 +55,22 @@ export const AdminPage: React.FC = () => {
   // Success Story Modal State (Add & Edit)
   const [showAddStory, setShowAddStory] = useState(false);
   const [editingStory, setEditingStory] = useState<any | null>(null);
-  const [storyForm, setStoryForm] = useState({
+  const [storyForm, setStoryForm] = useState<{
+    namesEn: string;
+    namesMr: string;
+    locationEn: string;
+    locationMr: string;
+    quoteEn: string;
+    quoteMr: string;
+    photos: string[];
+  }>({
     namesEn: '',
     namesMr: '',
     locationEn: '',
     locationMr: '',
     quoteEn: '',
     quoteMr: '',
-    image: '',
+    photos: [],
   });
 
   // Announcement state
@@ -194,12 +204,13 @@ export const AdminPage: React.FC = () => {
 
   const handleOpenAddStory = () => {
     setEditingStory(null);
-    setStoryForm({ namesEn: '', namesMr: '', locationEn: '', locationMr: '', quoteEn: '', quoteMr: '', image: '' });
+    setStoryForm({ namesEn: '', namesMr: '', locationEn: '', locationMr: '', quoteEn: '', quoteMr: '', photos: [] });
     setShowAddStory(true);
   };
 
   const handleOpenEditStory = (story: any) => {
     setEditingStory(story);
+    const existingPhotos = story.photos && story.photos.length > 0 ? story.photos : (story.image ? [story.image] : []);
     setStoryForm({
       namesEn: story.namesEn || '',
       namesMr: story.namesMr || '',
@@ -207,29 +218,64 @@ export const AdminPage: React.FC = () => {
       locationMr: story.locationMr || '',
       quoteEn: story.quoteEn || '',
       quoteMr: story.quoteMr || '',
-      image: story.image || '',
+      photos: existingPhotos,
     });
     setShowAddStory(true);
+  };
+
+  const handleStoryFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        if (result) {
+          setStoryForm((prev) => ({
+            ...prev,
+            photos: [...prev.photos, result],
+          }));
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = '';
+  };
+
+  const handleRemoveStoryPhoto = (index: number) => {
+    setStoryForm((prev) => ({
+      ...prev,
+      photos: prev.photos.filter((_, i) => i !== index),
+    }));
   };
 
   const handleSaveStory = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!storyForm.namesEn || !storyForm.quoteEn) return;
+    if (storyForm.photos.length === 0) {
+      alert('Please upload at least 1 photo for this success story.');
+      return;
+    }
     try {
+      const payload = {
+        ...storyForm,
+        image: storyForm.photos[0] || '',
+      };
       if (editingStory) {
         await fetchApi(`/admin/stories/${editingStory.id}`, {
           method: 'PUT',
-          body: JSON.stringify(storyForm),
+          body: JSON.stringify(payload),
         });
       } else {
         await fetchApi('/admin/stories', {
           method: 'POST',
-          body: JSON.stringify(storyForm),
+          body: JSON.stringify(payload),
         });
       }
       setShowAddStory(false);
       setEditingStory(null);
-      setStoryForm({ namesEn: '', namesMr: '', locationEn: '', locationMr: '', quoteEn: '', quoteMr: '', image: '' });
+      setStoryForm({ namesEn: '', namesMr: '', locationEn: '', locationMr: '', quoteEn: '', quoteMr: '', photos: [] });
       fetchAdminData();
     } catch (err: any) {
       alert(err.message || 'Error saving success story');
@@ -1055,15 +1101,70 @@ export const AdminPage: React.FC = () => {
                 />
               </div>
 
-              <div>
-                <label className="block font-semibold text-gray-700 mb-1">Couple Photo Image URL</label>
-                <input
-                  type="text"
-                  value={storyForm.image}
-                  onChange={(e) => setStoryForm({ ...storyForm, image: e.target.value })}
-                  placeholder="https://images.unsplash.com/..."
-                  className="w-full p-2.5 border rounded-xl"
-                />
+              {/* Multi-Photo Upload Area */}
+              <div className="space-y-2">
+                <label className="block font-semibold text-gray-700">
+                  Couple Photos (Upload Multiple Photos)
+                </label>
+                
+                <div className="border-2 border-dashed border-ivory-300 hover:border-gold-500 bg-ivory-50/60 hover:bg-gold-50/40 p-4 rounded-2xl text-center transition-all cursor-pointer relative">
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleStoryFileUpload}
+                    className="hidden"
+                    id="story-photos-upload"
+                  />
+                  <label
+                    htmlFor="story-photos-upload"
+                    className="cursor-pointer flex flex-col items-center justify-center gap-1 text-xs text-gray-600"
+                  >
+                    <UploadCloud className="w-8 h-8 text-brand-900" />
+                    <span className="font-bold text-brand-950 text-sm">
+                      Click to Select & Upload Photos
+                    </span>
+                    <span className="text-[11px] text-gray-500">
+                      Supports PNG, JPG, WEBP • You can select multiple images at once
+                    </span>
+                  </label>
+                </div>
+
+                {/* Photos Preview Grid */}
+                {storyForm.photos.length > 0 && (
+                  <div className="space-y-1.5 pt-2">
+                    <span className="text-[11px] font-bold text-gray-600">
+                      Uploaded Gallery Photos ({storyForm.photos.length}):
+                    </span>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-48 overflow-y-auto p-1.5 bg-gray-50 rounded-xl border border-gray-200">
+                      {storyForm.photos.map((photo, idx) => (
+                        <div
+                          key={idx}
+                          className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 group shadow-xs bg-white"
+                        >
+                          <img
+                            src={photo}
+                            alt={`Upload ${idx + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                          {idx === 0 && (
+                            <span className="absolute top-1 left-1 bg-gold-400 text-brand-950 text-[9px] font-bold px-1.5 py-0.5 rounded shadow-xs">
+                              Cover 🌟
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveStoryPhoto(idx)}
+                            className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded-md opacity-90 hover:opacity-100 cursor-pointer shadow-sm transition-opacity"
+                            title="Remove photo"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="pt-3 flex justify-end gap-2">

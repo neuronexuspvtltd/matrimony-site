@@ -1369,13 +1369,15 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
 
   if (endpoint === '/admin/stories' && method === 'POST') {
     const stories = getItem(SUCCESS_STORIES_KEY, initialSuccessStories || []);
+    const photosArr = body.photos && body.photos.length > 0 ? body.photos : (body.image ? [body.image] : []);
     const newStory = {
       id: `story_${Date.now()}`,
       namesEn: body.namesEn,
       namesMr: body.namesMr,
       locationEn: body.locationEn,
       locationMr: body.locationMr,
-      image: body.image || 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=600&q=80',
+      photos: photosArr,
+      image: photosArr[0] || 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=600&q=80',
       quoteEn: body.quoteEn,
       quoteMr: body.quoteMr,
       createdAt: new Date().toISOString(),
@@ -1390,6 +1392,8 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     const stories = getItem(SUCCESS_STORIES_KEY, initialSuccessStories || []);
     const sIdx = stories.findIndex((s: any) => String(s.id) === String(storyId));
     if (sIdx !== -1) {
+      const updatedPhotos = body.photos !== undefined ? body.photos : stories[sIdx].photos;
+      const primaryImage = (updatedPhotos && updatedPhotos[0]) || body.image || stories[sIdx].image;
       stories[sIdx] = {
         ...stories[sIdx],
         namesEn: body.namesEn || stories[sIdx].namesEn,
@@ -1398,7 +1402,8 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
         locationMr: body.locationMr || stories[sIdx].locationMr,
         quoteEn: body.quoteEn || stories[sIdx].quoteEn,
         quoteMr: body.quoteMr || stories[sIdx].quoteMr,
-        image: body.image || stories[sIdx].image,
+        photos: updatedPhotos,
+        image: primaryImage,
       };
       setItem(SUCCESS_STORIES_KEY, stories);
       return { message: 'Success story updated successfully', story: stories[sIdx] };
