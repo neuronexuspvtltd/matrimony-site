@@ -291,7 +291,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
 
     const age = dateOfBirth ? Math.floor((Date.now() - new Date(dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : 26;
 
-    const newProfile: ProfileData = {
+    const newProfile: any = {
       _id: `prof_${Date.now()}`,
       profileId: newProfId,
       user: {
@@ -326,6 +326,9 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       isVerified: true,
       isFeatured: true,
       completionPercentage: 70,
+      paymentStatus: body.paymentStatus || 'paid',
+      paymentAmount: body.paymentAmount || 1100,
+      paymentId: body.paymentId || `PAY_${Date.now()}`,
       partnerPreferences: {
         minAge: Math.max(18, age - 5),
         maxAge: age + 5,

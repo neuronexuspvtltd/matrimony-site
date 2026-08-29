@@ -3,7 +3,26 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { fetchApi } from '../services/api';
-import { Check, ChevronLeft, ChevronRight, User, Heart, Briefcase, Users, Sliders, Eye, EyeOff } from 'lucide-react';
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  User,
+  Heart,
+  Briefcase,
+  Users,
+  Sliders,
+  Eye,
+  EyeOff,
+  CreditCard,
+  ShieldCheck,
+  CheckCircle2,
+  AlertCircle,
+  Sparkles,
+  Lock,
+} from 'lucide-react';
+import { openRazorpayPayment, RazorpaySuccessResponse } from '../services/razorpayService';
+import { RAZORPAY_CONFIG } from '../config/razorpay';
 
 export const RegisterPage: React.FC = () => {
   const { t, language } = useLanguage();
@@ -124,14 +143,18 @@ export const RegisterPage: React.FC = () => {
     setCurrentStep((prev) => Math.max(1, prev - 1));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+  const [paymentSuccessData, setPaymentSuccessData] = useState<any | null>(null);
+  const [paymentProcessing, setPaymentProcessing] = useState(false);
 
+  const processRegistrationWithPayment = async (paymentId: string) => {
+    setLoading(true);
+    setError('');
     try {
-      await register({
+      const userRes = await register({
         ...formData,
+        paymentStatus: 'paid',
+        paymentAmount: RAZORPAY_CONFIG.amountINR,
+        paymentId,
         partnerPreferences: {
           minAge: formData.partnerMinAge,
           maxAge: formData.partnerMaxAge,
@@ -143,12 +166,59 @@ export const RegisterPage: React.FC = () => {
         },
       });
 
-      navigate('/dashboard');
+      setPaymentSuccessData({
+        paymentId,
+        amount: RAZORPAY_CONFIG.amountINR,
+        date: new Date().toLocaleDateString('en-IN', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        user: userRes,
+      });
     } catch (err: any) {
-      setError(err.message || 'Registration failed');
+      setError(err.message || 'Registration failed after payment. Please contact support with payment ID: ' + paymentId);
     } finally {
       setLoading(false);
+      setPaymentProcessing(false);
     }
+  };
+
+  const handleRazorpayPayment = () => {
+    if (!formData.fullName || !formData.email || !formData.mobile) {
+      setError(language === 'EN' ? 'Please complete your contact details first' : 'कृपया आधी तुमची संपर्क माहिती पूर्ण करा');
+      return;
+    }
+
+    setPaymentProcessing(true);
+    setError('');
+
+    openRazorpayPayment({
+      userDetails: {
+        name: formData.fullName,
+        email: formData.email,
+        contact: formData.mobile,
+      },
+      onSuccess: (paymentId: string) => {
+        processRegistrationWithPayment(paymentId);
+      },
+      onFailure: (errorMsg: string) => {
+        setPaymentProcessing(false);
+        setError(errorMsg);
+      },
+    });
+  };
+
+  const handleSimulateTestPayment = () => {
+    const mockPayId = `pay_sim_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+    processRegistrationWithPayment(mockPayId);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    handleRazorpayPayment();
   };
 
   const steps = [
@@ -546,60 +616,147 @@ export const RegisterPage: React.FC = () => {
             </div>
           )}
 
-          {/* STEP 5: Partner Preferences */}
+          {/* STEP 5: Partner Preferences & Razorpay Membership Payment */}
           {currentStep === 5 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in">
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">{t('preferredAge')} (Min - Max)</label>
-                <div className="flex gap-2">
+            <div className="space-y-6 animate-in fade-in">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">{t('preferredAge')} (Min - Max)</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      name="partnerMinAge"
+                      value={formData.partnerMinAge}
+                      onChange={handleChange}
+                      className="w-1/2 px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                    />
+                    <input
+                      type="number"
+                      name="partnerMaxAge"
+                      value={formData.partnerMaxAge}
+                      onChange={handleChange}
+                      className="w-1/2 px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">{t('preferredEducation')}</label>
                   <input
-                    type="number"
-                    name="partnerMinAge"
-                    value={formData.partnerMinAge}
+                    type="text"
+                    name="partnerEducation"
+                    value={formData.partnerEducation}
                     onChange={handleChange}
-                    className="w-1/2 px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">{t('preferredOccupation')}</label>
                   <input
-                    type="number"
-                    name="partnerMaxAge"
-                    value={formData.partnerMaxAge}
+                    type="text"
+                    name="partnerOccupation"
+                    value={formData.partnerOccupation}
                     onChange={handleChange}
-                    className="w-1/2 px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">{t('preferredLocation')}</label>
+                  <input
+                    type="text"
+                    name="partnerLocation"
+                    value={formData.partnerLocation}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">{t('preferredEducation')}</label>
-                <input
-                  type="text"
-                  name="partnerEducation"
-                  value={formData.partnerEducation}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
-                />
-              </div>
+              {/* 💳 RAZORPAY REGISTRATION PAYMENT CARD (₹1,100) */}
+              <div className="bg-gradient-to-br from-brand-950 via-brand-900 to-purple-950 text-white rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl border border-gold-400/40 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-48 h-48 bg-gold-400/10 rounded-full blur-2xl pointer-events-none"></div>
 
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">{t('preferredOccupation')}</label>
-                <input
-                  type="text"
-                  name="partnerOccupation"
-                  value={formData.partnerOccupation}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
-                />
-              </div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
+                  <div className="space-y-1">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold-400/20 text-gold-300 border border-gold-400/30 text-xs font-semibold">
+                      <Sparkles className="w-3.5 h-3.5 text-gold-400" />
+                      <span>{language === 'EN' ? 'Lifetime Premium Verification' : 'आयुष्यभर प्रीमियम पडताळणी'}</span>
+                    </div>
+                    <h3 className="font-serif text-xl sm:text-2xl font-bold text-white pt-1">
+                      {language === 'EN' ? 'Registration & Membership Fee' : 'नोंदणी व सदस्यता शुल्क'}
+                    </h3>
+                    <p className="text-xs text-ivory-200">
+                      {language === 'EN' ? 'Secure Payment powered by Razorpay' : 'रेझरपे द्वारे अत्यंत सुरक्षित पेमेंट'}
+                    </p>
+                  </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">{t('preferredLocation')}</label>
-                <input
-                  type="text"
-                  name="partnerLocation"
-                  value={formData.partnerLocation}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
-                />
+                  <div className="text-left sm:text-right shrink-0">
+                    <span className="text-xs text-ivory-200 block font-medium">Total Payable</span>
+                    <span className="font-serif text-3xl sm:text-4xl font-extrabold text-gold-300 tracking-tight">
+                      ₹1,100
+                    </span>
+                    <span className="text-[10px] text-ivory-200 block">INR (One-time Fee)</span>
+                  </div>
+                </div>
+
+                {/* What's Included */}
+                <div className="space-y-2.5 text-xs text-ivory-100">
+                  <span className="font-bold text-gold-300 uppercase tracking-wider text-[11px] block">
+                    {language === 'EN' ? 'Included Benefits:' : 'समाविष्ट सुविधा:'}
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span>Verified Badge & Search Placement</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span>Unlimited PDF Biodata Share & Download</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span>Send & Receive Connection Requests</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span>Real-time Profile View Notifications</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Payment Buttons */}
+                <div className="space-y-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleRazorpayPayment}
+                    disabled={loading || paymentProcessing}
+                    className="w-full py-4 px-6 bg-gradient-to-r from-gold-400 to-amber-300 text-brand-950 font-bold rounded-2xl text-sm sm:text-base shadow-xl flex items-center justify-center gap-2 hover:bg-gold-300 transition-all cursor-pointer transform hover:scale-[1.01]"
+                  >
+                    <CreditCard className="w-5 h-5 text-brand-950" />
+                    <span>
+                      {paymentProcessing || loading
+                        ? 'Opening Razorpay...'
+                        : `Pay ₹1,100 with Razorpay & Register`}
+                    </span>
+                  </button>
+
+                  {/* Dev / Test mode fallback button */}
+                  <button
+                    type="button"
+                    onClick={handleSimulateTestPayment}
+                    disabled={loading || paymentProcessing}
+                    className="w-full py-2.5 px-4 bg-white/10 text-ivory-200 hover:bg-white/20 font-semibold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-white/10"
+                  >
+                    <span>Simulate Test Payment (₹1,100)</span>
+                  </button>
+
+                  <div className="flex items-center justify-center gap-2 text-[11px] text-ivory-200 pt-1">
+                    <Lock className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>UPI • Cards • NetBanking • Wallets • 256-bit SSL Encrypted</span>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -644,6 +801,61 @@ export const RegisterPage: React.FC = () => {
             {t('navLogin')}
           </Link>
         </div>
+
+      {/* 🧾 PAYMENT SUCCESS RECEIPT MODAL */}
+      {paymentSuccessData && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 space-y-6 shadow-2xl animate-in zoom-in-95 text-center border border-ivory-300">
+            
+            <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-inner">
+              <CheckCircle2 className="w-10 h-10" />
+            </div>
+
+            <div className="space-y-1">
+              <span className="text-[11px] font-bold text-emerald-700 uppercase tracking-widest bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                Payment Successful ✓
+              </span>
+              <h2 className="font-serif text-2xl font-bold text-brand-950 pt-2">
+                Registration Complete!
+              </h2>
+              <p className="text-xs text-gray-500">
+                Welcome to V Brothers Marriage Bureau! Your account is active.
+              </p>
+            </div>
+
+            {/* Receipt Summary Card */}
+            <div className="bg-ivory-100/80 rounded-2xl p-4 text-left space-y-2 border border-ivory-300 text-xs">
+              <div className="flex justify-between border-b border-ivory-200 pb-2">
+                <span className="text-gray-500 font-medium">Payment ID:</span>
+                <span className="font-mono font-bold text-brand-950 select-all">
+                  {paymentSuccessData.paymentId}
+                </span>
+              </div>
+              <div className="flex justify-between border-b border-ivory-200 pb-2">
+                <span className="text-gray-500 font-medium">Amount Paid:</span>
+                <span className="font-bold text-emerald-700">₹{paymentSuccessData.amount}.00 INR</span>
+              </div>
+              <div className="flex justify-between border-b border-ivory-200 pb-2">
+                <span className="text-gray-500 font-medium">Date & Time:</span>
+                <span className="text-gray-700">{paymentSuccessData.date}</span>
+              </div>
+              <div className="flex justify-between pt-1">
+                <span className="text-gray-500 font-medium">Profile ID:</span>
+                <span className="font-mono font-bold text-brand-900">
+                  {paymentSuccessData.user?.profileId || 'PB-ACTIVE'}
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="w-full py-3.5 bg-brand-900 text-gold-300 font-bold rounded-xl text-sm shadow-md hover:bg-brand-950 transition-colors cursor-pointer"
+            >
+              Go to My Dashboard ➔
+            </button>
+          </div>
+        </div>
+      )}
 
       </div>
     </div>
