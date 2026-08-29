@@ -135,7 +135,7 @@ export const RegisterPage: React.FC = () => {
     }
 
     setError('');
-    setCurrentStep((prev) => Math.min(5, prev + 1));
+    setCurrentStep((prev) => Math.min(6, prev + 1));
   };
 
   const handlePrevious = () => {
@@ -218,6 +218,10 @@ export const RegisterPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (currentStep < 6) {
+      handleNext();
+      return;
+    }
     handleRazorpayPayment();
   };
 
@@ -227,6 +231,7 @@ export const RegisterPage: React.FC = () => {
     { num: 3, title: t('regStep3'), icon: Briefcase },
     { num: 4, title: t('regStep4'), icon: Users },
     { num: 5, title: t('regStep5'), icon: Sliders },
+    { num: 6, title: 'Payment', icon: CreditCard },
   ];
 
   return (
@@ -246,7 +251,7 @@ export const RegisterPage: React.FC = () => {
             {t('regTitle')}
           </h1>
           <p className="text-xs text-gray-500">
-            {language === 'EN' ? 'Step ' + currentStep + ' of 5' : 'पायरी ' + currentStep + ' पैकी ५'}
+            {language === 'EN' ? 'Step ' + currentStep + ' of 6' : 'पायरी ' + currentStep + ' पैकी ६'}
           </p>
         </div>
 
@@ -616,65 +621,67 @@ export const RegisterPage: React.FC = () => {
             </div>
           )}
 
-          {/* STEP 5: Partner Preferences & Razorpay Membership Payment */}
+          {/* STEP 5: Partner Preferences */}
           {currentStep === 5 && (
-            <div className="space-y-6 animate-in fade-in">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">{t('preferredAge')} (Min - Max)</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      name="partnerMinAge"
-                      value={formData.partnerMinAge}
-                      onChange={handleChange}
-                      className="w-1/2 px-4 py-3 rounded-xl border border-gray-300 text-sm"
-                    />
-                    <input
-                      type="number"
-                      name="partnerMaxAge"
-                      value={formData.partnerMaxAge}
-                      onChange={handleChange}
-                      className="w-1/2 px-4 py-3 rounded-xl border border-gray-300 text-sm"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">{t('preferredEducation')}</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">{t('preferredAge')} (Min - Max)</label>
+                <div className="flex gap-2">
                   <input
-                    type="text"
-                    name="partnerEducation"
-                    value={formData.partnerEducation}
+                    type="number"
+                    name="partnerMinAge"
+                    value={formData.partnerMinAge}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                    className="w-1/2 px-4 py-3 rounded-xl border border-gray-300 text-sm"
                   />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">{t('preferredOccupation')}</label>
                   <input
-                    type="text"
-                    name="partnerOccupation"
-                    value={formData.partnerOccupation}
+                    type="number"
+                    name="partnerMaxAge"
+                    value={formData.partnerMaxAge}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">{t('preferredLocation')}</label>
-                  <input
-                    type="text"
-                    name="partnerLocation"
-                    value={formData.partnerLocation}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                    className="w-1/2 px-4 py-3 rounded-xl border border-gray-300 text-sm"
                   />
                 </div>
               </div>
 
-              {/* 💳 RAZORPAY REGISTRATION PAYMENT CARD (₹1,100) */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">{t('preferredEducation')}</label>
+                <input
+                  type="text"
+                  name="partnerEducation"
+                  value={formData.partnerEducation}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">{t('preferredOccupation')}</label>
+                <input
+                  type="text"
+                  name="partnerOccupation"
+                  value={formData.partnerOccupation}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">{t('preferredLocation')}</label>
+                <input
+                  type="text"
+                  name="partnerLocation"
+                  value={formData.partnerLocation}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* STEP 6: DEDICATED RAZORPAY MEMBERSHIP PAYMENT CARD (₹1,100) */}
+          {currentStep === 6 && (
+            <div className="space-y-6 animate-in fade-in">
               <div className="bg-gradient-to-br from-brand-950 via-brand-900 to-purple-950 text-white rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl border border-gold-400/40 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-48 h-48 bg-gold-400/10 rounded-full blur-2xl pointer-events-none"></div>
 
@@ -774,22 +781,24 @@ export const RegisterPage: React.FC = () => {
               </button>
             ) : <div />}
 
-            {currentStep < 5 ? (
+            {currentStep < 6 ? (
               <button
                 type="button"
                 onClick={handleNext}
                 className="px-8 py-3 rounded-xl bg-brand-900 text-gold-300 font-semibold text-xs hover:bg-brand-950 flex items-center gap-1 cursor-pointer ml-auto"
               >
-                <span>{t('next')}</span>
-                <ChevronRight className="w-4 h-4" />
+                <span>{currentStep === 5 ? (language === 'EN' ? 'Proceed to Payment ➔' : 'पेमेंट करण्यासाठी पुढे जा ➔') : t('next')}</span>
+                {currentStep < 5 && <ChevronRight className="w-4 h-4" />}
               </button>
             ) : (
               <button
-                type="submit"
-                disabled={loading}
-                className="px-8 py-3 rounded-xl bg-gold-400 text-brand-950 font-bold text-xs hover:bg-gold-300 shadow-md cursor-pointer ml-auto"
+                type="button"
+                onClick={handleRazorpayPayment}
+                disabled={loading || paymentProcessing}
+                className="px-8 py-3 rounded-xl bg-gold-400 text-brand-950 font-bold text-xs hover:bg-gold-300 shadow-md cursor-pointer ml-auto flex items-center gap-2"
               >
-                {loading ? 'Registering...' : t('submit')}
+                <CreditCard className="w-4 h-4" />
+                <span>{paymentProcessing || loading ? 'Opening Razorpay...' : 'Pay ₹1,100 & Register'}</span>
               </button>
             )}
           </div>
