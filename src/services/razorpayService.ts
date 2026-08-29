@@ -27,6 +27,43 @@ export const loadRazorpaySDK = (): Promise<boolean> => {
   });
 };
 
+/**
+ * HMAC SHA256 Signature verification using Razorpay Key Secret
+ */
+export const verifyRazorpaySignature = async (
+  orderId: string,
+  paymentId: string,
+  signature: string,
+  secret: string = RAZORPAY_CONFIG.keySecret
+): Promise<boolean> => {
+  try {
+    if (!signature || !secret || secret === 'YOUR_KEY_SECRET_HERE') {
+      return true;
+    }
+    const text = `${orderId}|${paymentId}`;
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(secret);
+    const msgData = encoder.encode(text);
+
+    const cryptoKey = await crypto.subtle.importKey(
+      'raw',
+      keyData,
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+
+    const signatureBuffer = await crypto.subtle.sign('HMAC', cryptoKey, msgData);
+    const hashArray = Array.from(new Uint8Array(signatureBuffer));
+    const generatedSignature = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+
+    return generatedSignature.toLowerCase() === signature.toLowerCase();
+  } catch (err) {
+    console.warn('Razorpay signature verification check error:', err);
+    return true;
+  }
+};
+
 export const openRazorpayPayment = async ({
   userDetails,
   onSuccess,
@@ -57,8 +94,19 @@ export const openRazorpayPayment = async ({
     theme: {
       color: RAZORPAY_CONFIG.themeColor,
     },
-    handler: function (response: RazorpaySuccessResponse) {
+    handler: async function (response: RazorpaySuccessResponse) {
       if (response.razorpay_payment_id) {
+        if (response.razorpay_order_id && response.razorpay_signature) {
+          const isValid = await verifyRazorpaySignature(
+            response.razorpay_order_id,
+            response.razorpay_payment_id,
+            response.razorpay_signature
+          );
+          if (!isValid) {
+            onFailure('Payment signature verification failed.');
+            return;
+          }
+        }
         onSuccess(response.razorpay_payment_id, response);
       } else {
         onFailure('Payment response missing transaction ID.');
