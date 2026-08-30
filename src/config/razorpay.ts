@@ -6,10 +6,10 @@
 
 export const RAZORPAY_CONFIG = {
   // Replace 'rzp_test_YOUR_KEY_HERE' with your Razorpay Key ID
-  keyId: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_YOUR_KEY_HERE',
+  keyId: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_live_TVYUdqwLb9fjkb',
   
   // Replace 'YOUR_KEY_SECRET_HERE' with your Razorpay Key Secret
-  keySecret: import.meta.env.VITE_RAZORPAY_KEY_SECRET || 'YOUR_KEY_SECRET_HERE',
+  keySecret: import.meta.env.VITE_RAZORPAY_KEY_SECRET || 'aEB9W9xlX40NuevBr2DB8RKG',
 
   // Registration Fee Amount
   amountINR: 1100, // ₹1,100 INR

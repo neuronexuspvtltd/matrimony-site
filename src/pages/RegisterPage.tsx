@@ -749,16 +749,6 @@ export const RegisterPage: React.FC = () => {
                     </span>
                   </button>
 
-                  {/* Dev / Test mode fallback button */}
-                  <button
-                    type="button"
-                    onClick={handleSimulateTestPayment}
-                    disabled={loading || paymentProcessing}
-                    className="w-full py-2.5 px-4 bg-white/10 text-ivory-200 hover:bg-white/20 font-semibold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-white/10"
-                  >
-                    <span>Simulate Test Payment (₹1,100)</span>
-                  </button>
-
                   <div className="flex items-center justify-center gap-2 text-[11px] text-ivory-200 pt-1">
                     <Lock className="w-3.5 h-3.5 text-emerald-400" />
                     <span>UPI • Cards • NetBanking • Wallets • 256-bit SSL Encrypted</span>
