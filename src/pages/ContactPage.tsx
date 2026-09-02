@@ -75,8 +75,7 @@ export const ContactPage: React.FC = () => {
           <h3 className="font-serif font-bold text-gray-900 text-base">
             {language === 'EN' ? 'Call Support' : 'फोन संपर्क'}
           </h3>
-          <p className="text-xs text-gray-600 font-semibold">+91 98765 43210</p>
-          <p className="text-xs text-gray-600">+91 98765 43211</p>
+          <p className="text-xs text-gray-600 font-semibold">+91 90750 36382</p>
           <span className="text-[10px] text-gray-400 block pt-1">Mon - Sat, 9:00 AM - 7:00 PM IST</span>
         </div>
 
@@ -88,8 +87,7 @@ export const ContactPage: React.FC = () => {
           <h3 className="font-serif font-bold text-gray-900 text-base">
             {language === 'EN' ? 'Email Support' : 'ईमेल संपर्क'}
           </h3>
-          <p className="text-xs text-gray-600 font-semibold">support@vbrothersmarry.com</p>
-          <p className="text-xs text-gray-600">help@vbrothersmarry.com</p>
+          <p className="text-xs text-gray-600 font-semibold">pranotipawar056@gmail.com</p>
           <span className="text-[10px] text-gray-400 block pt-1">We respond within 24 hours</span>
         </div>
 

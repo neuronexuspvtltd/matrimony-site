@@ -38,8 +38,8 @@ export const AdminPage: React.FC = () => {
     heroHeadlineMr: 'तुमच्या आयुष्याचा साथीदार शोधा',
     heroSubtitleEn: 'Find love on your terms with thousands of verified profiles',
     heroSubtitleMr: 'तुमच्या आवडीनुसार आणि विश्वासाने शोधा सुयोग्य स्थळे',
-    supportPhone: '+91 98765 43210',
-    supportEmail: 'support@pavithrabandhan.com',
+    supportPhone: '+91 90750 36382',
+    supportEmail: 'pranotipawar056@gmail.com',
     puneOffice: 'FC Road, Shivajinagar, Pune',
     mumbaiOffice: 'Nariman Point, Mumbai',
   });

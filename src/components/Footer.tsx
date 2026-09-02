@@ -91,11 +91,11 @@ export const Footer: React.FC = () => {
             <div className="flex flex-wrap md:flex-col items-center md:items-start gap-x-4 gap-y-1.5 text-[11px] md:text-xs text-ivory-300">
               <div className="flex items-center gap-1.5">
                 <Phone className="w-3.5 h-3.5 text-gold-400" />
-                <span>+91 98765 43210</span>
+                <span>+91 90750 36382</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Mail className="w-3.5 h-3.5 text-gold-400" />
-                <span>support@vbrothersmarry.com</span>
+                <span>pranotipawar056@gmail.com</span>
               </div>
               <p className="text-[10px] md:text-[11px] text-ivory-400 w-full pt-0.5 md:pt-2">
                 {language === 'EN' ? 'Headquarters: Pune & Mumbai, Maharashtra' : 'मुख्य कार्यालय: पुणे आणि मुंबई, महाराष्ट्र'}
