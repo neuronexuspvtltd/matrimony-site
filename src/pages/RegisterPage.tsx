@@ -386,7 +386,7 @@ export const RegisterPage: React.FC = () => {
                   value={formData.fullName}
                   onChange={handleChange}
                   placeholder="e.g. Rahul Patil"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
                   required
                 />
               </div>
@@ -399,7 +399,7 @@ export const RegisterPage: React.FC = () => {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="user@gmail.com"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
                   required
                 />
               </div>
@@ -420,7 +420,7 @@ export const RegisterPage: React.FC = () => {
                     inputMode="numeric"
                     placeholder="9876543210"
                     disabled={mobileOtpVerified}
-                    className="flex-1 px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm"
+                    className="flex-1 px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
                     required
                   />
                   {mobileOtpVerified ? (
@@ -506,7 +506,7 @@ export const RegisterPage: React.FC = () => {
                   name="gender"
                   value={formData.gender}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-900 text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 text-sm transition-all shadow-sm"
                 >
                   <option value="male">{t('male')}</option>
                   <option value="female">{t('female')}</option>
@@ -520,7 +520,7 @@ export const RegisterPage: React.FC = () => {
                   name="dob"
                   value={formData.dob}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-900 text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 text-sm transition-all shadow-sm"
                   required
                 />
               </div>
@@ -534,7 +534,7 @@ export const RegisterPage: React.FC = () => {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="••••••••"
-                    className="w-full px-4 py-3 pr-10 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-900 text-sm"
+                    className="w-full px-4 py-3 pr-10 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 text-sm transition-all shadow-sm"
                     required
                   />
                   <button
@@ -557,7 +557,7 @@ export const RegisterPage: React.FC = () => {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     placeholder="••••••••"
-                    className="w-full px-4 py-3 pr-10 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-900 text-sm"
+                    className="w-full px-4 py-3 pr-10 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 text-sm transition-all shadow-sm"
                     required
                   />
                   <button
@@ -584,7 +584,7 @@ export const RegisterPage: React.FC = () => {
                   value={formData.height}
                   onChange={handleChange}
                   placeholder="5'8&quot;"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
                 />
               </div>
 
@@ -594,7 +594,7 @@ export const RegisterPage: React.FC = () => {
                   name="maritalStatus"
                   value={formData.maritalStatus}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 text-sm transition-all shadow-sm"
                 >
                   <option value="never_married">Never Married (अविवाहित)</option>
                   <option value="divorced">Divorced (घटस्फोटित)</option>
@@ -609,7 +609,7 @@ export const RegisterPage: React.FC = () => {
                   name="religion"
                   value={formData.religion}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
                 />
               </div>
 
@@ -620,7 +620,7 @@ export const RegisterPage: React.FC = () => {
                   name="caste"
                   value={formData.caste}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
                 />
               </div>
 
@@ -632,7 +632,7 @@ export const RegisterPage: React.FC = () => {
                   value={formData.subCaste}
                   onChange={handleChange}
                   placeholder="Deshmukh / 96 Kuli"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
                 />
               </div>
 
@@ -643,7 +643,7 @@ export const RegisterPage: React.FC = () => {
                   name="motherTongue"
                   value={formData.motherTongue}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
                 />
               </div>
 
@@ -654,7 +654,7 @@ export const RegisterPage: React.FC = () => {
                   name="city"
                   value={formData.city}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
                 />
               </div>
 
@@ -665,7 +665,7 @@ export const RegisterPage: React.FC = () => {
                   name="state"
                   value={formData.state}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
                 />
               </div>
             </div>
@@ -682,7 +682,7 @@ export const RegisterPage: React.FC = () => {
                   value={formData.education}
                   onChange={handleChange}
                   placeholder="B.Tech, MBA, M.Sc, MD"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
                 />
               </div>
 
@@ -694,7 +694,7 @@ export const RegisterPage: React.FC = () => {
                   value={formData.college}
                   onChange={handleChange}
                   placeholder="College / University Name"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
                 />
               </div>
 
@@ -706,7 +706,7 @@ export const RegisterPage: React.FC = () => {
                   value={formData.occupation}
                   onChange={handleChange}
                   placeholder="Software Engineer, Doctor, CA"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
                 />
               </div>
 
@@ -718,7 +718,7 @@ export const RegisterPage: React.FC = () => {
                   value={formData.income}
                   onChange={handleChange}
                   placeholder="e.g. 10-15 LPA"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
                 />
               </div>
             </div>
@@ -734,7 +734,7 @@ export const RegisterPage: React.FC = () => {
                   name="fatherOccupation"
                   value={formData.fatherOccupation}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
                 />
               </div>
 
@@ -745,7 +745,7 @@ export const RegisterPage: React.FC = () => {
                   name="motherOccupation"
                   value={formData.motherOccupation}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
                 />
               </div>
 
@@ -757,7 +757,7 @@ export const RegisterPage: React.FC = () => {
                   value={formData.brothers}
                   onChange={handleChange}
                   min="0"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
                 />
               </div>
 
@@ -769,7 +769,7 @@ export const RegisterPage: React.FC = () => {
                   value={formData.sisters}
                   onChange={handleChange}
                   min="0"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
                 />
               </div>
 
@@ -781,7 +781,7 @@ export const RegisterPage: React.FC = () => {
                   onChange={handleChange}
                   rows={3}
                   placeholder="Share a short bio about yourself and your aspirations..."
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
                 />
               </div>
             </div>
@@ -798,14 +798,14 @@ export const RegisterPage: React.FC = () => {
                     name="partnerMinAge"
                     value={formData.partnerMinAge}
                     onChange={handleChange}
-                    className="w-1/2 px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                    className="w-1/2 px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
                   />
                   <input
                     type="number"
                     name="partnerMaxAge"
                     value={formData.partnerMaxAge}
                     onChange={handleChange}
-                    className="w-1/2 px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                    className="w-1/2 px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
                   />
                 </div>
               </div>
@@ -817,7 +817,7 @@ export const RegisterPage: React.FC = () => {
                   name="partnerEducation"
                   value={formData.partnerEducation}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
                 />
               </div>
 
@@ -828,7 +828,7 @@ export const RegisterPage: React.FC = () => {
                   name="partnerOccupation"
                   value={formData.partnerOccupation}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
                 />
               </div>
 
@@ -839,7 +839,7 @@ export const RegisterPage: React.FC = () => {
                   name="partnerLocation"
                   value={formData.partnerLocation}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
                 />
               </div>
             </div>
