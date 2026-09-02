@@ -701,10 +701,17 @@ export const RegisterPage: React.FC = () => {
 
                   <div className="text-left sm:text-right shrink-0">
                     <span className="text-xs text-ivory-200 block font-medium">Total Payable</span>
-                    <span className="font-serif text-3xl sm:text-4xl font-extrabold text-gold-300 tracking-tight">
-                      ₹1,100
-                    </span>
-                    <span className="text-[10px] text-ivory-200 block">INR (One-time Fee)</span>
+                    <div className="flex items-baseline justify-start sm:justify-end gap-2 pt-0.5">
+                      <span className="line-through text-red-300/80 text-base sm:text-lg font-bold">
+                        ₹5,000
+                      </span>
+                      <span className="font-serif text-3xl sm:text-4xl font-extrabold text-gold-300 tracking-tight">
+                        ₹2,499
+                      </span>
+                    </div>
+                    <div className="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] uppercase font-bold px-2.5 py-0.5 rounded-full mt-1">
+                      <span>50% Special Offer</span>
+                    </div>
                   </div>
                 </div>
 
@@ -745,7 +752,7 @@ export const RegisterPage: React.FC = () => {
                     <span>
                       {paymentProcessing || loading
                         ? 'Opening Razorpay...'
-                        : `Pay ₹1,100 with Razorpay & Register`}
+                        : `Pay ₹2,499 with Razorpay & Register`}
                     </span>
                   </button>
 
@@ -788,7 +795,7 @@ export const RegisterPage: React.FC = () => {
                 className="px-8 py-3 rounded-xl bg-gold-400 text-brand-950 font-bold text-xs hover:bg-gold-300 shadow-md cursor-pointer ml-auto flex items-center gap-2"
               >
                 <CreditCard className="w-4 h-4" />
-                <span>{paymentProcessing || loading ? 'Opening Razorpay...' : 'Pay ₹1,100 & Register'}</span>
+                <span>{paymentProcessing || loading ? 'Opening Razorpay...' : 'Pay ₹2,499 & Register'}</span>
               </button>
             )}
           </div>

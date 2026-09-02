@@ -11,12 +11,13 @@ export const RAZORPAY_CONFIG = {
   // Replace 'YOUR_KEY_SECRET_HERE' with your Razorpay Key Secret
   keySecret: import.meta.env.VITE_RAZORPAY_KEY_SECRET || 'aEB9W9xlX40NuevBr2DB8RKG',
 
-  // Registration Fee Amount
-  amountINR: 1100, // ₹1,100 INR
-  amountPaise: 110000, // 1100 * 100 paise
+  // Registration Fee Offer Pricing
+  originalAmountINR: 5000, // ₹5,000 INR (Strikethrough original price)
+  amountINR: 2499, // ₹2,499 INR (Special Offer Final Price)
+  amountPaise: 249900, // 2499 * 100 paise
 
   currency: 'INR',
   companyName: 'V Brothers Marriage Bureau',
-  description: 'Membership Registration & Profile Verification Fee (₹1,100)',
+  description: 'Membership Registration & Profile Verification Fee (Special Offer ₹2,499)',
   themeColor: '#581c87', // Brand Maroon / Purple
 };

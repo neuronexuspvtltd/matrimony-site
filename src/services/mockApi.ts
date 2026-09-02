@@ -327,7 +327,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       isFeatured: true,
       completionPercentage: 70,
       paymentStatus: body.paymentStatus || 'paid',
-      paymentAmount: body.paymentAmount || 1100,
+      paymentAmount: body.paymentAmount || 2499,
       paymentId: body.paymentId || `PAY_${Date.now()}`,
       partnerPreferences: {
         minAge: Math.max(18, age - 5),
