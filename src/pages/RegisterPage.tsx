@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
@@ -103,6 +103,17 @@ export const RegisterPage: React.FC = () => {
   const [mobileOtpError, setMobileOtpError] = useState('');
   const [mobileOtpSuccess, setMobileOtpSuccess] = useState('');
   const [otpTimerSeconds, setOtpTimerSeconds] = useState(120);
+
+  const topRef = useRef<HTMLDivElement>(null);
+
+  // Smoothly scroll to the top of the form on step change
+  useEffect(() => {
+    if (topRef.current) {
+      topRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentStep]);
 
   useEffect(() => {
     let interval: any = null;
@@ -320,7 +331,7 @@ export const RegisterPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-[85vh] py-12 px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto">
+    <div ref={topRef} className="min-h-[85vh] py-12 px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto">
       <div className="bg-white rounded-3xl border border-ivory-300 shadow-xl overflow-hidden p-6 sm:p-10 space-y-8">
         
         {/* Header Title */}
