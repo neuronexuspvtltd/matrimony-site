@@ -271,6 +271,22 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     return { exists: false };
   }
 
+  if (endpoint === '/auth/reset-password' && method === 'POST') {
+    const { mobile, newPassword } = body;
+    const cleanMobile = (mobile || '').trim();
+
+    const pIndex = profiles.findIndex((p: ProfileData) => p.user.mobile === cleanMobile || p.user.email?.toLowerCase() === cleanMobile.toLowerCase());
+    if (pIndex !== -1) {
+      profiles[pIndex].user.password = newPassword;
+      setItem(PROFILES_KEY, profiles);
+      saveProfileToFirestore(profiles[pIndex].user._id, profiles[pIndex]).catch(() => {});
+      return { success: true, message: 'Password updated successfully! You can now log in.' };
+    }
+
+    // Fallback update
+    throw new Error('No user profile found associated with mobile number ' + cleanMobile);
+  }
+
   if (endpoint === '/auth/register' && method === 'POST') {
     const { fullName, email, password, mobile, gender, dateOfBirth, city, religion, caste, education, occupation, maritalStatus } = body;
 

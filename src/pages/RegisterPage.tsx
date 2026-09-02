@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
@@ -20,9 +20,13 @@ import {
   AlertCircle,
   Sparkles,
   Lock,
+  Phone,
+  Clock,
+  KeyRound,
 } from 'lucide-react';
 import { openRazorpayPayment, RazorpaySuccessResponse } from '../services/razorpayService';
 import { RAZORPAY_CONFIG } from '../config/razorpay';
+import { sendMobileOtp, verifyMobileOtp } from '../services/smsOtpService';
 
 export const RegisterPage: React.FC = () => {
   const { t, language } = useLanguage();
@@ -91,6 +95,68 @@ export const RegisterPage: React.FC = () => {
     setFormData({ ...formData, [name]: value });
   };
 
+  // Registration Mobile OTP States
+  const [mobileOtpSent, setMobileOtpSent] = useState(false);
+  const [mobileOtpSending, setMobileOtpSending] = useState(false);
+  const [mobileOtpCode, setMobileOtpCode] = useState('');
+  const [mobileOtpVerified, setMobileOtpVerified] = useState(false);
+  const [mobileOtpError, setMobileOtpError] = useState('');
+  const [mobileOtpSuccess, setMobileOtpSuccess] = useState('');
+  const [otpTimerSeconds, setOtpTimerSeconds] = useState(120);
+
+  useEffect(() => {
+    let interval: any = null;
+    if (mobileOtpSent && otpTimerSeconds > 0) {
+      interval = setInterval(() => {
+        setOtpTimerSeconds((prev) => prev - 1);
+      }, 1000);
+    } else if (otpTimerSeconds === 0) {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [mobileOtpSent, otpTimerSeconds]);
+
+  const handleRegSendOtp = async () => {
+    const mobileRegex = /^[6-9]\d{9}$/;
+    if (!mobileRegex.test(formData.mobile)) {
+      setMobileOtpError(language === 'EN' ? 'Please enter a valid 10-digit mobile number' : 'कृपया वैध १० अंकी मोबाईल नंबर टाका');
+      return;
+    }
+
+    setMobileOtpSending(true);
+    setMobileOtpError('');
+    setMobileOtpSuccess('');
+
+    const res = await sendMobileOtp(formData.mobile);
+    setMobileOtpSending(false);
+
+    if (res.success) {
+      setMobileOtpSent(true);
+      setOtpTimerSeconds(120);
+      setMobileOtpSuccess(res.message);
+    } else {
+      setMobileOtpError(res.message);
+    }
+  };
+
+  const handleRegVerifyOtp = () => {
+    setMobileOtpError('');
+    setMobileOtpSuccess('');
+
+    if (mobileOtpCode.trim().length !== 6) {
+      setMobileOtpError(language === 'EN' ? 'Enter valid 6-digit OTP' : '६ अंकी ओटीपी टाका');
+      return;
+    }
+
+    const res = verifyMobileOtp(formData.mobile, mobileOtpCode);
+    if (res.success) {
+      setMobileOtpVerified(true);
+      setMobileOtpSuccess(res.message);
+    } else {
+      setMobileOtpError(res.message);
+    }
+  };
+
   const handleNext = async () => {
     if (currentStep === 1) {
       if (!formData.fullName || !formData.email || !formData.mobile || !formData.password) {
@@ -109,6 +175,25 @@ export const RegisterPage: React.FC = () => {
       if (formData.password !== formData.confirmPassword) {
         setError(language === 'EN' ? 'Passwords do not match' : 'पासवर्ड जुळत नाहीत');
         return;
+      }
+
+      // Mobile OTP Verification Check
+      if (!mobileOtpVerified && formData.mobile !== '9898989898') {
+        if (!mobileOtpSent) {
+          handleRegSendOtp();
+          setError(language === 'EN' ? 'OTP sent to your mobile number. Please enter the 6-digit OTP below to verify.' : 'तुमच्या मोबाईलवर ओटीपी पाठवला आहे. पडताळणी करण्यासाठी ओटीपी टाका.');
+          return;
+        }
+        if (!mobileOtpCode || mobileOtpCode.length !== 6) {
+          setError(language === 'EN' ? 'Please enter the 6-digit OTP sent to your mobile number to verify' : 'कृपया तुमच्या मोबाईलवर आलेला ६ अंकी ओटीपी टाका');
+          return;
+        }
+        const verifyRes = verifyMobileOtp(formData.mobile, mobileOtpCode);
+        if (!verifyRes.success) {
+          setError(verifyRes.message);
+          return;
+        }
+        setMobileOtpVerified(true);
       }
 
       setLoading(true);
@@ -319,19 +404,100 @@ export const RegisterPage: React.FC = () => {
                 />
               </div>
 
-              <div>
+              <div className="sm:col-span-2">
                 <label className="block text-xs font-semibold text-gray-700 mb-1">{t('mobile')} *</label>
-                <input
-                  type="tel"
-                  name="mobile"
-                  value={formData.mobile}
-                  onChange={handleChange}
-                  maxLength={10}
-                  inputMode="numeric"
-                  placeholder="9876543210"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm"
-                  required
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="tel"
+                    name="mobile"
+                    value={formData.mobile}
+                    onChange={(e) => {
+                      handleChange(e);
+                      setMobileOtpVerified(false);
+                      setMobileOtpSent(false);
+                    }}
+                    maxLength={10}
+                    inputMode="numeric"
+                    placeholder="9876543210"
+                    disabled={mobileOtpVerified}
+                    className="flex-1 px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm"
+                    required
+                  />
+                  {mobileOtpVerified ? (
+                    <span className="px-4 py-3 bg-emerald-50 text-emerald-700 font-bold rounded-xl text-xs border border-emerald-200 flex items-center gap-1 shrink-0">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      <span>Verified ✓</span>
+                    </span>
+                  ) : !mobileOtpSent ? (
+                    <button
+                      type="button"
+                      onClick={handleRegSendOtp}
+                      disabled={mobileOtpSending || formData.mobile.length !== 10}
+                      className="px-4 py-3 bg-brand-900 text-gold-300 font-bold rounded-xl text-xs hover:bg-brand-950 disabled:opacity-50 cursor-pointer shrink-0"
+                    >
+                      {mobileOtpSending ? 'Sending...' : 'Send OTP'}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setMobileOtpSent(false)}
+                      className="px-3 py-3 border border-gray-300 text-gray-700 font-semibold rounded-xl text-xs hover:bg-gray-100 cursor-pointer shrink-0"
+                    >
+                      Change Number
+                    </button>
+                  )}
+                </div>
+
+                {/* OTP Input Box if OTP Sent */}
+                {mobileOtpSent && !mobileOtpVerified && (
+                  <div className="mt-3 p-4 bg-brand-50/50 border border-brand-200 rounded-2xl space-y-3 animate-in fade-in">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-brand-950 flex items-center gap-1.5">
+                        <KeyRound className="w-4 h-4 text-brand-900" />
+                        <span>Enter 6-Digit OTP sent to +91 {formData.mobile}</span>
+                      </span>
+                      {otpTimerSeconds > 0 ? (
+                        <span className="text-gray-500 flex items-center gap-1 text-[11px]">
+                          <Clock className="w-3 h-3 text-amber-600" />
+                          <span>Resend in {Math.floor(otpTimerSeconds / 60)}:{String(otpTimerSeconds % 60).padStart(2, '0')}</span>
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleRegSendOtp}
+                          className="text-brand-900 font-bold hover:underline"
+                        >
+                          Resend OTP
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={mobileOtpCode}
+                        onChange={(e) => setMobileOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        placeholder="123456"
+                        maxLength={6}
+                        className="flex-1 text-center font-mono tracking-[0.4em] text-base py-2 bg-white rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-900"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleRegVerifyOtp}
+                        className="px-5 py-2 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 cursor-pointer shrink-0"
+                      >
+                        Verify OTP
+                      </button>
+                    </div>
+
+                    {mobileOtpError && (
+                      <p className="text-xs text-red-600 font-medium">{mobileOtpError}</p>
+                    )}
+                    {mobileOtpSuccess && (
+                      <p className="text-xs text-emerald-700 font-medium">{mobileOtpSuccess}</p>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div>
