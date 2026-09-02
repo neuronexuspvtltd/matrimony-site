@@ -184,12 +184,16 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       throw new Error('Please enter your password.');
     }
 
-    const cleanEmail = email.trim().toLowerCase();
+    const cleanCredential = (email || '').trim().toLowerCase();
 
-    // Admin Account Authentication
-    if (cleanEmail === 'admin@matrimony.com') {
+    // Admin Account Authentication (Email / Mobile)
+    if (
+      cleanCredential === 'admin@matrimony.com' ||
+      cleanCredential === '9075036382' ||
+      cleanCredential === 'pranotipawar056@gmail.com'
+    ) {
       if (password !== 'Admin@123') {
-        throw new Error('Invalid email or password');
+        throw new Error('Invalid mobile number / email or password');
       }
       const adminUser = {
         id: 'usr_admin',
@@ -204,8 +208,6 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       localStorage.setItem('pb_current_user', JSON.stringify(adminUser));
       return { token: tokenStr, user: adminUser };
     }
-
-    const cleanCredential = (email || '').trim().toLowerCase();
 
     // Member Profile Search (Local Storage & Cloud Firestore by Email OR Mobile)
     let prof = profiles.find(
