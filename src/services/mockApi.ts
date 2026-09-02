@@ -205,11 +205,18 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       return { token: tokenStr, user: adminUser };
     }
 
-    // Member Profile Search (Local Storage & Cloud Firestore)
-    let prof = profiles.find((p: ProfileData) => p.user.email.toLowerCase() === cleanEmail);
+    const cleanCredential = (email || '').trim().toLowerCase();
+
+    // Member Profile Search (Local Storage & Cloud Firestore by Email OR Mobile)
+    let prof = profiles.find(
+      (p: ProfileData) =>
+        p.user.email.toLowerCase() === cleanCredential ||
+        p.user.mobile === cleanCredential ||
+        (p.user.mobile && p.user.mobile.replace(/\D/g, '') === cleanCredential)
+    );
 
     if (!prof) {
-      const firestoreProf = await findProfileByEmailFirestore(cleanEmail).catch(() => null);
+      const firestoreProf = await findProfileByEmailFirestore(cleanCredential).catch(() => null);
       if (firestoreProf) {
         prof = firestoreProf;
         profiles.unshift(firestoreProf);
@@ -218,7 +225,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     }
 
     if (!prof) {
-      throw new Error('Invalid email or password');
+      throw new Error('Invalid mobile number / email or password');
     }
 
     if (prof.user.status === 'suspended') {
