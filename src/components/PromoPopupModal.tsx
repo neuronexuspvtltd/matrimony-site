@@ -58,12 +58,7 @@ export const PromoPopupModal: React.FC<PromoPopupModalProps> = ({ siteContent: p
         return;
       }
 
-      // Check if user already dismissed THIS specific poster image URL in this browser tab session
-      const dismissedUrl = sessionStorage.getItem('pb_promo_popup_closed_url');
-      if (dismissedUrl === activeContent.popupBannerImageUrl) {
-        return;
-      }
-
+      // Show popup on every site load/refresh as requested by admin
       setContent(activeContent);
       setIsOpen(true);
     };
@@ -89,9 +84,6 @@ export const PromoPopupModal: React.FC<PromoPopupModalProps> = ({ siteContent: p
 
   const handleClose = () => {
     setIsOpen(false);
-    if (content?.popupBannerImageUrl) {
-      sessionStorage.setItem('pb_promo_popup_closed_url', content.popupBannerImageUrl);
-    }
   };
 
   const handlePosterClick = () => {
