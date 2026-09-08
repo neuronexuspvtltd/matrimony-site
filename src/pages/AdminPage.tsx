@@ -1323,7 +1323,17 @@ export const AdminPage: React.FC = () => {
               <input
                 type="checkbox"
                 checked={!!siteContent.popupBannerEnabled}
-                onChange={(e) => setSiteContent({ ...siteContent, popupBannerEnabled: e.target.checked })}
+                onChange={async (e) => {
+                  const isChecked = e.target.checked;
+                  const updated = { ...siteContent, popupBannerEnabled: isChecked };
+                  setSiteContent(updated);
+                  try {
+                    await fetchApi('/admin/site-content', {
+                      method: 'PUT',
+                      body: JSON.stringify(updated),
+                    });
+                  } catch (err) {}
+                }}
                 className="w-4 h-4 text-brand-900 rounded focus:ring-brand-900 cursor-pointer"
               />
               <span className="text-xs font-bold text-brand-950">

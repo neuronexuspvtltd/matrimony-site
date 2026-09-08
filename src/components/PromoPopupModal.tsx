@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { X, Sparkles, ChevronRight } from 'lucide-react';
+import { fetchApi } from '../services/api';
 
 interface PromoPopupModalProps {
   siteContent?: any;
@@ -19,7 +20,7 @@ export const PromoPopupModal: React.FC<PromoPopupModalProps> = ({ siteContent: p
     const loadSiteContent = async () => {
       let activeContent: any = propsContent;
 
-      // 1. Try reading from localStorage
+      // 1. Try reading directly from LocalStorage
       if (!activeContent) {
         try {
           const raw = localStorage.getItem('pb_site_content_data');
@@ -29,24 +30,24 @@ export const PromoPopupModal: React.FC<PromoPopupModalProps> = ({ siteContent: p
         } catch (e) {}
       }
 
-      // 2. Fallback fetch from API
+      // 2. Fetch using fetchApi('/admin/site-content')
       if (!activeContent) {
         try {
-          const res = await fetch('/admin/site-content');
-          activeContent = await res.json();
+          const res = await fetchApi('/admin/site-content');
+          if (res) {
+            activeContent = res;
+          }
         } catch (e) {}
       }
 
       if (!isMounted) return;
 
-      // STRICT VALIDATION: If activeContent is missing, OR popupBannerEnabled is false, OR image URL is empty -> DO NOT SHOW ANYTHING!
-      if (
-        !activeContent ||
-        !activeContent.popupBannerEnabled ||
-        !activeContent.popupBannerImageUrl ||
-        typeof activeContent.popupBannerImageUrl !== 'string' ||
-        activeContent.popupBannerImageUrl.trim() === ''
-      ) {
+      // Ensure activeContent exists and has popupBannerEnabled true and a non-empty image URL
+      const isEnabled = Boolean(activeContent?.popupBannerEnabled);
+      const imageUrl = activeContent?.popupBannerImageUrl;
+      const isValidImage = typeof imageUrl === 'string' && imageUrl.trim().length > 0;
+
+      if (!isEnabled || !isValidImage) {
         setIsOpen(false);
         setContent(null);
         return;
@@ -58,8 +59,15 @@ export const PromoPopupModal: React.FC<PromoPopupModalProps> = ({ siteContent: p
 
     loadSiteContent();
 
+    // Listen for storage changes in real-time
+    const handleStorageChange = () => {
+      loadSiteContent();
+    };
+    window.addEventListener('storage', handleStorageChange);
+
     return () => {
       isMounted = false;
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, [propsContent]);
 
