@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { fetchApi } from '../services/api';
+import { uploadUserPhotoToStorage } from '../services/firebaseService';
 import {
   X,
   User,
@@ -13,6 +14,11 @@ import {
   CheckCircle2,
   AlertCircle,
   Sparkles,
+  Camera,
+  Trash2,
+  Star,
+  Plus,
+  Image as ImageIcon,
 } from 'lucide-react';
 
 interface EditProfileModalProps {
@@ -31,10 +37,14 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   const { t, language } = useLanguage();
   const { refreshUser } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<'personal' | 'career' | 'family' | 'partner'>('personal');
+  const [activeTab, setActiveTab] = useState<'personal' | 'career' | 'family' | 'partner' | 'photos'>('personal');
   const [loading, setLoading] = useState(false);
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  const [photosList, setPhotosList] = useState<string[]>([]);
+  const [primaryPhotoUrl, setPrimaryPhotoUrl] = useState<string>('');
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -74,6 +84,12 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
   useEffect(() => {
     if (profileData) {
+      const existingPhotos: string[] = Array.isArray(profileData.photos) ? profileData.photos : [];
+      const primary: string = profileData.primaryPhoto || (existingPhotos.length > 0 ? existingPhotos[0] : '');
+
+      setPrimaryPhotoUrl(primary);
+      setPhotosList(existingPhotos.length > 0 ? existingPhotos : (primary ? [primary] : []));
+
       setFormData({
         fullName: profileData.user?.fullName || profileData.fullName || '',
         age: profileData.age || 25,
@@ -109,6 +125,44 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
     }
   }, [profileData]);
 
+  const handleMultiplePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    setUploadingPhotos(true);
+    setError('');
+    try {
+      const targetUserId = profileData?.user?._id || profileData?._id || 'usr_me';
+      const uploadPromises = files.map((file) => uploadUserPhotoToStorage(file, targetUserId));
+      const uploadedUrls = await Promise.all(uploadPromises);
+
+      setPhotosList((prev) => {
+        const next = [...prev, ...uploadedUrls];
+        if (!primaryPhotoUrl && next.length > 0) {
+          setPrimaryPhotoUrl(next[0]);
+        }
+        return next;
+      });
+    } catch (err: any) {
+      setError(err.message || 'Failed to upload photos');
+    } finally {
+      setUploadingPhotos(false);
+    }
+  };
+
+  const removePhoto = (index: number) => {
+    const targetUrl = photosList[index];
+    const updated = photosList.filter((_, i) => i !== index);
+    setPhotosList(updated);
+    if (primaryPhotoUrl === targetUrl) {
+      setPrimaryPhotoUrl(updated[0] || '');
+    }
+  };
+
+  const handleSetPrimary = (url: string) => {
+    setPrimaryPhotoUrl(url);
+  };
+
   if (!isOpen) return null;
 
   const handleChange = (
@@ -128,7 +182,11 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
       const targetId = profileData?.profileId || profileData?.user?._id || 'me';
       const res = await fetchApi(`/profiles/${targetId}`, {
         method: 'PUT',
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          primaryPhoto: primaryPhotoUrl || (photosList.length > 0 ? photosList[0] : ''),
+          photos: photosList,
+        }),
       });
 
       const updated = res.profile || res;
@@ -235,6 +293,19 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
           >
             <Sliders className="w-4 h-4 text-gold-600" />
             <span>{language === 'EN' ? 'Partner Preferences' : 'अपेक्षित जोडीदार'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('photos')}
+            className={`flex-1 py-3.5 px-3 flex items-center justify-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'photos'
+                ? 'border-brand-900 text-brand-950 bg-white font-bold'
+                : 'border-transparent text-gray-500 hover:text-gray-800'
+            }`}
+          >
+            <Camera className="w-4 h-4 text-gold-600" />
+            <span>{language === 'EN' ? 'Photos Gallery' : 'फोटो गॅलरी'}</span>
           </button>
         </div>
 
@@ -551,6 +622,94 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                   className="w-full px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 text-sm transition-all shadow-sm"
                 />
               </div>
+            </div>
+          )}
+
+          {/* TAB 5: PHOTOS GALLERY */}
+          {activeTab === 'photos' && (
+            <div className="space-y-4 animate-in fade-in">
+              <div className="p-4 bg-brand-50/60 border border-brand-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h4 className="font-serif font-bold text-brand-950 text-sm flex items-center gap-2">
+                    <Camera className="w-4 h-4 text-brand-900" />
+                    <span>{language === 'EN' ? 'Manage Multiple Profile Photos' : 'प्रोफाईल फोटो गॅलरी'}</span>
+                  </h4>
+                  <p className="text-xs text-gray-600">
+                    {language === 'EN'
+                      ? 'Upload multiple photos. Click Star ⭐ to set a photo as your primary profile picture.'
+                      : 'एकापेक्षा जास्त फोटो अपलोड करा. स्टार ⭐ वर क्लिक करून मुख्य फोटो सेट करा.'}
+                  </p>
+                </div>
+
+                <label className="px-4 py-2.5 bg-brand-900 text-gold-300 font-bold rounded-xl text-xs hover:bg-brand-950 cursor-pointer flex items-center gap-2 shrink-0 self-start sm:self-auto shadow-md">
+                  <Plus className="w-4 h-4 text-gold-400" />
+                  <span>{uploadingPhotos ? 'Uploading...' : 'Upload Photos'}</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleMultiplePhotoUpload}
+                    disabled={uploadingPhotos}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+
+              {/* Photos Grid */}
+              {photosList.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
+                  {photosList.map((photoUrl, idx) => (
+                    <div
+                      key={idx}
+                      className={`relative group aspect-square rounded-2xl overflow-hidden border-2 bg-slate-100 shadow-sm ${
+                        primaryPhotoUrl === photoUrl ? 'border-gold-400 ring-2 ring-gold-400/40' : 'border-gray-200'
+                      }`}
+                    >
+                      <img src={photoUrl} alt="" className="w-full h-full object-cover" />
+
+                      {/* Primary Photo Badge */}
+                      {primaryPhotoUrl === photoUrl && (
+                        <div className="absolute top-2 left-2 bg-gold-400 text-brand-950 text-[10px] font-bold px-2 py-0.5 rounded-full shadow flex items-center gap-1">
+                          <Star className="w-3 h-3 fill-brand-950" />
+                          <span>Primary</span>
+                        </div>
+                      )}
+
+                      {/* Hover Action Buttons Overlay */}
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-2">
+                        {primaryPhotoUrl !== photoUrl && (
+                          <button
+                            type="button"
+                            onClick={() => handleSetPrimary(photoUrl)}
+                            className="px-3 py-1.5 bg-gold-400 text-brand-950 font-bold rounded-xl text-xs flex items-center gap-1 shadow hover:bg-gold-300"
+                            title="Set as Primary Profile Photo"
+                          >
+                            <Star className="w-3.5 h-3.5 fill-brand-950" />
+                            <span>Set Main</span>
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => removePhoto(idx)}
+                          className="p-2 bg-red-600 text-white rounded-xl shadow hover:bg-red-700 cursor-pointer"
+                          title="Delete Photo"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-8 border-2 border-dashed border-ivory-300 rounded-2xl text-center space-y-3 bg-ivory-50">
+                  <div className="w-12 h-12 rounded-full bg-ivory-200 text-gray-400 flex items-center justify-center mx-auto">
+                    <ImageIcon className="w-6 h-6" />
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    No photos added to your gallery yet. Click "Upload Photos" above to select multiple photos.
+                  </p>
+                </div>
+              )}
             </div>
           )}
 

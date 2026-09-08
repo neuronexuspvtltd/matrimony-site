@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { fetchApi } from '../services/api';
+import { uploadUserPhotoToStorage } from '../services/firebaseService';
 import {
   Check,
   ChevronLeft,
@@ -23,6 +24,11 @@ import {
   Phone,
   Clock,
   KeyRound,
+  Camera,
+  Trash2,
+  Star,
+  Image,
+  Plus,
 } from 'lucide-react';
 import { openRazorpayPayment, RazorpaySuccessResponse } from '../services/razorpayService';
 import { RAZORPAY_CONFIG } from '../config/razorpay';
@@ -103,6 +109,10 @@ export const RegisterPage: React.FC = () => {
   const [mobileOtpError, setMobileOtpError] = useState('');
   const [mobileOtpSuccess, setMobileOtpSuccess] = useState('');
   const [otpTimerSeconds, setOtpTimerSeconds] = useState(120);
+
+  // Payment states
+  const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [paymentSuccessData, setPaymentSuccessData] = useState<any>(null);
 
   const topRef = useRef<HTMLDivElement>(null);
 
@@ -239,8 +249,45 @@ export const RegisterPage: React.FC = () => {
     setCurrentStep((prev) => Math.max(1, prev - 1));
   };
 
-  const [paymentSuccessData, setPaymentSuccessData] = useState<any | null>(null);
-  const [paymentProcessing, setPaymentProcessing] = useState(false);
+  // Multiple Photos Registration State
+  const [regPhotos, setRegPhotos] = useState<string[]>([]);
+  const [regPrimaryPhoto, setRegPrimaryPhoto] = useState<string>('');
+  const [uploadingRegPhotos, setUploadingRegPhotos] = useState(false);
+
+  const handleRegMultiplePhotos = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    setUploadingRegPhotos(true);
+    try {
+      const uploadPromises = files.map((file) =>
+        uploadUserPhotoToStorage(file, `reg_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`)
+      );
+      const uploadedUrls = await Promise.all(uploadPromises);
+
+      setRegPhotos((prev) => {
+        const next = [...prev, ...uploadedUrls];
+        if (!regPrimaryPhoto && next.length > 0) {
+          setRegPrimaryPhoto(next[0]);
+        }
+        return next;
+      });
+    } catch (err: any) {
+      console.warn('Photo upload error:', err);
+    } finally {
+      setUploadingRegPhotos(false);
+    }
+  };
+
+  const removeRegPhoto = (index: number) => {
+    setRegPhotos((prev) => {
+      const next = prev.filter((_, i) => i !== index);
+      if (regPrimaryPhoto === prev[index]) {
+        setRegPrimaryPhoto(next[0] || '');
+      }
+      return next;
+    });
+  };
 
   const processRegistrationWithPayment = async (paymentId: string) => {
     setLoading(true);
@@ -248,6 +295,8 @@ export const RegisterPage: React.FC = () => {
     try {
       const userRes = await register({
         ...formData,
+        primaryPhoto: regPrimaryPhoto || (regPhotos.length > 0 ? regPhotos[0] : ''),
+        photos: regPhotos,
         paymentStatus: 'paid',
         paymentAmount: RAZORPAY_CONFIG.amountINR,
         paymentId,
@@ -678,6 +727,80 @@ export const RegisterPage: React.FC = () => {
                   onChange={handleChange}
                   className="w-full px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
                 />
+              </div>
+
+              {/* Multiple Photos Upload Section */}
+              <div className="sm:col-span-2 pt-2">
+                <div className="p-5 bg-ivory-100/90 border border-ivory-300 rounded-2xl space-y-4 shadow-sm">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <h4 className="font-serif font-bold text-brand-950 text-sm flex items-center gap-2">
+                        <Camera className="w-4 h-4 text-gold-600" />
+                        <span>{language === 'EN' ? 'Upload Profile Photos (Multiple Photos)' : 'प्रोफाईल फोटो अपलोड करा (एकापेक्षा जास्त फोटो)'}</span>
+                      </h4>
+                      <p className="text-xs text-gray-500">
+                        {language === 'EN' ? 'Upload up to 5 high quality photos. First photo will be your main photo.' : 'तुमचे उत्कृष्ट फोटो अपलोड करा. पहिला फोटो मुख्य फोटो म्हणून दिसेल.'}
+                      </p>
+                    </div>
+
+                    <label className="px-4 py-2.5 bg-brand-900 text-gold-300 font-bold rounded-xl text-xs hover:bg-brand-950 cursor-pointer flex items-center gap-1.5 shrink-0 self-start sm:self-auto">
+                      <Plus className="w-4 h-4 text-gold-400" />
+                      <span>{uploadingRegPhotos ? 'Uploading...' : 'Add Photos'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleRegMultiplePhotos}
+                        disabled={uploadingRegPhotos}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+
+                  {/* Photos Grid Preview */}
+                  {regPhotos.length > 0 ? (
+                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 pt-2">
+                      {regPhotos.map((photoUrl, idx) => (
+                        <div key={idx} className="relative group w-full aspect-square rounded-xl overflow-hidden border-2 border-ivory-300 bg-white shadow-sm">
+                          <img src={photoUrl} alt="" className="w-full h-full object-cover" />
+                          
+                          {/* Primary Badge */}
+                          {regPrimaryPhoto === photoUrl && (
+                            <span className="absolute top-1 left-1 bg-gold-400 text-brand-950 text-[9px] font-bold px-1.5 py-0.5 rounded shadow">
+                              Primary ⭐
+                            </span>
+                          )}
+
+                          {/* Action Overlay */}
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 p-1">
+                            {regPrimaryPhoto !== photoUrl && (
+                              <button
+                                type="button"
+                                onClick={() => setRegPrimaryPhoto(photoUrl)}
+                                className="p-1.5 bg-gold-400 text-brand-950 rounded-lg text-[10px] font-bold"
+                                title="Set as Primary"
+                              >
+                                <Star className="w-3.5 h-3.5 fill-brand-950" />
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => removeRegPhoto(idx)}
+                              className="p-1.5 bg-red-600 text-white rounded-lg"
+                              title="Delete photo"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-4 border-2 border-dashed border-ivory-300 rounded-xl text-center text-xs text-gray-400 bg-white/50">
+                      No photos added yet. Click "Add Photos" to select multiple photos from your device.
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}

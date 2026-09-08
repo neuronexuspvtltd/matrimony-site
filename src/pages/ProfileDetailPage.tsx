@@ -43,6 +43,7 @@ export const ProfileDetailPage: React.FC = () => {
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const fetchProfile = async () => {
     if (!id) return;
@@ -457,17 +458,30 @@ export const ProfileDetailPage: React.FC = () => {
           {/* Photo Gallery */}
           {profile.photos && profile.photos.length > 0 && (
             <div className="bg-white rounded-3xl border border-ivory-300 p-6 space-y-4">
-              <h3 className="font-serif font-bold text-brand-900 text-base border-b border-ivory-200 pb-3">
-                {language === 'EN' ? 'Photo Gallery' : 'फोटो गॅलरी'}
-              </h3>
+              <div className="flex items-center justify-between border-b border-ivory-200 pb-3">
+                <h3 className="font-serif font-bold text-brand-900 text-base">
+                  {language === 'EN' ? 'Photo Gallery' : 'फोटो गॅलरी'}
+                </h3>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gold-100 text-brand-900 border border-gold-300/50">
+                  {profile.photos.length} {profile.photos.length === 1 ? 'Photo' : 'Photos'}
+                </span>
+              </div>
               <div className="grid grid-cols-2 gap-2">
                 {profile.photos.map((photo: string, idx: number) => (
-                  <img
+                  <div
                     key={idx}
-                    src={photo}
-                    alt={`Gallery ${idx + 1}`}
-                    className="w-full h-28 object-cover rounded-xl border border-gray-100"
-                  />
+                    onClick={() => setPreviewImage(photo)}
+                    className="relative group cursor-pointer overflow-hidden rounded-xl border border-gray-200 h-28 bg-gray-100"
+                  >
+                    <img
+                      src={photo}
+                      alt={`Gallery ${idx + 1}`}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-semibold">
+                      🔍 View
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
@@ -503,6 +517,28 @@ export const ProfileDetailPage: React.FC = () => {
                 Submit Report
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image Lightbox Modal */}
+      {previewImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setPreviewImage(null)}
+        >
+          <div className="relative max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl">
+            <button
+              onClick={() => setPreviewImage(null)}
+              className="absolute top-3 right-3 bg-black/60 text-white rounded-full w-9 h-9 flex items-center justify-center text-lg font-bold hover:bg-black/80 transition-colors z-10"
+            >
+              ✕
+            </button>
+            <img
+              src={previewImage}
+              alt="Photo preview"
+              className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl"
+            />
           </div>
         </div>
       )}
