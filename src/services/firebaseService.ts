@@ -388,13 +388,61 @@ export const markMessagesReadFirestore = async (conversationId: string, partnerI
 // 📁 FIREBASE STORAGE SERVICES
 // --------------------------------------------------
 
-// Helper to convert local files to Base64 Data URLs for local persistence
-const readFileAsDataURL = (file: File): Promise<string> => {
+// Helper to compress local image files and convert to lightweight Base64 Data URLs (~50KB-100KB) for local persistence
+const compressAndReadImageAsDataURL = (file: File, maxWidth = 800, maxHeight = 800, quality = 0.75): Promise<string> => {
   return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result as string);
-    reader.onerror = () => resolve(URL.createObjectURL(file));
-    reader.readAsDataURL(file);
+    // If not an image file (e.g. PDF or other binary), read directly as standard data URL
+    if (!file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = () => resolve(URL.createObjectURL(file));
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      let width = img.width;
+      let height = img.height;
+
+      if (width > maxWidth || height > maxHeight) {
+        if (width > height) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        } else {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, width, height);
+        // Export compressed JPEG base64 string
+        const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+        resolve(compressedBase64);
+      } else {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(file);
+      }
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.readAsDataURL(file);
+    };
+
+    img.src = objectUrl;
   });
 };
 
@@ -406,8 +454,8 @@ export const uploadUserPhotoToStorage = async (file: File, userId: string): Prom
     const downloadUrl = await getDownloadURL(fileRef);
     return downloadUrl;
   } catch (error: any) {
-    console.warn('Firebase storage photo upload fallback (using Base64 for local persistence):', error.message);
-    return await readFileAsDataURL(file);
+    console.warn('Firebase storage photo upload fallback (using compressed Base64 for local persistence):', error.message);
+    return await compressAndReadImageAsDataURL(file);
   }
 };
 
@@ -420,6 +468,6 @@ export const uploadPdfBiodataToStorage = async (file: File, userId: string): Pro
     return downloadUrl;
   } catch (error: any) {
     console.warn('Firebase storage biodata upload fallback (using Base64 for local persistence):', error.message);
-    return await readFileAsDataURL(file);
+    return await compressAndReadImageAsDataURL(file);
   }
 };

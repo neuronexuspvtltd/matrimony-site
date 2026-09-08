@@ -60,7 +60,43 @@ const getItem = (key: string, defaultVal: any) => {
 };
 
 const setItem = (key: string, val: any) => {
-  localStorage.setItem(key, JSON.stringify(val));
+  try {
+    localStorage.setItem(key, JSON.stringify(val));
+  } catch (e: any) {
+    if (
+      e?.name === 'QuotaExceededError' ||
+      e?.name === 'NS_ERROR_DOM_QUOTA_REACHED' ||
+      e?.code === 22 ||
+      (e?.message && e.message.includes('exceeded the quota'))
+    ) {
+      console.warn('LocalStorage quota limit reached. Pruning cache to free space...');
+      try {
+        // Clear transient logs to reclaim space
+        localStorage.removeItem('pb_views_data');
+        localStorage.removeItem('pb_notifications_data');
+
+        // If storing profiles array, compress un-compressed large base64 image strings in historical profiles
+        if (key === PROFILES_KEY && Array.isArray(val)) {
+          const sanitizedProfiles = val.map((prof: any) => {
+            const p = { ...prof };
+            if (p.primaryPhoto && p.primaryPhoto.length > 500000) {
+              p.primaryPhoto = p.primaryPhoto.substring(0, 100) + '...'; // trim oversized raw base64
+            }
+            if (Array.isArray(p.photos)) {
+              p.photos = p.photos.filter((ph: string) => ph.length < 500000);
+            }
+            return p;
+          });
+          localStorage.setItem(key, JSON.stringify(sanitizedProfiles));
+          return;
+        }
+
+        localStorage.setItem(key, JSON.stringify(val));
+      } catch (retryErr) {
+        console.error('LocalStorage quota error could not be recovered automatically:', retryErr);
+      }
+    }
+  }
 };
 
 // Calculate profile completion percentage
