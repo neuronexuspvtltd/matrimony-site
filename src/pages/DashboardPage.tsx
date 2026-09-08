@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { fetchApi } from '../services/api';
 import { uploadUserPhotoToStorage } from '../services/firebaseService';
 import { ProfileCard } from '../components/ProfileCard';
+import { EditProfileModal } from '../components/EditProfileModal';
 import {
   Eye,
   Heart,
@@ -17,6 +18,7 @@ import {
   ChevronRight,
   ShieldCheck,
   Camera,
+  Edit3,
 } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
@@ -27,6 +29,7 @@ export const DashboardPage: React.FC = () => {
   const [recentViews, setRecentViews] = useState<any[]>([]);
   const [recommendedMatches, setRecommendedMatches] = useState<any[]>([]);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [stats, setStats] = useState({
     viewsCount: 0,
     interestsReceivedCount: 0,
@@ -143,17 +146,26 @@ export const DashboardPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0 z-10">
+        <div className="flex flex-wrap items-center gap-3 shrink-0 z-10">
+          <button
+            type="button"
+            onClick={() => setEditModalOpen(true)}
+            className="px-5 py-3 rounded-2xl bg-gold-400 text-brand-950 font-bold text-xs hover:bg-gold-300 shadow-md transition-all flex items-center gap-2 cursor-pointer"
+          >
+            <Edit3 className="w-4 h-4 text-brand-950" />
+            <span>{language === 'EN' ? 'Edit Profile' : 'प्रोफाईल एडिट करा'}</span>
+          </button>
+
           <label className="px-5 py-3 rounded-2xl bg-brand-800 text-gold-300 font-bold text-xs hover:bg-brand-700 shadow-md transition-all cursor-pointer flex items-center gap-2 border border-gold-400/30">
             <Camera className="w-4 h-4 text-gold-400" />
-            <span>{uploadingPhoto ? 'Uploading...' : '📷 Add Profile Photo'}</span>
+            <span>{uploadingPhoto ? 'Uploading...' : '📷 Add Photo'}</span>
             <input type="file" accept="image/*" onChange={handlePhotoUpload} disabled={uploadingPhoto} className="hidden" />
           </label>
 
           {userProfile.profileId && (
             <Link
               to={`/profile/${userProfile.profileId}`}
-              className="px-5 py-3 rounded-2xl bg-gold-400 text-brand-950 font-bold text-xs hover:bg-gold-300 shadow-md transition-all"
+              className="px-5 py-3 rounded-2xl bg-white/10 text-ivory-100 hover:bg-white/20 border border-white/20 font-bold text-xs shadow-md transition-all"
             >
               {t('viewProfile')}
             </Link>
@@ -173,7 +185,14 @@ export const DashboardPage: React.FC = () => {
               <p className="text-xs text-gray-500">{t('completeProfileTip')}</p>
             </div>
           </div>
-          <span className="text-xs font-bold text-brand-900">{completionPct}% Complete</span>
+          <button
+            type="button"
+            onClick={() => setEditModalOpen(true)}
+            className="text-xs font-bold text-brand-900 hover:underline flex items-center gap-1 cursor-pointer"
+          >
+            <Edit3 className="w-3.5 h-3.5 text-brand-900" />
+            <span>Edit Profile</span>
+          </button>
         </div>
 
         {/* Progress Bar */}
@@ -318,6 +337,17 @@ export const DashboardPage: React.FC = () => {
           ))}
         </div>
       </div>
+
+      {/* Edit Profile Modal */}
+      <EditProfileModal
+        isOpen={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        profileData={userProfile}
+        onProfileUpdated={(updated) => {
+          setDbProfile(updated);
+          refreshUser();
+        }}
+      />
 
     </div>
   );

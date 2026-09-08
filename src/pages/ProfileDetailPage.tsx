@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { fetchApi } from '../services/api';
 import { uploadUserPhotoToStorage } from '../services/firebaseService';
 import { BiodataPdfViewer } from '../components/BiodataPdfViewer';
+import { EditProfileModal } from '../components/EditProfileModal';
 import {
   Heart,
   Star,
@@ -22,6 +23,8 @@ import {
   MessageSquare,
   Camera,
   Upload,
+  Edit,
+  Edit3,
 } from 'lucide-react';
 
 export const ProfileDetailPage: React.FC = () => {
@@ -39,6 +42,7 @@ export const ProfileDetailPage: React.FC = () => {
   const [isShortlisted, setIsShortlisted] = useState(false);
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [reportReason, setReportReason] = useState('');
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
   const fetchProfile = async () => {
     if (!id) return;
@@ -225,17 +229,28 @@ export const ProfileDetailPage: React.FC = () => {
 
             {/* Header Action Buttons */}
             {isOwnProfile || user?.role === 'admin' ? (
-              <label className="px-5 py-3 rounded-2xl bg-brand-900 text-gold-300 font-bold text-xs hover:bg-brand-950 shadow-md transition-all cursor-pointer flex items-center gap-2 shrink-0">
-                <Camera className="w-4 h-4 text-gold-400" />
-                <span>{uploadingPhoto ? 'Uploading Photo...' : '📷 Add / Change Photo'}</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handlePhotoUpload}
-                  disabled={uploadingPhoto}
-                  className="hidden"
-                />
-              </label>
+              <div className="flex flex-wrap items-center gap-3 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setEditModalOpen(true)}
+                  className="px-5 py-3 rounded-2xl bg-gold-400 text-brand-950 font-bold text-xs hover:bg-gold-300 shadow-md transition-all cursor-pointer flex items-center gap-2"
+                >
+                  <Edit3 className="w-4 h-4 text-brand-950" />
+                  <span>{language === 'EN' ? 'Edit Profile' : 'प्रोफाईल एडिट करा'}</span>
+                </button>
+
+                <label className="px-5 py-3 rounded-2xl bg-brand-900 text-gold-300 font-bold text-xs hover:bg-brand-950 shadow-md transition-all cursor-pointer flex items-center gap-2 border border-gold-400/30">
+                  <Camera className="w-4 h-4 text-gold-400" />
+                  <span>{uploadingPhoto ? 'Uploading...' : '📷 Add / Change Photo'}</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
+                    disabled={uploadingPhoto}
+                    className="hidden"
+                  />
+                </label>
+              </div>
             ) : (
               <div className="flex items-center gap-2 w-full sm:w-auto">
                 <button
@@ -491,6 +506,17 @@ export const ProfileDetailPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Edit Profile Modal */}
+      <EditProfileModal
+        isOpen={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        profileData={profile}
+        onProfileUpdated={(updated) => {
+          setProfile(updated);
+          fetchProfile();
+        }}
+      />
 
     </div>
   );

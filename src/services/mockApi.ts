@@ -485,18 +485,60 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       return p || {};
     }
 
-    if (targetId === 'me' && method === 'PUT') {
-      const pIndex = profiles.findIndex((prof: ProfileData) => prof.user._id === currentUser?.id);
+    if (method === 'PUT') {
+      const pIndex = profiles.findIndex(
+        (prof: ProfileData) =>
+          prof.user._id === currentUser?.id ||
+          prof._id === currentUser?.id ||
+          prof.profileId === targetId ||
+          prof.user._id === targetId ||
+          prof._id === targetId
+      );
+
       if (pIndex !== -1) {
-        profiles[pIndex] = { ...profiles[pIndex], ...body };
-        profiles[pIndex].completionPercentage = calculateCompletion(profiles[pIndex]);
+        const existing = profiles[pIndex];
+        const updatedUser = {
+          ...existing.user,
+          fullName: body.fullName || body.user?.fullName || existing.user.fullName,
+          mobile: body.mobile || body.user?.mobile || existing.user.mobile,
+          email: body.email || body.user?.email || existing.user.email,
+          gender: body.gender || body.user?.gender || existing.user.gender,
+        };
+
+        const updatedProfile = {
+          ...existing,
+          ...body,
+          user: updatedUser,
+          partnerPreferences: {
+            ...existing.partnerPreferences,
+            ...(body.partnerPreferences || {}),
+            minAge: body.partnerMinAge ?? body.partnerPreferences?.minAge ?? existing.partnerPreferences?.minAge ?? 21,
+            maxAge: body.partnerMaxAge ?? body.partnerPreferences?.maxAge ?? existing.partnerPreferences?.maxAge ?? 35,
+            education: body.partnerEducation ?? body.partnerPreferences?.education ?? existing.partnerPreferences?.education ?? 'Graduate',
+            occupation: body.partnerOccupation ?? body.partnerPreferences?.occupation ?? existing.partnerPreferences?.occupation ?? 'Any',
+            location: body.partnerLocation ?? body.partnerPreferences?.location ?? existing.partnerPreferences?.location ?? 'Any',
+          },
+        };
+
+        updatedProfile.completionPercentage = calculateCompletion(updatedProfile);
+        profiles[pIndex] = updatedProfile;
         setItem(PROFILES_KEY, profiles);
 
-        saveProfileToFirestore(profiles[pIndex].user._id, profiles[pIndex]).catch((err) =>
+        // If updating current user profile, sync current user in localStorage
+        if (currentUser && (existing.user._id === currentUser.id || existing._id === currentUser.id)) {
+          const updatedCurUser = {
+            ...currentUser,
+            fullName: updatedUser.fullName,
+            email: updatedUser.email,
+          };
+          localStorage.setItem('pb_current_user', JSON.stringify(updatedCurUser));
+        }
+
+        saveProfileToFirestore(existing.user._id || existing._id, updatedProfile).catch((err) =>
           console.warn('Firestore profile sync error:', err)
         );
 
-        return { message: 'Profile updated', profile: profiles[pIndex] };
+        return { message: 'Profile updated successfully', profile: updatedProfile };
       }
     }
 
