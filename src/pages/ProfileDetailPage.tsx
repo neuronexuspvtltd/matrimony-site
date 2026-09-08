@@ -63,24 +63,41 @@ export const ProfileDetailPage: React.FC = () => {
   }, [id]);
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
     setUploadingPhoto(true);
     try {
       const targetUserId = user?.id || profile?.user?._id || profile?._id || 'usr_me';
-      const photoUrl = await uploadUserPhotoToStorage(file, targetUserId);
-      
+      const fileList = Array.from(files);
+      const uploadedUrls = await Promise.all(
+        fileList.map((file) => uploadUserPhotoToStorage(file, targetUserId))
+      );
+
+      const existingPhotos = Array.isArray(profile?.photos) && profile.photos.length > 0
+        ? profile.photos
+        : (profile?.primaryPhoto ? [profile.primaryPhoto] : []);
+
+      const updatedPhotos = Array.from(new Set([...existingPhotos, ...uploadedUrls]));
+      const updatedPrimary = profile?.primaryPhoto || updatedPhotos[0] || uploadedUrls[0];
+
       await fetchApi('/profiles/me', {
         method: 'PUT',
-        body: JSON.stringify({ primaryPhoto: photoUrl }),
+        body: JSON.stringify({
+          primaryPhoto: updatedPrimary,
+          photos: updatedPhotos,
+        }),
       });
 
-      alert(language === 'EN' ? 'Profile photo uploaded successfully to Firebase Storage!' : 'प्रोफाईल फोटो बदलला व सेव्ह झाला!');
+      alert(
+        language === 'EN'
+          ? `${uploadedUrls.length} photo(s) uploaded successfully!`
+          : `${uploadedUrls.length} फोटो यशस्वीपणे सेव्ह झाले!`
+      );
       await fetchProfile();
       await refreshUser();
     } catch (err: any) {
-      alert(err.message || 'Failed to upload profile photo');
+      alert(err.message || 'Failed to upload photo');
     } finally {
       setUploadingPhoto(false);
     }
@@ -196,6 +213,7 @@ export const ProfileDetailPage: React.FC = () => {
                     <input
                       type="file"
                       accept="image/*"
+                      multiple
                       onChange={handlePhotoUpload}
                       disabled={uploadingPhoto}
                       className="hidden"
@@ -455,37 +473,83 @@ export const ProfileDetailPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Photo Gallery */}
-          {profile.photos && profile.photos.length > 0 && (
-            <div className="bg-white rounded-3xl border border-ivory-300 p-6 space-y-4">
-              <div className="flex items-center justify-between border-b border-ivory-200 pb-3">
-                <h3 className="font-serif font-bold text-brand-900 text-base">
-                  {language === 'EN' ? 'Photo Gallery' : 'फोटो गॅलरी'}
-                </h3>
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gold-100 text-brand-900 border border-gold-300/50">
-                  {profile.photos.length} {profile.photos.length === 1 ? 'Photo' : 'Photos'}
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                {profile.photos.map((photo: string, idx: number) => (
-                  <div
-                    key={idx}
-                    onClick={() => setPreviewImage(photo)}
-                    className="relative group cursor-pointer overflow-hidden rounded-xl border border-gray-200 h-28 bg-gray-100"
-                  >
-                    <img
-                      src={photo}
-                      alt={`Gallery ${idx + 1}`}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-semibold">
-                      🔍 View
-                    </div>
+          {/* Photo Gallery Card */}
+          {(() => {
+            const displayPhotos: string[] = Array.isArray(profile.photos) && profile.photos.length > 0
+              ? profile.photos
+              : (profile.primaryPhoto ? [profile.primaryPhoto] : []);
+
+            return (
+              <div className="bg-white rounded-3xl border border-ivory-300 p-6 space-y-4">
+                <div className="flex items-center justify-between border-b border-ivory-200 pb-3">
+                  <h3 className="font-serif font-bold text-brand-900 text-base flex items-center gap-2">
+                    <Camera className="w-4 h-4 text-gold-600" />
+                    <span>{language === 'EN' ? 'Photo Gallery' : 'फोटो गॅलरी'}</span>
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-gold-100 text-brand-900 border border-gold-300/50">
+                      {displayPhotos.length} {displayPhotos.length === 1 ? 'Photo' : 'Photos'}
+                    </span>
+                    {(isOwnProfile || user?.role === 'admin') && (
+                      <label className="text-[11px] font-bold text-brand-950 hover:text-black bg-gold-400 hover:bg-gold-300 px-2.5 py-1 rounded-xl cursor-pointer transition-all flex items-center gap-1 shadow-xs border border-gold-500/30">
+                        <Camera className="w-3.5 h-3.5" />
+                        <span>{uploadingPhoto ? '...' : '+ Add Photos'}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={handlePhotoUpload}
+                          disabled={uploadingPhoto}
+                          className="hidden"
+                        />
+                      </label>
+                    )}
                   </div>
-                ))}
+                </div>
+
+                {displayPhotos.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    {displayPhotos.map((photo: string, idx: number) => (
+                      <div
+                        key={idx}
+                        onClick={() => setPreviewImage(photo)}
+                        className="relative group cursor-pointer overflow-hidden rounded-xl border border-gray-200 h-28 bg-gray-100 shadow-xs"
+                      >
+                        <img
+                          src={photo}
+                          alt={`Gallery ${idx + 1}`}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-xs font-semibold">
+                          <Camera className="w-4 h-4 text-gold-300 mb-0.5" />
+                          <span>View Photo</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                    <Camera className="w-8 h-8 mx-auto text-gray-300 mb-1" />
+                    <p className="text-xs text-gray-400 font-medium">No gallery photos added yet</p>
+                    {(isOwnProfile || user?.role === 'admin') && (
+                      <label className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 bg-brand-900 text-gold-300 text-xs font-semibold rounded-xl cursor-pointer hover:bg-brand-950 transition-all shadow-sm">
+                        <Camera className="w-4 h-4 text-gold-400" />
+                        <span>Upload Multiple Photos</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={handlePhotoUpload}
+                          disabled={uploadingPhoto}
+                          className="hidden"
+                        />
+                      </label>
+                    )}
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            );
+          })()}
 
         </div>
 

@@ -479,6 +479,9 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       }
 
       if (p) {
+        if (!Array.isArray(p.photos) || p.photos.length === 0) {
+          p.photos = p.primaryPhoto ? [p.primaryPhoto] : [];
+        }
         p.completionPercentage = calculateCompletion(p);
       }
 
@@ -586,6 +589,10 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
 
     let targetProf = profiles.find((p: ProfileData) => p.profileId === targetId || p._id === targetId || p.user._id === targetId);
     if (!targetProf) throw new Error('Profile not found');
+
+    if (!Array.isArray(targetProf.photos) || targetProf.photos.length === 0) {
+      targetProf.photos = targetProf.primaryPhoto ? [targetProf.primaryPhoto] : [];
+    }
 
     // Admin Access Bypass: Admin gets full access to photos & biodatas
     if (currentUser?.role === 'admin') {
