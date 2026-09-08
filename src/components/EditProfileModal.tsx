@@ -184,6 +184,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
         method: 'PUT',
         body: JSON.stringify({
           ...formData,
+          age: Number(formData.age),
           primaryPhoto: primaryPhotoUrl || (photosList.length > 0 ? photosList[0] : ''),
           photos: photosList,
         }),

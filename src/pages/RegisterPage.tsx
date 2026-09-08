@@ -295,6 +295,8 @@ export const RegisterPage: React.FC = () => {
     try {
       const userRes = await register({
         ...formData,
+        dob: formData.dob,
+        dateOfBirth: formData.dob,
         primaryPhoto: regPrimaryPhoto || (regPhotos.length > 0 ? regPhotos[0] : ''),
         photos: regPhotos,
         paymentStatus: 'paid',

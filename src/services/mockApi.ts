@@ -297,7 +297,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
   }
 
   if (endpoint === '/auth/register' && method === 'POST') {
-    const { fullName, email, password, mobile, gender, dateOfBirth, city, religion, caste, education, occupation, maritalStatus } = body;
+    const { fullName, email, password, mobile, gender, dob, dateOfBirth, city, religion, caste, education, occupation, maritalStatus } = body;
 
     const cleanEmail = (email || '').trim().toLowerCase();
 
@@ -314,7 +314,20 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     const newUserId = `usr_${Date.now()}`;
     const newProfId = `PB-${Math.floor(10000 + Math.random() * 90000)}`;
 
-    const age = dateOfBirth ? Math.floor((Date.now() - new Date(dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : 26;
+    const birthDateStr = dob || dateOfBirth;
+    let age = 26;
+    if (birthDateStr) {
+      const birthDate = new Date(birthDateStr);
+      const today = new Date();
+      let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        calculatedAge--;
+      }
+      age = isNaN(calculatedAge) || calculatedAge < 18 ? 26 : calculatedAge;
+    } else if (body.age) {
+      age = Number(body.age);
+    }
 
     const newProfile: any = {
       _id: `prof_${Date.now()}`,
@@ -508,9 +521,16 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
           gender: body.gender || body.user?.gender || existing.user.gender,
         };
 
+        const ageVal = (body.age !== undefined && body.age !== null && body.age !== '')
+          ? Number(body.age)
+          : (body.dob || body.dateOfBirth
+              ? Math.floor((Date.now() - new Date(body.dob || body.dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+              : existing.age);
+
         const updatedProfile = {
           ...existing,
           ...body,
+          age: ageVal,
           user: updatedUser,
           partnerPreferences: {
             ...existing.partnerPreferences,
