@@ -125,6 +125,33 @@ export const RegisterPage: React.FC = () => {
     }
   }, [currentStep]);
 
+  // Dynamic Payment Fee States configured by Admin
+  const [registrationFeeAmount, setRegistrationFeeAmount] = useState<number>(2499);
+  const [registrationOriginalFee, setRegistrationOriginalFee] = useState<number>(5000);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('pb_site_content_data');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.registrationFeeAmount) setRegistrationFeeAmount(Number(parsed.registrationFeeAmount));
+        if (parsed.registrationOriginalFee) setRegistrationOriginalFee(Number(parsed.registrationOriginalFee));
+      }
+    } catch (e) {}
+
+    fetch('/admin/site-content')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.registrationFeeAmount) {
+          setRegistrationFeeAmount(Number(data.registrationFeeAmount));
+        }
+        if (data && data.registrationOriginalFee) {
+          setRegistrationOriginalFee(Number(data.registrationOriginalFee));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     let interval: any = null;
     if (mobileOtpSent && otpTimerSeconds > 0) {
@@ -300,7 +327,7 @@ export const RegisterPage: React.FC = () => {
         primaryPhoto: regPrimaryPhoto || (regPhotos.length > 0 ? regPhotos[0] : ''),
         photos: regPhotos,
         paymentStatus: 'paid',
-        paymentAmount: RAZORPAY_CONFIG.amountINR,
+        paymentAmount: registrationFeeAmount,
         paymentId,
         partnerPreferences: {
           minAge: formData.partnerMinAge,
@@ -315,7 +342,7 @@ export const RegisterPage: React.FC = () => {
 
       setPaymentSuccessData({
         paymentId,
-        amount: RAZORPAY_CONFIG.amountINR,
+        amount: registrationFeeAmount,
         date: new Date().toLocaleDateString('en-IN', {
           day: 'numeric',
           month: 'short',
@@ -348,6 +375,7 @@ export const RegisterPage: React.FC = () => {
         email: formData.email,
         contact: formData.mobile,
       },
+      amountINR: registrationFeeAmount,
       onSuccess: (paymentId: string) => {
         processRegistrationWithPayment(paymentId);
       },
@@ -1005,14 +1033,14 @@ export const RegisterPage: React.FC = () => {
                     <span className="text-xs text-ivory-200 block font-medium">Total Payable</span>
                     <div className="flex items-baseline justify-start sm:justify-end gap-2 pt-0.5">
                       <span className="line-through text-red-300/80 text-base sm:text-lg font-bold">
-                        ₹5,000
+                        ₹{registrationOriginalFee.toLocaleString('en-IN')}
                       </span>
                       <span className="font-serif text-3xl sm:text-4xl font-extrabold text-gold-300 tracking-tight">
-                        ₹2,499
+                        ₹{registrationFeeAmount.toLocaleString('en-IN')}
                       </span>
                     </div>
                     <div className="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] uppercase font-bold px-2.5 py-0.5 rounded-full mt-1">
-                      <span>50% Special Offer</span>
+                      <span>Special Membership Price</span>
                     </div>
                   </div>
                 </div>
@@ -1054,7 +1082,7 @@ export const RegisterPage: React.FC = () => {
                     <span>
                       {paymentProcessing || loading
                         ? 'Opening Razorpay...'
-                        : `Pay ₹2,499 with Razorpay & Register`}
+                        : `Pay ₹${registrationFeeAmount.toLocaleString('en-IN')} with Razorpay & Register`}
                     </span>
                   </button>
 
@@ -1097,7 +1125,7 @@ export const RegisterPage: React.FC = () => {
                 className="px-8 py-3 rounded-xl bg-gold-400 text-brand-950 font-bold text-xs hover:bg-gold-300 shadow-md cursor-pointer ml-auto flex items-center gap-2"
               >
                 <CreditCard className="w-4 h-4" />
-                <span>{paymentProcessing || loading ? 'Opening Razorpay...' : 'Pay ₹2,499 & Register'}</span>
+                <span>{paymentProcessing || loading ? 'Opening Razorpay...' : `Pay ₹${registrationFeeAmount.toLocaleString('en-IN')} & Register`}</span>
               </button>
             )}
           </div>

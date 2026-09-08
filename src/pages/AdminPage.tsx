@@ -22,6 +22,7 @@ import {
   Globe2,
   X,
   Lock,
+  CreditCard,
   Save,
   FileText,
   UploadCloud,
@@ -49,6 +50,9 @@ export const AdminPage: React.FC = () => {
     supportEmail: 'pranotipawar056@gmail.com',
     puneOffice: 'FC Road, Shivajinagar, Pune',
     mumbaiOffice: 'Nariman Point, Mumbai',
+    registrationFeeAmount: 2499,
+    registrationOriginalFee: 5000,
+    registrationFeeDescription: 'Membership Registration & Profile Verification Fee',
   });
 
   const [tab, setTab] = useState<'users' | 'stories' | 'content' | 'announcement' | 'reports'>('users');
@@ -983,6 +987,69 @@ export const AdminPage: React.FC = () => {
                   value={siteContent.mumbaiOffice || ''}
                   onChange={(e) => setSiteContent({ ...siteContent, mumbaiOffice: e.target.value })}
                   className="w-full px-3 py-2 rounded-xl border text-xs"
+                />
+              </div>
+            </div>
+
+            {/* 💳 RAZORPAY REGISTRATION FEE & PAYMENT CONFIGURATION */}
+            <div className="border-t border-gray-100 pt-5 space-y-4">
+              <div className="bg-brand-50/70 border border-brand-200/60 p-4 rounded-2xl">
+                <div className="flex items-center gap-2 text-brand-900 font-bold text-sm mb-1">
+                  <CreditCard className="w-4 h-4 text-gold-600" />
+                  <span>Razorpay Registration Charge Settings</span>
+                </div>
+                <p className="text-xs text-brand-800/80">
+                  Set the custom candidate registration fee. Changing this amount will instantly update the live Razorpay payment charge collected from new members during registration.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">
+                    Registration Charge (₹ INR) <span className="text-emerald-600 font-bold">(Razorpay Charge)</span>
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={siteContent.registrationFeeAmount ?? 2499}
+                    onChange={(e) => setSiteContent({ ...siteContent, registrationFeeAmount: Number(e.target.value) })}
+                    className="w-full px-3 py-2 rounded-xl border text-xs font-bold text-brand-900 bg-white"
+                    placeholder="e.g. 2499 or 1499 or 999"
+                    required
+                  />
+                  <span className="text-[10px] text-gray-500 mt-1 block">
+                    This exact amount (e.g. ₹{siteContent.registrationFeeAmount || 2499}) will be charged via Razorpay.
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">
+                    Original Price Strikethrough (₹ INR)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={siteContent.registrationOriginalFee ?? 5000}
+                    onChange={(e) => setSiteContent({ ...siteContent, registrationOriginalFee: Number(e.target.value) })}
+                    className="w-full px-3 py-2 rounded-xl border text-xs font-medium text-gray-600 bg-white"
+                    placeholder="e.g. 5000"
+                  />
+                  <span className="text-[10px] text-gray-500 mt-1 block">
+                    Original price shown with strikethrough (e.g. <span className="line-through">₹{siteContent.registrationOriginalFee || 5000}</span>).
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                  Razorpay Checkout Description Text
+                </label>
+                <input
+                  type="text"
+                  value={siteContent.registrationFeeDescription || 'Membership Registration & Profile Verification Fee'}
+                  onChange={(e) => setSiteContent({ ...siteContent, registrationFeeDescription: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border text-xs bg-white"
+                  placeholder="e.g. Membership Registration & Profile Verification Fee"
                 />
               </div>
             </div>

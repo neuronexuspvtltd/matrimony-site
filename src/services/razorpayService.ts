@@ -66,10 +66,14 @@ export const verifyRazorpaySignature = async (
 
 export const openRazorpayPayment = async ({
   userDetails,
+  amountINR,
+  description,
   onSuccess,
   onFailure,
 }: {
   userDetails: { name: string; email: string; contact: string };
+  amountINR?: number;
+  description?: string;
   onSuccess: (paymentId: string, response: RazorpaySuccessResponse) => void;
   onFailure: (errorMsg: string) => void;
 }) => {
@@ -79,12 +83,35 @@ export const openRazorpayPayment = async ({
     return;
   }
 
+  // Fetch admin custom fee settings from LocalStorage if available
+  let customAmountINR = amountINR;
+  let customDescription = description;
+
+  if (!customAmountINR || !customDescription) {
+    try {
+      const siteContentStr = localStorage.getItem('pb_site_content_data');
+      if (siteContentStr) {
+        const siteContent = JSON.parse(siteContentStr);
+        if (!customAmountINR && siteContent.registrationFeeAmount) {
+          customAmountINR = Number(siteContent.registrationFeeAmount);
+        }
+        if (!customDescription && siteContent.registrationFeeDescription) {
+          customDescription = siteContent.registrationFeeDescription;
+        }
+      }
+    } catch (e) {}
+  }
+
+  const finalAmountINR = customAmountINR || RAZORPAY_CONFIG.amountINR;
+  const amountPaise = Math.round(finalAmountINR * 100);
+  const finalDescription = customDescription || `Membership Registration & Profile Verification Fee (Special Offer ₹${finalAmountINR})`;
+
   const options = {
     key: RAZORPAY_CONFIG.keyId,
-    amount: RAZORPAY_CONFIG.amountPaise,
+    amount: amountPaise,
     currency: RAZORPAY_CONFIG.currency,
     name: RAZORPAY_CONFIG.companyName,
-    description: RAZORPAY_CONFIG.description,
+    description: finalDescription,
     image: '/v_brothers_icon.png',
     prefill: {
       name: userDetails.name,

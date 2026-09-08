@@ -43,6 +43,9 @@ const defaultSiteContent = {
   helpEmail: 'pranotipawar056@gmail.com',
   puneOffice: 'FC Road, Shivajinagar, Pune',
   mumbaiOffice: 'Nariman Point, Mumbai',
+  registrationFeeAmount: 2499,
+  registrationOriginalFee: 5000,
+  registrationFeeDescription: 'Membership Registration & Profile Verification Fee',
 };
 
 // Helper to load or initialize LocalStorage
@@ -401,7 +404,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       isFeatured: true,
       completionPercentage: 70,
       paymentStatus: body.paymentStatus || 'paid',
-      paymentAmount: body.paymentAmount || 2499,
+      paymentAmount: body.paymentAmount || Number(getItem(SITE_CONTENT_KEY, defaultSiteContent).registrationFeeAmount) || 2499,
       paymentId: body.paymentId || `PAY_${Date.now()}`,
       partnerPreferences: {
         minAge: Math.max(18, age - 5),
