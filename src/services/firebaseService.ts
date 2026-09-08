@@ -388,6 +388,16 @@ export const markMessagesReadFirestore = async (conversationId: string, partnerI
 // 📁 FIREBASE STORAGE SERVICES
 // --------------------------------------------------
 
+// Helper to convert local files to Base64 Data URLs for local persistence
+const readFileAsDataURL = (file: File): Promise<string> => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = () => resolve(URL.createObjectURL(file));
+    reader.readAsDataURL(file);
+  });
+};
+
 // 1. Upload User Photo to Firebase Storage
 export const uploadUserPhotoToStorage = async (file: File, userId: string): Promise<string> => {
   try {
@@ -396,8 +406,8 @@ export const uploadUserPhotoToStorage = async (file: File, userId: string): Prom
     const downloadUrl = await getDownloadURL(fileRef);
     return downloadUrl;
   } catch (error: any) {
-    console.warn('Firebase storage photo upload warning:', error.message);
-    return URL.createObjectURL(file);
+    console.warn('Firebase storage photo upload fallback (using Base64 for local persistence):', error.message);
+    return await readFileAsDataURL(file);
   }
 };
 
@@ -409,7 +419,7 @@ export const uploadPdfBiodataToStorage = async (file: File, userId: string): Pro
     const downloadUrl = await getDownloadURL(fileRef);
     return downloadUrl;
   } catch (error: any) {
-    console.warn('Firebase storage biodata upload warning:', error.message);
-    return URL.createObjectURL(file);
+    console.warn('Firebase storage biodata upload fallback (using Base64 for local persistence):', error.message);
+    return await readFileAsDataURL(file);
   }
 };
