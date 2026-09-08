@@ -183,7 +183,7 @@ export const LoginPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="e.g. 9898989898 or user@gmail.com"
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 bg-white text-gray-900 font-medium placeholder:text-gray-400 focus:border-brand-800 focus:ring-2 focus:ring-brand-500/20 text-sm transition-all shadow-sm"
                 required
               />
             </div>
@@ -211,7 +211,7 @@ export const LoginPage: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-10 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
+                className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-300 bg-white text-gray-900 font-medium placeholder:text-gray-400 focus:border-brand-800 focus:ring-2 focus:ring-brand-500/20 text-sm transition-all shadow-sm"
                 required
               />
               <button
@@ -293,7 +293,7 @@ export const LoginPage: React.FC = () => {
                       onChange={(e) => setForgotMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
                       placeholder="9898989898"
                       disabled={otpSent}
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
+                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 bg-white text-gray-900 font-medium placeholder:text-gray-400 focus:border-brand-800 focus:ring-2 focus:ring-brand-500/20 text-sm transition-all shadow-sm"
                       required
                     />
                   </div>
@@ -349,7 +349,7 @@ export const LoginPage: React.FC = () => {
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="New Password (min 6 chars)"
-                        className="w-full pl-10 pr-10 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
+                        className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-300 bg-white text-gray-900 font-medium placeholder:text-gray-400 focus:border-brand-800 focus:ring-2 focus:ring-brand-500/20 text-sm transition-all shadow-sm"
                         required
                       />
                       <button
@@ -372,7 +372,7 @@ export const LoginPage: React.FC = () => {
                       value={confirmNewPassword}
                       onChange={(e) => setConfirmNewPassword(e.target.value)}
                       placeholder="Confirm New Password"
-                      className="w-full px-4 py-3 rounded-xl border border-ivory-300 bg-ivory-100/90 focus:bg-white focus:ring-2 focus:ring-brand-900 focus:border-brand-900 text-sm transition-all shadow-sm"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-white text-gray-900 font-medium placeholder:text-gray-400 focus:border-brand-800 focus:ring-2 focus:ring-brand-500/20 text-sm transition-all shadow-sm"
                       required
                     />
                   </div>
