@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { fetchApi } from '../services/api';
+import { uploadUserPhotoToStorage } from '../services/firebaseService';
 import {
   Shield,
   Users,
   ShieldCheck,
   Eye,
+  EyeOff,
   AlertTriangle,
   Send,
   Search,
@@ -24,6 +26,11 @@ import {
   FileText,
   UploadCloud,
   Images,
+  KeyRound,
+  Camera,
+  User,
+  Briefcase,
+  Sliders,
 } from 'lucide-react';
 
 export const AdminPage: React.FC = () => {
@@ -51,6 +58,58 @@ export const AdminPage: React.FC = () => {
 
   // Edit User Modal State
   const [editingUser, setEditingUser] = useState<any | null>(null);
+  const [adminUserTab, setAdminUserTab] = useState<'account' | 'personal' | 'career' | 'family' | 'photos' | 'partner'>('account');
+  const [adminUploadingPhoto, setAdminUploadingPhoto] = useState(false);
+  const [adminShowPassword, setAdminShowPassword] = useState(false);
+
+  const handleAdminPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0 || !editingUser) return;
+
+    setAdminUploadingPhoto(true);
+    try {
+      const targetUserId = editingUser._id || editingUser.user?._id || 'usr_me';
+      const uploadedUrls = await Promise.all(
+        files.map((file) => uploadUserPhotoToStorage(file, targetUserId))
+      );
+
+      const existingPhotos = Array.isArray(editingUser.photos)
+        ? editingUser.photos
+        : (editingUser.primaryPhoto ? [editingUser.primaryPhoto] : []);
+
+      const newPhotos = Array.from(new Set([...existingPhotos, ...uploadedUrls]));
+      const newPrimary = editingUser.primaryPhoto || newPhotos[0] || '';
+
+      setEditingUser({
+        ...editingUser,
+        photos: newPhotos,
+        primaryPhoto: newPrimary,
+      });
+    } catch (err: any) {
+      alert(err.message || 'Error uploading photo');
+    } finally {
+      setAdminUploadingPhoto(false);
+    }
+  };
+
+  const handleAdminRemovePhoto = (photoUrl: string) => {
+    if (!editingUser) return;
+    const newPhotos = (editingUser.photos || []).filter((p: string) => p !== photoUrl);
+    const newPrimary = editingUser.primaryPhoto === photoUrl ? (newPhotos[0] || '') : editingUser.primaryPhoto;
+    setEditingUser({
+      ...editingUser,
+      photos: newPhotos,
+      primaryPhoto: newPrimary,
+    });
+  };
+
+  const handleAdminSetPrimaryPhoto = (photoUrl: string) => {
+    if (!editingUser) return;
+    setEditingUser({
+      ...editingUser,
+      primaryPhoto: photoUrl,
+    });
+  };
 
   // Success Story Modal State (Add & Edit)
   const [showAddStory, setShowAddStory] = useState(false);
@@ -895,122 +954,643 @@ export const AdminPage: React.FC = () => {
         </div>
       )}
 
-      {/* EDIT MEMBER MODAL (Mobile Responsive) */}
+      {/* EDIT MEMBER MODAL (Full Admin Control) */}
       {editingUser && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-4 sm:p-6 space-y-4 shadow-2xl animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-ivory-300 pb-3">
-              <h3 className="font-serif font-bold text-brand-950 text-base">Edit Member Profile ({editingUser.profileId})</h3>
-              <button onClick={() => setEditingUser(null)} className="p-1 rounded-full text-gray-400 hover:bg-gray-100">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-3xl w-full p-4 sm:p-6 space-y-4 shadow-2xl animate-in zoom-in-95 max-h-[92vh] flex flex-col">
+            
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-ivory-300 pb-3 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-brand-900 text-gold-300 flex items-center justify-center font-bold text-sm">
+                  {editingUser.fullName?.[0] || 'U'}
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-brand-950 text-base flex items-center gap-2">
+                    <span>Edit Profile: {editingUser.fullName}</span>
+                    <span className="text-xs font-mono font-normal text-gold-600 bg-gold-50 px-2 py-0.5 rounded-full border border-gold-200">
+                      ID: {editingUser.profileId}
+                    </span>
+                  </h3>
+                  <p className="text-[11px] text-gray-500">Full Admin Management & Credentials Control</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setEditingUser(null)}
+                className="p-2 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveUserEdit} className="space-y-3 text-xs">
-              <div>
-                <label className="block font-semibold text-gray-700 mb-1">Full Name</label>
-                <input
-                  type="text"
-                  value={editingUser.fullName || ''}
-                  onChange={(e) => setEditingUser({ ...editingUser, fullName: e.target.value })}
-                  className="w-full p-2.5 border rounded-xl"
-                  required
-                />
-              </div>
+            {/* Admin Tabs */}
+            <div className="flex items-center gap-1 overflow-x-auto border-b border-ivory-200 bg-ivory-50/50 p-1 rounded-2xl shrink-0 text-xs">
+              <button
+                type="button"
+                onClick={() => setAdminUserTab('account')}
+                className={`px-3 py-2 rounded-xl flex items-center gap-1.5 font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  adminUserTab === 'account'
+                    ? 'bg-brand-900 text-gold-300 shadow-xs'
+                    : 'text-gray-600 hover:bg-white'
+                }`}
+              >
+                <KeyRound className="w-3.5 h-3.5" />
+                <span>Account & Password</span>
+              </button>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-gray-700 mb-1">Email</label>
-                  <input
-                    type="email"
-                    value={editingUser.email || ''}
-                    onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
-                    className="w-full p-2.5 border rounded-xl"
-                  />
+              <button
+                type="button"
+                onClick={() => setAdminUserTab('personal')}
+                className={`px-3 py-2 rounded-xl flex items-center gap-1.5 font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  adminUserTab === 'personal'
+                    ? 'bg-brand-900 text-gold-300 shadow-xs'
+                    : 'text-gray-600 hover:bg-white'
+                }`}
+              >
+                <User className="w-3.5 h-3.5" />
+                <span>Personal Info</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setAdminUserTab('career')}
+                className={`px-3 py-2 rounded-xl flex items-center gap-1.5 font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  adminUserTab === 'career'
+                    ? 'bg-brand-900 text-gold-300 shadow-xs'
+                    : 'text-gray-600 hover:bg-white'
+                }`}
+              >
+                <Briefcase className="w-3.5 h-3.5" />
+                <span>Education & Job</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setAdminUserTab('family')}
+                className={`px-3 py-2 rounded-xl flex items-center gap-1.5 font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  adminUserTab === 'family'
+                    ? 'bg-brand-900 text-gold-300 shadow-xs'
+                    : 'text-gray-600 hover:bg-white'
+                }`}
+              >
+                <Users className="w-3.5 h-3.5" />
+                <span>Family Details</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setAdminUserTab('photos')}
+                className={`px-3 py-2 rounded-xl flex items-center gap-1.5 font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  adminUserTab === 'photos'
+                    ? 'bg-brand-900 text-gold-300 shadow-xs'
+                    : 'text-gray-600 hover:bg-white'
+                }`}
+              >
+                <Camera className="w-3.5 h-3.5" />
+                <span>Photos Gallery</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setAdminUserTab('partner')}
+                className={`px-3 py-2 rounded-xl flex items-center gap-1.5 font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  adminUserTab === 'partner'
+                    ? 'bg-brand-900 text-gold-300 shadow-xs'
+                    : 'text-gray-600 hover:bg-white'
+                }`}
+              >
+                <Sliders className="w-3.5 h-3.5" />
+                <span>Partner Preferences</span>
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSaveUserEdit} className="flex-1 overflow-y-auto pr-1 space-y-4 text-xs">
+              
+              {/* TAB 1: ACCOUNT & PASSWORD */}
+              {adminUserTab === 'account' && (
+                <div className="space-y-4 animate-in fade-in">
+                  <div className="bg-amber-50/70 border border-amber-200 text-amber-900 p-3 rounded-2xl flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>Admin Security Settings: You can reset member password and change account status directly.</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="sm:col-span-2">
+                      <label className="block font-semibold text-gray-700 mb-1">Full Name *</label>
+                      <input
+                        type="text"
+                        value={editingUser.fullName || ''}
+                        onChange={(e) => setEditingUser({ ...editingUser, fullName: e.target.value })}
+                        className="w-full p-2.5 border rounded-xl"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-gray-700 mb-1">Email Address</label>
+                      <input
+                        type="email"
+                        value={editingUser.email || ''}
+                        onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
+                        className="w-full p-2.5 border rounded-xl"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-gray-700 mb-1">Mobile Phone</label>
+                      <input
+                        type="text"
+                        value={editingUser.mobile || ''}
+                        onChange={(e) => setEditingUser({ ...editingUser, mobile: e.target.value })}
+                        className="w-full p-2.5 border rounded-xl"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <label className="block font-semibold text-gray-700 mb-1">User Password 🔑</label>
+                      <div className="relative">
+                        <input
+                          type={adminShowPassword ? 'text' : 'password'}
+                          value={editingUser.password || ''}
+                          onChange={(e) => setEditingUser({ ...editingUser, password: e.target.value })}
+                          placeholder="Password (e.g. Password@123)"
+                          className="w-full p-2.5 pr-10 border rounded-xl font-mono text-xs"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setAdminShowPassword(!adminShowPassword)}
+                          className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-700 cursor-pointer"
+                        >
+                          {adminShowPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                      <p className="text-[10px] text-gray-400 mt-1">Admin can view or change password for any candidate.</p>
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-gray-700 mb-1">Account Role</label>
+                      <select
+                        value={editingUser.role || 'user'}
+                        onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value })}
+                        className="w-full p-2.5 border rounded-xl"
+                      >
+                        <option value="user">User (Standard Member)</option>
+                        <option value="admin">Admin (System Administrator)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-gray-700 mb-1">Account Status</label>
+                      <select
+                        value={editingUser.status || 'active'}
+                        onChange={(e) => setEditingUser({ ...editingUser, status: e.target.value })}
+                        className="w-full p-2.5 border rounded-xl"
+                      >
+                        <option value="active">Active (Normal Access)</option>
+                        <option value="suspended">Suspended (Blocked Access)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-gray-700 mb-1">Verification Status</label>
+                      <select
+                        value={editingUser.isVerified ? 'true' : 'false'}
+                        onChange={(e) => setEditingUser({ ...editingUser, isVerified: e.target.value === 'true' })}
+                        className="w-full p-2.5 border rounded-xl"
+                      >
+                        <option value="true">Verified ✓ (Green Badge)</option>
+                        <option value="false">Unverified</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-gray-700 mb-1">Featured Badge</label>
+                      <select
+                        value={editingUser.isFeatured ? 'true' : 'false'}
+                        onChange={(e) => setEditingUser({ ...editingUser, isFeatured: e.target.value === 'true' })}
+                        className="w-full p-2.5 border rounded-xl"
+                      >
+                        <option value="true">Featured ⭐ (Highlighted Member)</option>
+                        <option value="false">Normal Listing</option>
+                      </select>
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <label className="block font-semibold text-gray-700 mb-1">PDF Biodata Privacy Setting</label>
+                      <select
+                        value={editingUser.biodataPrivacy || editingUser.biodataVisibility || 'Connections Only'}
+                        onChange={(e) => setEditingUser({ ...editingUser, biodataPrivacy: e.target.value, biodataVisibility: e.target.value })}
+                        className="w-full p-2.5 border rounded-xl"
+                      >
+                        <option value="Connections Only">Connections Only (Recommended)</option>
+                        <option value="Visible to All">Visible to All</option>
+                        <option value="Private">Private</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
+              )}
 
-                <div>
-                  <label className="block font-semibold text-gray-700 mb-1">Mobile Phone</label>
-                  <input
-                    type="text"
-                    value={editingUser.mobile || ''}
-                    onChange={(e) => setEditingUser({ ...editingUser, mobile: e.target.value })}
-                    className="w-full p-2.5 border rounded-xl"
-                  />
+              {/* TAB 2: PERSONAL INFO */}
+              {adminUserTab === 'personal' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 animate-in fade-in">
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Gender</label>
+                    <select
+                      value={editingUser.gender || 'male'}
+                      onChange={(e) => setEditingUser({ ...editingUser, gender: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl capitalize"
+                    >
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Age (Years)</label>
+                    <input
+                      type="number"
+                      value={editingUser.age || 26}
+                      onChange={(e) => setEditingUser({ ...editingUser, age: Number(e.target.value) })}
+                      min="18"
+                      max="80"
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Height</label>
+                    <input
+                      type="text"
+                      value={editingUser.height || "5'8\""}
+                      onChange={(e) => setEditingUser({ ...editingUser, height: e.target.value })}
+                      placeholder="e.g. 5'8&quot;"
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Marital Status</label>
+                    <select
+                      value={editingUser.maritalStatus || 'never_married'}
+                      onChange={(e) => setEditingUser({ ...editingUser, maritalStatus: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl capitalize"
+                    >
+                      <option value="never_married">Never Married</option>
+                      <option value="divorced">Divorced</option>
+                      <option value="widowed">Widowed</option>
+                      <option value="awaiting_divorce">Awaiting Divorce</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Religion</label>
+                    <input
+                      type="text"
+                      value={editingUser.religion || 'Hindu'}
+                      onChange={(e) => setEditingUser({ ...editingUser, religion: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Caste</label>
+                    <input
+                      type="text"
+                      value={editingUser.caste || ''}
+                      onChange={(e) => setEditingUser({ ...editingUser, caste: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Sub-Caste</label>
+                    <input
+                      type="text"
+                      value={editingUser.subCaste || ''}
+                      onChange={(e) => setEditingUser({ ...editingUser, subCaste: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Mother Tongue</label>
+                    <input
+                      type="text"
+                      value={editingUser.motherTongue || 'Marathi'}
+                      onChange={(e) => setEditingUser({ ...editingUser, motherTongue: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">City</label>
+                    <input
+                      type="text"
+                      value={editingUser.city || ''}
+                      onChange={(e) => setEditingUser({ ...editingUser, city: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">State</label>
+                    <input
+                      type="text"
+                      value={editingUser.state || 'Maharashtra'}
+                      onChange={(e) => setEditingUser({ ...editingUser, state: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block font-semibold text-gray-700 mb-1">About Candidate</label>
+                    <textarea
+                      value={editingUser.aboutMe || ''}
+                      onChange={(e) => setEditingUser({ ...editingUser, aboutMe: e.target.value })}
+                      rows={3}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-gray-700 mb-1">City</label>
-                  <input
-                    type="text"
-                    value={editingUser.city || ''}
-                    onChange={(e) => setEditingUser({ ...editingUser, city: e.target.value })}
-                    className="w-full p-2.5 border rounded-xl"
-                  />
+              {/* TAB 3: CAREER & EDUCATION */}
+              {adminUserTab === 'career' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 animate-in fade-in">
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Education Degree</label>
+                    <input
+                      type="text"
+                      value={editingUser.education || ''}
+                      onChange={(e) => setEditingUser({ ...editingUser, education: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">College / University</label>
+                    <input
+                      type="text"
+                      value={editingUser.college || ''}
+                      onChange={(e) => setEditingUser({ ...editingUser, college: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Occupation / Designation</label>
+                    <input
+                      type="text"
+                      value={editingUser.occupation || ''}
+                      onChange={(e) => setEditingUser({ ...editingUser, occupation: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Company / Organization</label>
+                    <input
+                      type="text"
+                      value={editingUser.company || ''}
+                      onChange={(e) => setEditingUser({ ...editingUser, company: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block font-semibold text-gray-700 mb-1">Annual Income</label>
+                    <input
+                      type="text"
+                      value={editingUser.income || ''}
+                      onChange={(e) => setEditingUser({ ...editingUser, income: e.target.value })}
+                      placeholder="e.g. ₹10 - ₹15 Lakhs p.a."
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
                 </div>
+              )}
 
-                <div>
-                  <label className="block font-semibold text-gray-700 mb-1">Caste</label>
-                  <input
-                    type="text"
-                    value={editingUser.caste || ''}
-                    onChange={(e) => setEditingUser({ ...editingUser, caste: e.target.value })}
-                    className="w-full p-2.5 border rounded-xl"
-                  />
+              {/* TAB 4: FAMILY DETAILS */}
+              {adminUserTab === 'family' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 animate-in fade-in">
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Father's Occupation</label>
+                    <input
+                      type="text"
+                      value={editingUser.fatherOccupation || ''}
+                      onChange={(e) => setEditingUser({ ...editingUser, fatherOccupation: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Mother's Occupation</label>
+                    <input
+                      type="text"
+                      value={editingUser.motherOccupation || ''}
+                      onChange={(e) => setEditingUser({ ...editingUser, motherOccupation: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Family Type</label>
+                    <select
+                      value={editingUser.familyType || 'nuclear'}
+                      onChange={(e) => setEditingUser({ ...editingUser, familyType: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl capitalize"
+                    >
+                      <option value="nuclear">Nuclear Family</option>
+                      <option value="joint">Joint Family</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Family Values</label>
+                    <select
+                      value={editingUser.familyValues || 'moderate'}
+                      onChange={(e) => setEditingUser({ ...editingUser, familyValues: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl capitalize"
+                    >
+                      <option value="traditional">Traditional</option>
+                      <option value="moderate">Moderate</option>
+                      <option value="liberal">Liberal</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Number of Brothers</label>
+                    <input
+                      type="number"
+                      value={editingUser.brothers ?? 0}
+                      onChange={(e) => setEditingUser({ ...editingUser, brothers: Number(e.target.value) })}
+                      min="0"
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Number of Sisters</label>
+                    <input
+                      type="number"
+                      value={editingUser.sisters ?? 0}
+                      onChange={(e) => setEditingUser({ ...editingUser, sisters: Number(e.target.value) })}
+                      min="0"
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-gray-700 mb-1">Education</label>
-                  <input
-                    type="text"
-                    value={editingUser.education || ''}
-                    onChange={(e) => setEditingUser({ ...editingUser, education: e.target.value })}
-                    className="w-full p-2.5 border rounded-xl"
-                  />
+              {/* TAB 5: PHOTOS GALLERY */}
+              {adminUserTab === 'photos' && (
+                <div className="space-y-4 animate-in fade-in">
+                  <div className="border-2 border-dashed border-ivory-300 hover:border-gold-500 bg-ivory-50 p-4 rounded-2xl text-center transition-all cursor-pointer relative">
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={handleAdminPhotoUpload}
+                      disabled={adminUploadingPhoto}
+                      className="hidden"
+                      id="admin-photo-upload"
+                    />
+                    <label
+                      htmlFor="admin-photo-upload"
+                      className="cursor-pointer flex flex-col items-center justify-center gap-1 text-xs text-gray-600"
+                    >
+                      <Camera className="w-8 h-8 text-brand-900" />
+                      <span className="font-bold text-brand-950 text-sm">
+                        {adminUploadingPhoto ? 'Uploading Photos...' : 'Admin Upload Photos for User'}
+                      </span>
+                      <span className="text-[11px] text-gray-500">
+                        Upload single or multiple candidate photos directly to Firebase Storage
+                      </span>
+                    </label>
+                  </div>
+
+                  {Array.isArray(editingUser.photos) && editingUser.photos.length > 0 ? (
+                    <div className="space-y-2">
+                      <span className="font-semibold text-gray-700">
+                        Candidate Photos ({editingUser.photos.length}):
+                      </span>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {editingUser.photos.map((photo: string, idx: number) => {
+                          const isPrimary = editingUser.primaryPhoto === photo;
+                          return (
+                            <div key={idx} className="relative group border rounded-xl overflow-hidden bg-gray-100 h-28 shadow-xs">
+                              <img src={photo} alt={`Candidate Photo ${idx + 1}`} className="w-full h-full object-cover" />
+                              {isPrimary && (
+                                <span className="absolute top-1 left-1 bg-gold-400 text-brand-950 text-[9px] font-bold px-1.5 py-0.5 rounded shadow-xs">
+                                  Primary ⭐
+                                </span>
+                              )}
+                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
+                                {!isPrimary && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAdminSetPrimaryPhoto(photo)}
+                                    className="px-2 py-1 bg-gold-400 text-brand-950 text-[10px] font-bold rounded hover:bg-gold-300"
+                                  >
+                                    Set Main
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => handleAdminRemovePhoto(photo)}
+                                  className="p-1 bg-red-600 text-white rounded hover:bg-red-700"
+                                  title="Delete photo"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-center py-4 text-gray-400">No photos currently uploaded for this user.</p>
+                  )}
                 </div>
+              )}
 
-                <div>
-                  <label className="block font-semibold text-gray-700 mb-1">Occupation</label>
-                  <input
-                    type="text"
-                    value={editingUser.occupation || ''}
-                    onChange={(e) => setEditingUser({ ...editingUser, occupation: e.target.value })}
-                    className="w-full p-2.5 border rounded-xl"
-                  />
+              {/* TAB 6: PARTNER PREFERENCES */}
+              {adminUserTab === 'partner' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 animate-in fade-in">
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Preferred Min Age</label>
+                    <input
+                      type="number"
+                      value={editingUser.partnerMinAge ?? editingUser.partnerPreferences?.minAge ?? 21}
+                      onChange={(e) => setEditingUser({ ...editingUser, partnerMinAge: Number(e.target.value) })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Preferred Max Age</label>
+                    <input
+                      type="number"
+                      value={editingUser.partnerMaxAge ?? editingUser.partnerPreferences?.maxAge ?? 35}
+                      onChange={(e) => setEditingUser({ ...editingUser, partnerMaxAge: Number(e.target.value) })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Preferred Education</label>
+                    <input
+                      type="text"
+                      value={editingUser.partnerEducation ?? editingUser.partnerPreferences?.education ?? 'Graduate'}
+                      onChange={(e) => setEditingUser({ ...editingUser, partnerEducation: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Preferred Occupation</label>
+                    <input
+                      type="text"
+                      value={editingUser.partnerOccupation ?? editingUser.partnerPreferences?.occupation ?? 'Any'}
+                      onChange={(e) => setEditingUser({ ...editingUser, partnerOccupation: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block font-semibold text-gray-700 mb-1">Preferred Location</label>
+                    <input
+                      type="text"
+                      value={editingUser.partnerLocation ?? editingUser.partnerPreferences?.location ?? 'Maharashtra'}
+                      onChange={(e) => setEditingUser({ ...editingUser, partnerLocation: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <div>
-                <label className="block font-semibold text-gray-700 mb-1">PDF Biodata Privacy Setting</label>
-                <select
-                  value={editingUser.biodataPrivacy || 'Connections Only'}
-                  onChange={(e) => setEditingUser({ ...editingUser, biodataPrivacy: e.target.value })}
-                  className="w-full p-2.5 border rounded-xl"
-                >
-                  <option value="Connections Only">Connections Only (Recommended)</option>
-                  <option value="Visible to All">Visible to All</option>
-                  <option value="Private">Private</option>
-                </select>
-              </div>
-
-              <div className="pt-3 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setEditingUser(null)}
-                  className="px-4 py-2 border rounded-xl text-gray-600 font-semibold cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-brand-900 text-gold-300 font-bold rounded-xl cursor-pointer hover:bg-brand-950"
-                >
-                  Save Changes
-                </button>
+              {/* Action Buttons */}
+              <div className="pt-4 border-t border-ivory-300 flex items-center justify-between shrink-0">
+                <span className="text-[11px] text-gray-400">All changes will be updated live across the database.</span>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditingUser(null)}
+                    className="px-4 py-2 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-100 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 bg-brand-900 text-gold-300 font-bold rounded-xl hover:bg-brand-950 shadow-md cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>Save All Changes</span>
+                  </button>
+                </div>
               </div>
             </form>
           </div>

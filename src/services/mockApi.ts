@@ -1296,22 +1296,34 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       );
     }
     return {
-      users: filtered.map((p: any) => ({
-        _id: p._id || p.user?._id,
-        fullName: p.user?.fullName || p.fullName || 'Member',
-        email: p.user?.email || p.email || '',
-        mobile: p.user?.mobile || p.mobile || '',
-        profileId: p.profileId || '',
-        city: p.city || '',
-        caste: p.caste || '',
-        occupation: p.occupation || '',
-        education: p.education || '',
-        isVerified: p.isVerified ?? p.user?.isVerified ?? false,
-        isFeatured: p.isFeatured ?? false,
-        biodataUrl: p.biodataUrl || '',
-        biodataPrivacy: p.biodataVisibility || 'Connections Only',
-        status: p.user?.status || p.status || 'active',
-      })),
+      users: filtered.map((p: any) => {
+        const photosList = Array.isArray(p.photos) && p.photos.length > 0
+          ? p.photos
+          : (p.primaryPhoto ? [p.primaryPhoto] : []);
+        return {
+          ...p,
+          _id: p._id || p.user?._id,
+          fullName: p.user?.fullName || p.fullName || 'Member',
+          email: p.user?.email || p.email || '',
+          mobile: p.user?.mobile || p.mobile || '',
+          password: p.user?.password || 'Password@123',
+          role: p.user?.role || p.role || 'user',
+          profileId: p.profileId || '',
+          gender: p.gender || p.user?.gender || 'male',
+          age: p.age || 26,
+          city: p.city || '',
+          caste: p.caste || '',
+          occupation: p.occupation || '',
+          education: p.education || '',
+          isVerified: p.isVerified ?? p.user?.isVerified ?? false,
+          isFeatured: p.isFeatured ?? false,
+          biodataUrl: p.biodataUrl || '',
+          biodataPrivacy: p.biodataVisibility || 'Connections Only',
+          status: p.user?.status || p.status || 'active',
+          primaryPhoto: p.primaryPhoto || (photosList.length > 0 ? photosList[0] : ''),
+          photos: photosList,
+        };
+      }),
     };
   }
 
@@ -1383,31 +1395,51 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
       }
     }
     if (pIdx !== -1) {
+      const existing = rawProfiles[pIdx];
+
       const updatedUser = {
-        ...rawProfiles[pIdx].user,
-        fullName: body.fullName !== undefined ? body.fullName : rawProfiles[pIdx].user?.fullName,
-        email: body.email !== undefined ? body.email : rawProfiles[pIdx].user?.email,
-        mobile: body.mobile !== undefined ? body.mobile : rawProfiles[pIdx].user?.mobile,
+        ...existing.user,
+        fullName: body.fullName !== undefined ? body.fullName : existing.user?.fullName,
+        email: body.email !== undefined ? body.email : existing.user?.email,
+        mobile: body.mobile !== undefined ? body.mobile : existing.user?.mobile,
+        password: body.password ? body.password : existing.user?.password,
+        role: body.role !== undefined ? body.role : existing.user?.role,
+        status: body.status !== undefined ? body.status : existing.user?.status,
+        isVerified: body.isVerified !== undefined ? body.isVerified : existing.user?.isVerified,
       };
 
-      rawProfiles[pIdx] = {
-        ...rawProfiles[pIdx],
-        fullName: updatedUser.fullName,
-        city: body.city !== undefined ? body.city : rawProfiles[pIdx].city,
-        caste: body.caste !== undefined ? body.caste : rawProfiles[pIdx].caste,
-        occupation: body.occupation !== undefined ? body.occupation : rawProfiles[pIdx].occupation,
-        education: body.education !== undefined ? body.education : rawProfiles[pIdx].education,
-        biodataVisibility: body.biodataPrivacy || rawProfiles[pIdx].biodataVisibility,
+      const updatedProfile = {
+        ...existing,
+        ...body,
         user: updatedUser,
+        fullName: updatedUser.fullName,
+        isVerified: updatedUser.isVerified,
+        status: updatedUser.status,
+        isFeatured: body.isFeatured !== undefined ? body.isFeatured : existing.isFeatured,
+        age: body.age !== undefined && body.age !== null && body.age !== '' ? Number(body.age) : existing.age,
+        primaryPhoto: body.primaryPhoto !== undefined ? body.primaryPhoto : existing.primaryPhoto,
+        photos: Array.isArray(body.photos) ? body.photos : (existing.photos || []),
+        biodataVisibility: body.biodataPrivacy || body.biodataVisibility || existing.biodataVisibility,
+        partnerPreferences: {
+          ...existing.partnerPreferences,
+          ...(body.partnerPreferences || {}),
+          minAge: body.partnerMinAge ?? body.partnerPreferences?.minAge ?? existing.partnerPreferences?.minAge ?? 21,
+          maxAge: body.partnerMaxAge ?? body.partnerPreferences?.maxAge ?? existing.partnerPreferences?.maxAge ?? 35,
+          education: body.partnerEducation ?? body.partnerPreferences?.education ?? existing.partnerPreferences?.education ?? 'Graduate',
+          occupation: body.partnerOccupation ?? body.partnerPreferences?.occupation ?? existing.partnerPreferences?.occupation ?? 'Any',
+          location: body.partnerLocation ?? body.partnerPreferences?.location ?? existing.partnerPreferences?.location ?? 'Any',
+        },
       };
+
+      rawProfiles[pIdx] = updatedProfile;
       setItem(PROFILES_KEY, rawProfiles);
 
-      const targetIds = Array.from(new Set([rawProfiles[pIdx]._id, rawProfiles[pIdx].user?._id, targetUserId].filter(Boolean)));
+      const targetIds = Array.from(new Set([existing._id, existing.user?._id, existing.profileId, targetUserId].filter(Boolean)));
       for (const tId of targetIds) {
         await saveProfileToFirestore(tId as string, rawProfiles[pIdx]);
       }
 
-      return { message: 'User updated successfully', profile: rawProfiles[pIdx] };
+      return { message: 'Member profile updated successfully by Admin', profile: rawProfiles[pIdx] };
     }
     throw new Error(`Member not found for ID: ${targetUserId}`);
   }
