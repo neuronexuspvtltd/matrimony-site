@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { X, Sparkles, ChevronRight } from 'lucide-react';
+import { defaultSiteContent } from '../services/mockApi';
 
 interface PromoPopupModalProps {
   siteContent?: any;
@@ -14,43 +15,64 @@ export const PromoPopupModal: React.FC<PromoPopupModalProps> = ({ siteContent: p
   const [content, setContent] = useState<any>(null);
 
   useEffect(() => {
-    // 1. Check if user already dismissed the promo popup in this browser session
-    const isClosedInSession = sessionStorage.getItem('pb_promo_popup_closed');
-    if (isClosedInSession === 'true') {
-      return;
-    }
+    let isMounted = true;
 
-    let activeContent = propsContent;
+    const loadSiteContent = async () => {
+      let activeContent: any = propsContent;
 
-    if (!activeContent || !activeContent.popupBannerImageUrl) {
-      try {
-        const raw = localStorage.getItem('pb_site_content_data');
-        if (raw) {
-          activeContent = JSON.parse(raw);
-        }
-      } catch (e) {}
-    }
-
-    // Fallback fetch if not available in localStorage
-    if (!activeContent || !activeContent.popupBannerImageUrl) {
-      fetch('/admin/site-content')
-        .then((res) => res.json())
-        .then((data) => {
-          if (data && data.popupBannerEnabled && data.popupBannerImageUrl) {
-            setContent(data);
-            // Slight delay (400ms) for smooth entrance after page load
-            setTimeout(() => setIsOpen(true), 400);
+      // 1. Try reading from localStorage
+      if (!activeContent || !activeContent.popupBannerImageUrl) {
+        try {
+          const raw = localStorage.getItem('pb_site_content_data');
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && parsed.popupBannerImageUrl) {
+              activeContent = { ...defaultSiteContent, ...parsed };
+            }
           }
-        })
-        .catch(() => {});
-      return;
-    }
+        } catch (e) {}
+      }
 
-    if (activeContent && activeContent.popupBannerEnabled && activeContent.popupBannerImageUrl) {
+      // 2. Fallback fetch from API if missing or empty
+      if (!activeContent || !activeContent.popupBannerImageUrl) {
+        try {
+          const res = await fetch('/admin/site-content');
+          const data = await res.json();
+          if (data && data.popupBannerImageUrl) {
+            activeContent = { ...defaultSiteContent, ...data };
+          }
+        } catch (e) {}
+      }
+
+      // Fallback to default site content if none found
+      if (!activeContent || !activeContent.popupBannerImageUrl) {
+        activeContent = defaultSiteContent;
+      }
+
+      if (!isMounted) return;
+
+      // Check if popup is enabled (defaults to true)
+      const isEnabled = activeContent?.popupBannerEnabled !== false;
+      if (!isEnabled || !activeContent?.popupBannerImageUrl) {
+        setIsOpen(false);
+        return;
+      }
+
+      // Check if user already dismissed THIS specific poster image URL in this browser tab session
+      const dismissedUrl = sessionStorage.getItem('pb_promo_popup_closed_url');
+      if (dismissedUrl === activeContent.popupBannerImageUrl) {
+        return;
+      }
+
       setContent(activeContent);
-      const timer = setTimeout(() => setIsOpen(true), 400);
-      return () => clearTimeout(timer);
-    }
+      setIsOpen(true);
+    };
+
+    loadSiteContent();
+
+    return () => {
+      isMounted = false;
+    };
   }, [propsContent]);
 
   // Handle body scroll locking when promo modal is open
@@ -67,7 +89,9 @@ export const PromoPopupModal: React.FC<PromoPopupModalProps> = ({ siteContent: p
 
   const handleClose = () => {
     setIsOpen(false);
-    sessionStorage.setItem('pb_promo_popup_closed', 'true');
+    if (content?.popupBannerImageUrl) {
+      sessionStorage.setItem('pb_promo_popup_closed_url', content.popupBannerImageUrl);
+    }
   };
 
   const handlePosterClick = () => {

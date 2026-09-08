@@ -32,7 +32,7 @@ const REPORTS_KEY = 'pb_reports_data';
 const SUCCESS_STORIES_KEY = 'pb_success_stories_data';
 const SITE_CONTENT_KEY = 'pb_site_content_data';
 
-const defaultSiteContent = {
+export const defaultSiteContent = {
   heroHeadlineEn: 'Choose Your Forever',
   heroHeadlineMr: 'तुमच्या आयुष्याचा साथीदार शोधा',
   heroSubtitleEn: 'Find love on your terms with thousands of verified profiles',

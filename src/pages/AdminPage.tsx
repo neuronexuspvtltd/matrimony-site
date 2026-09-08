@@ -86,10 +86,24 @@ export const AdminPage: React.FC = () => {
     setUploadingPoster(true);
     try {
       const posterUrl = await uploadUserPhotoToStorage(file, `poster_banner_${Date.now()}`);
-      setSiteContent((prev: any) => ({
-        ...prev,
+      const updated = {
+        ...siteContent,
+        popupBannerEnabled: true,
         popupBannerImageUrl: posterUrl,
-      }));
+      };
+      setSiteContent(updated);
+
+      // Auto-publish live to storage & backend instantly
+      await fetchApi('/admin/site-content', {
+        method: 'PUT',
+        body: JSON.stringify(updated),
+      });
+
+      // Reset closed session so the new poster immediately pops up for previewing
+      sessionStorage.removeItem('pb_promo_popup_closed');
+      sessionStorage.removeItem('pb_promo_popup_closed_url');
+
+      alert('Poster image uploaded and published live successfully! 🎉');
     } catch (err: any) {
       alert(err.message || 'Error uploading poster image');
     } finally {
@@ -412,6 +426,8 @@ export const AdminPage: React.FC = () => {
         method: 'PUT',
         body: JSON.stringify(siteContent),
       });
+      sessionStorage.removeItem('pb_promo_popup_closed');
+      sessionStorage.removeItem('pb_promo_popup_closed_url');
       alert(res.message || 'Site content updated and published live!');
     } catch (err: any) {
       alert(err.message || 'Error saving site content');
