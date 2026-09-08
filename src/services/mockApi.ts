@@ -46,6 +46,18 @@ const defaultSiteContent = {
   registrationFeeAmount: 2499,
   registrationOriginalFee: 5000,
   registrationFeeDescription: 'Membership Registration & Profile Verification Fee',
+  statMembersCount: '10,000+',
+  statMembersLabelEn: 'REGISTERED MEMBERS',
+  statMembersLabelMr: 'नोंदणीकृत सदस्य',
+  statActiveCount: '4,500+',
+  statActiveLabelEn: 'ACTIVE PROFILES',
+  statActiveLabelMr: 'सक्रिय प्रोफाईल्स',
+  statConnectionsCount: '1,800+',
+  statConnectionsLabelEn: 'SUCCESSFUL CONNECTIONS',
+  statConnectionsLabelMr: 'यशस्वी जुळलेले बंध',
+  statCitiesCount: '50+',
+  statCitiesLabelEn: 'CITIES COVERED',
+  statCitiesLabelMr: 'शहरे समाविष्ट',
 };
 
 // Helper to load or initialize LocalStorage

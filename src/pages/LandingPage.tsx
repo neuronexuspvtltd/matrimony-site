@@ -39,12 +39,42 @@ export const LandingPage: React.FC = () => {
   const { t, language } = useLanguage();
   const { user } = useAuth();
   const [featuredProfiles, setFeaturedProfiles] = useState<any[]>([]);
+  const [siteContent, setSiteContent] = useState<any>({
+    statMembersCount: '10,000+',
+    statMembersLabelEn: 'REGISTERED MEMBERS',
+    statMembersLabelMr: 'नोंदणीकृत सदस्य',
+    statActiveCount: '4,500+',
+    statActiveLabelEn: 'ACTIVE PROFILES',
+    statActiveLabelMr: 'सक्रिय प्रोफाईल्स',
+    statConnectionsCount: '1,800+',
+    statConnectionsLabelEn: 'SUCCESSFUL CONNECTIONS',
+    statConnectionsLabelMr: 'यशस्वी जुळलेले बंध',
+    statCitiesCount: '50+',
+    statCitiesLabelEn: 'CITIES COVERED',
+    statCitiesLabelMr: 'शहरे समाविष्ट',
+  });
 
   // 🖼️ Multi-photo Lightbox Gallery State
   const [selectedStory, setSelectedStory] = useState<any | null>(null);
   const [activePhotoIndex, setActivePhotoIndex] = useState<number>(0);
 
   useEffect(() => {
+    try {
+      const raw = localStorage.getItem('pb_site_content_data');
+      if (raw) {
+        setSiteContent(JSON.parse(raw));
+      }
+    } catch (e) {}
+
+    fetch('/admin/site-content')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.statMembersCount) {
+          setSiteContent(data);
+        }
+      })
+      .catch(() => {});
+
     fetchApi('/search/featured')
       .then((data) => setFeaturedProfiles(data || []))
       .catch((err) => console.error('Error fetching featured profiles:', err));
@@ -458,23 +488,47 @@ export const LandingPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x-0 md:divide-x divide-brand-900">
             <div className="space-y-2">
-              <div className="font-serif text-4xl sm:text-5xl font-bold text-white">10,000+</div>
-              <div className="text-xs font-medium text-gold-400 uppercase tracking-wider">{t('statMembers')}</div>
+              <div className="font-serif text-4xl sm:text-5xl font-bold text-white">
+                {siteContent.statMembersCount || '10,000+'}
+              </div>
+              <div className="text-xs font-medium text-gold-400 uppercase tracking-wider">
+                {language === 'MR'
+                  ? (siteContent.statMembersLabelMr || 'नोंदणीकृत सदस्य')
+                  : (siteContent.statMembersLabelEn || 'REGISTERED MEMBERS')}
+              </div>
             </div>
 
             <div className="space-y-2">
-              <div className="font-serif text-4xl sm:text-5xl font-bold text-white">4,500+</div>
-              <div className="text-xs font-medium text-gold-400 uppercase tracking-wider">{t('statActive')}</div>
+              <div className="font-serif text-4xl sm:text-5xl font-bold text-white">
+                {siteContent.statActiveCount || '4,500+'}
+              </div>
+              <div className="text-xs font-medium text-gold-400 uppercase tracking-wider">
+                {language === 'MR'
+                  ? (siteContent.statActiveLabelMr || 'सक्रिय प्रोफाईल्स')
+                  : (siteContent.statActiveLabelEn || 'ACTIVE PROFILES')}
+              </div>
             </div>
 
             <div className="space-y-2">
-              <div className="font-serif text-4xl sm:text-5xl font-bold text-white">1,800+</div>
-              <div className="text-xs font-medium text-gold-400 uppercase tracking-wider">{t('statConnections')}</div>
+              <div className="font-serif text-4xl sm:text-5xl font-bold text-white">
+                {siteContent.statConnectionsCount || '1,800+'}
+              </div>
+              <div className="text-xs font-medium text-gold-400 uppercase tracking-wider">
+                {language === 'MR'
+                  ? (siteContent.statConnectionsLabelMr || 'यशस्वी जुळलेले बंध')
+                  : (siteContent.statConnectionsLabelEn || 'SUCCESSFUL CONNECTIONS')}
+              </div>
             </div>
 
             <div className="space-y-2">
-              <div className="font-serif text-4xl sm:text-5xl font-bold text-white">50+</div>
-              <div className="text-xs font-medium text-gold-400 uppercase tracking-wider">{t('statCities')}</div>
+              <div className="font-serif text-4xl sm:text-5xl font-bold text-white">
+                {siteContent.statCitiesCount || '50+'}
+              </div>
+              <div className="text-xs font-medium text-gold-400 uppercase tracking-wider">
+                {language === 'MR'
+                  ? (siteContent.statCitiesLabelMr || 'शहरे समाविष्ट')
+                  : (siteContent.statCitiesLabelEn || 'CITIES COVERED')}
+              </div>
             </div>
           </div>
         </div>

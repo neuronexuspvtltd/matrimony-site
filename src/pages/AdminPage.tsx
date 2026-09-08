@@ -32,6 +32,7 @@ import {
   User,
   Briefcase,
   Sliders,
+  Award,
 } from 'lucide-react';
 
 export const AdminPage: React.FC = () => {
@@ -53,6 +54,18 @@ export const AdminPage: React.FC = () => {
     registrationFeeAmount: 2499,
     registrationOriginalFee: 5000,
     registrationFeeDescription: 'Membership Registration & Profile Verification Fee',
+    statMembersCount: '10,000+',
+    statMembersLabelEn: 'REGISTERED MEMBERS',
+    statMembersLabelMr: 'नोंदणीकृत सदस्य',
+    statActiveCount: '4,500+',
+    statActiveLabelEn: 'ACTIVE PROFILES',
+    statActiveLabelMr: 'सक्रिय प्रोफाईल्स',
+    statConnectionsCount: '1,800+',
+    statConnectionsLabelEn: 'SUCCESSFUL CONNECTIONS',
+    statConnectionsLabelMr: 'यशस्वी जुळलेले बंध',
+    statCitiesCount: '50+',
+    statCitiesLabelEn: 'CITIES COVERED',
+    statCitiesLabelMr: 'शहरे समाविष्ट',
   });
 
   const [tab, setTab] = useState<'users' | 'stories' | 'content' | 'announcement' | 'reports'>('users');
@@ -1051,6 +1064,149 @@ export const AdminPage: React.FC = () => {
                   className="w-full px-3 py-2 rounded-xl border text-xs bg-white"
                   placeholder="e.g. Membership Registration & Profile Verification Fee"
                 />
+              </div>
+            </div>
+
+            {/* 📊 HOMEPAGE LIVE STATISTICS COUNTER EDITORS */}
+            <div className="border-t border-gray-100 pt-5 space-y-4">
+              <div className="bg-brand-50/70 border border-brand-200/60 p-4 rounded-2xl">
+                <div className="flex items-center gap-2 text-brand-900 font-bold text-sm mb-1">
+                  <Award className="w-4 h-4 text-gold-600" />
+                  <span>Homepage Statistics Counter Section</span>
+                </div>
+                <p className="text-xs text-brand-800/80">
+                  Edit the 4 counter numbers and labels displayed on the main homepage stats banner bar.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Stat 1 */}
+                <div className="p-3.5 bg-gray-50/80 border border-gray-200 rounded-2xl space-y-2">
+                  <span className="text-xs font-bold text-brand-900 block">Stat 1: Registered Members</span>
+                  <div>
+                    <label className="block text-[11px] font-medium text-gray-600 mb-0.5">Counter Value (e.g. 10,000+)</label>
+                    <input
+                      type="text"
+                      value={siteContent.statMembersCount ?? '10,000+'}
+                      onChange={(e) => setSiteContent({ ...siteContent, statMembersCount: e.target.value })}
+                      className="w-full px-3 py-1.5 rounded-lg border text-xs bg-white font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium text-gray-600 mb-0.5">Label (English)</label>
+                    <input
+                      type="text"
+                      value={siteContent.statMembersLabelEn ?? 'REGISTERED MEMBERS'}
+                      onChange={(e) => setSiteContent({ ...siteContent, statMembersLabelEn: e.target.value })}
+                      className="w-full px-3 py-1.5 rounded-lg border text-xs bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium text-gray-600 mb-0.5">Label (मराठी)</label>
+                    <input
+                      type="text"
+                      value={siteContent.statMembersLabelMr ?? 'नोंदणीकृत सदस्य'}
+                      onChange={(e) => setSiteContent({ ...siteContent, statMembersLabelMr: e.target.value })}
+                      className="w-full px-3 py-1.5 rounded-lg border text-xs bg-white"
+                    />
+                  </div>
+                </div>
+
+                {/* Stat 2 */}
+                <div className="p-3.5 bg-gray-50/80 border border-gray-200 rounded-2xl space-y-2">
+                  <span className="text-xs font-bold text-brand-900 block">Stat 2: Active Profiles</span>
+                  <div>
+                    <label className="block text-[11px] font-medium text-gray-600 mb-0.5">Counter Value (e.g. 4,500+)</label>
+                    <input
+                      type="text"
+                      value={siteContent.statActiveCount ?? '4,500+'}
+                      onChange={(e) => setSiteContent({ ...siteContent, statActiveCount: e.target.value })}
+                      className="w-full px-3 py-1.5 rounded-lg border text-xs bg-white font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium text-gray-600 mb-0.5">Label (English)</label>
+                    <input
+                      type="text"
+                      value={siteContent.statActiveLabelEn ?? 'ACTIVE PROFILES'}
+                      onChange={(e) => setSiteContent({ ...siteContent, statActiveLabelEn: e.target.value })}
+                      className="w-full px-3 py-1.5 rounded-lg border text-xs bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium text-gray-600 mb-0.5">Label (मराठी)</label>
+                    <input
+                      type="text"
+                      value={siteContent.statActiveLabelMr ?? 'सक्रिय प्रोफाईल्स'}
+                      onChange={(e) => setSiteContent({ ...siteContent, statActiveLabelMr: e.target.value })}
+                      className="w-full px-3 py-1.5 rounded-lg border text-xs bg-white"
+                    />
+                  </div>
+                </div>
+
+                {/* Stat 3 */}
+                <div className="p-3.5 bg-gray-50/80 border border-gray-200 rounded-2xl space-y-2">
+                  <span className="text-xs font-bold text-brand-900 block">Stat 3: Successful Connections</span>
+                  <div>
+                    <label className="block text-[11px] font-medium text-gray-600 mb-0.5">Counter Value (e.g. 1,800+)</label>
+                    <input
+                      type="text"
+                      value={siteContent.statConnectionsCount ?? '1,800+'}
+                      onChange={(e) => setSiteContent({ ...siteContent, statConnectionsCount: e.target.value })}
+                      className="w-full px-3 py-1.5 rounded-lg border text-xs bg-white font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium text-gray-600 mb-0.5">Label (English)</label>
+                    <input
+                      type="text"
+                      value={siteContent.statConnectionsLabelEn ?? 'SUCCESSFUL CONNECTIONS'}
+                      onChange={(e) => setSiteContent({ ...siteContent, statConnectionsLabelEn: e.target.value })}
+                      className="w-full px-3 py-1.5 rounded-lg border text-xs bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium text-gray-600 mb-0.5">Label (मराठी)</label>
+                    <input
+                      type="text"
+                      value={siteContent.statConnectionsLabelMr ?? 'यशस्वी जुळलेले बंध'}
+                      onChange={(e) => setSiteContent({ ...siteContent, statConnectionsLabelMr: e.target.value })}
+                      className="w-full px-3 py-1.5 rounded-lg border text-xs bg-white"
+                    />
+                  </div>
+                </div>
+
+                {/* Stat 4 */}
+                <div className="p-3.5 bg-gray-50/80 border border-gray-200 rounded-2xl space-y-2">
+                  <span className="text-xs font-bold text-brand-900 block">Stat 4: Cities Covered</span>
+                  <div>
+                    <label className="block text-[11px] font-medium text-gray-600 mb-0.5">Counter Value (e.g. 50+)</label>
+                    <input
+                      type="text"
+                      value={siteContent.statCitiesCount ?? '50+'}
+                      onChange={(e) => setSiteContent({ ...siteContent, statCitiesCount: e.target.value })}
+                      className="w-full px-3 py-1.5 rounded-lg border text-xs bg-white font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium text-gray-600 mb-0.5">Label (English)</label>
+                    <input
+                      type="text"
+                      value={siteContent.statCitiesLabelEn ?? 'CITIES COVERED'}
+                      onChange={(e) => setSiteContent({ ...siteContent, statCitiesLabelEn: e.target.value })}
+                      className="w-full px-3 py-1.5 rounded-lg border text-xs bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium text-gray-600 mb-0.5">Label (मराठी)</label>
+                    <input
+                      type="text"
+                      value={siteContent.statCitiesLabelMr ?? 'शहरे समाविष्ट'}
+                      onChange={(e) => setSiteContent({ ...siteContent, statCitiesLabelMr: e.target.value })}
+                      className="w-full px-3 py-1.5 rounded-lg border text-xs bg-white"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
