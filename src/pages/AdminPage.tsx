@@ -73,7 +73,7 @@ export const AdminPage: React.FC = () => {
     popupBannerLinkUrl: '/register',
   });
 
-  const [tab, setTab] = useState<'users' | 'stories' | 'content' | 'announcement' | 'reports' | 'popup'>('users');
+  const [tab, setTab] = useState<'users' | 'stories' | 'content' | 'announcement' | 'reports' | 'popup' | 'payment'>('users');
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [savingContent, setSavingContent] = useState(false);
@@ -651,6 +651,16 @@ export const AdminPage: React.FC = () => {
         >
           Site Opening Popup Poster
         </button>
+        <button
+          onClick={() => setTab('payment')}
+          className={`px-3 py-2 sm:px-0 sm:pb-3 text-xs font-bold transition-colors cursor-pointer whitespace-nowrap rounded-xl sm:rounded-none ${
+            tab === 'payment'
+              ? 'bg-brand-900 text-gold-300 sm:bg-transparent sm:text-brand-900 sm:border-b-2 sm:border-brand-900'
+              : 'bg-ivory-100/80 text-gray-600 hover:text-gray-900 sm:bg-transparent sm:text-gray-500 sm:hover:text-gray-800'
+          }`}
+        >
+          Razorpay Payment Settings
+        </button>
       </div>
 
       {/* TAB 1: User & Profile Management */}
@@ -1034,69 +1044,6 @@ export const AdminPage: React.FC = () => {
                   value={siteContent.mumbaiOffice || ''}
                   onChange={(e) => setSiteContent({ ...siteContent, mumbaiOffice: e.target.value })}
                   className="w-full px-3 py-2 rounded-xl border text-xs"
-                />
-              </div>
-            </div>
-
-            {/* 💳 RAZORPAY REGISTRATION FEE & PAYMENT CONFIGURATION */}
-            <div className="border-t border-gray-100 pt-5 space-y-4">
-              <div className="bg-brand-50/70 border border-brand-200/60 p-4 rounded-2xl">
-                <div className="flex items-center gap-2 text-brand-900 font-bold text-sm mb-1">
-                  <CreditCard className="w-4 h-4 text-gold-600" />
-                  <span>Razorpay Registration Charge Settings</span>
-                </div>
-                <p className="text-xs text-brand-800/80">
-                  Set the custom candidate registration fee. Changing this amount will instantly update the live Razorpay payment charge collected from new members during registration.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    Registration Charge (₹ INR) <span className="text-emerald-600 font-bold">(Razorpay Charge)</span>
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={siteContent.registrationFeeAmount ?? 2499}
-                    onChange={(e) => setSiteContent({ ...siteContent, registrationFeeAmount: Number(e.target.value) })}
-                    className="w-full px-3 py-2 rounded-xl border text-xs font-bold text-brand-900 bg-white"
-                    placeholder="e.g. 2499 or 1499 or 999"
-                    required
-                  />
-                  <span className="text-[10px] text-gray-500 mt-1 block">
-                    This exact amount (e.g. ₹{siteContent.registrationFeeAmount || 2499}) will be charged via Razorpay.
-                  </span>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    Original Price Strikethrough (₹ INR)
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={siteContent.registrationOriginalFee ?? 5000}
-                    onChange={(e) => setSiteContent({ ...siteContent, registrationOriginalFee: Number(e.target.value) })}
-                    className="w-full px-3 py-2 rounded-xl border text-xs font-medium text-gray-600 bg-white"
-                    placeholder="e.g. 5000"
-                  />
-                  <span className="text-[10px] text-gray-500 mt-1 block">
-                    Original price shown with strikethrough (e.g. <span className="line-through">₹{siteContent.registrationOriginalFee || 5000}</span>).
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Razorpay Checkout Description Text
-                </label>
-                <input
-                  type="text"
-                  value={siteContent.registrationFeeDescription || 'Membership Registration & Profile Verification Fee'}
-                  onChange={(e) => setSiteContent({ ...siteContent, registrationFeeDescription: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border text-xs bg-white"
-                  placeholder="e.g. Membership Registration & Profile Verification Fee"
                 />
               </div>
             </div>
@@ -1487,6 +1434,90 @@ export const AdminPage: React.FC = () => {
             >
               <Save className="w-4 h-4" />
               <span>{savingContent ? 'Saving...' : 'Save & Publish Live Poster Settings'}</span>
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* TAB 7: Razorpay Payment Gateway Settings */}
+      {tab === 'payment' && (
+        <form onSubmit={handleSaveSiteContent} className="bg-white rounded-3xl border border-ivory-300 p-4 sm:p-6 space-y-6 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-ivory-200 pb-4">
+            <div>
+              <div className="flex items-center gap-2 text-brand-900 font-bold text-base mb-1">
+                <CreditCard className="w-5 h-5 text-gold-600" />
+                <span>Razorpay Custom Registration Charge & Payment Gateway Settings</span>
+              </div>
+              <p className="text-xs text-gray-500">
+                Manage the live Razorpay candidate registration fee and pricing details. Any changes saved here will immediately update the Razorpay payment amount collected during candidate registration.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="space-y-2 bg-emerald-50/50 border border-emerald-200/70 p-4.5 rounded-2xl">
+              <label className="block text-xs font-bold text-emerald-950 flex items-center justify-between">
+                <span>Active Registration Charge (₹ INR)</span>
+                <span className="text-[10px] uppercase font-extrabold bg-emerald-600 text-white px-2.5 py-0.5 rounded-full shadow-xs">
+                  Live Razorpay Charge
+                </span>
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={siteContent.registrationFeeAmount ?? 2499}
+                onChange={(e) => setSiteContent({ ...siteContent, registrationFeeAmount: Number(e.target.value) })}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-emerald-300 text-sm font-extrabold text-brand-900 bg-white focus:ring-2 focus:ring-emerald-600"
+                placeholder="e.g. 2499 or 1499 or 999"
+                required
+              />
+              <span className="text-[11px] text-emerald-800/90 font-medium block">
+                This exact amount (<strong>₹{siteContent.registrationFeeAmount || 2499}</strong>) will be charged to candidates via Razorpay gateway during registration.
+              </span>
+            </div>
+
+            <div className="space-y-2 bg-gray-50 border border-gray-200 p-4.5 rounded-2xl">
+              <label className="block text-xs font-bold text-gray-800">
+                Original Strikethrough Price (₹ INR)
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={siteContent.registrationOriginalFee ?? 5000}
+                onChange={(e) => setSiteContent({ ...siteContent, registrationOriginalFee: Number(e.target.value) })}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm font-semibold text-gray-700 bg-white focus:ring-2 focus:ring-brand-900"
+                placeholder="e.g. 5000"
+              />
+              <span className="text-[11px] text-gray-600 font-medium block">
+                Original price displayed with strikethrough (e.g. <span className="line-through">₹{siteContent.registrationOriginalFee || 5000}</span>) on registration page.
+              </span>
+            </div>
+
+            <div className="sm:col-span-2 space-y-2">
+              <label className="block text-xs font-semibold text-gray-700">
+                Razorpay Modal Checkout Description Text
+              </label>
+              <input
+                type="text"
+                value={siteContent.registrationFeeDescription || 'Membership Registration & Profile Verification Fee'}
+                onChange={(e) => setSiteContent({ ...siteContent, registrationFeeDescription: e.target.value })}
+                className="w-full px-3.5 py-2.5 rounded-xl border text-xs bg-white focus:ring-2 focus:ring-brand-900"
+                placeholder="e.g. Membership Registration & Profile Verification Fee"
+              />
+              <span className="text-[10px] text-gray-500 block">
+                This description text is shown inside the official Razorpay payment popup modal during checkout.
+              </span>
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-gray-100">
+            <button
+              type="submit"
+              disabled={savingContent}
+              className="w-full sm:w-auto px-6 py-3 bg-brand-900 text-gold-300 font-bold rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md hover:bg-brand-950 transition-all"
+            >
+              <Save className="w-4 h-4" />
+              <span>{savingContent ? 'Saving...' : 'Save & Publish Live Payment Charges'}</span>
             </button>
           </div>
         </form>
