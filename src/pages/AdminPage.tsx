@@ -62,6 +62,112 @@ export const AdminPage: React.FC = () => {
   const [adminUploadingPhoto, setAdminUploadingPhoto] = useState(false);
   const [adminShowPassword, setAdminShowPassword] = useState(false);
 
+  // Add New User Modal State (Direct Admin Creation without OTP or Payment)
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [newUserTab, setNewUserTab] = useState<'account' | 'personal' | 'career' | 'family' | 'photos' | 'partner'>('account');
+  const [creatingUser, setCreatingUser] = useState(false);
+  const [newUserUploadingPhoto, setNewUserUploadingPhoto] = useState(false);
+  const [newUserShowPassword, setNewUserShowPassword] = useState(false);
+
+  const initialNewUserForm = {
+    fullName: '',
+    email: '',
+    mobile: '',
+    password: 'Password@123',
+    gender: 'male',
+    dob: '1998-01-01',
+    age: 26,
+    height: "5'8\"",
+    maritalStatus: 'never_married',
+    religion: 'Hindu',
+    caste: 'Maratha',
+    subCaste: '',
+    motherTongue: 'Marathi',
+    city: 'Pune',
+    state: 'Maharashtra',
+    country: 'India',
+    education: 'B.Tech / B.E.',
+    college: '',
+    occupation: 'Software Engineer',
+    company: '',
+    income: '10-15 LPA',
+    fatherOccupation: 'Businessman',
+    motherOccupation: 'Homemaker',
+    brothers: 0,
+    sisters: 0,
+    familyType: 'nuclear',
+    familyValues: 'moderate',
+    aboutMe: '',
+    primaryPhoto: '',
+    photos: [] as string[],
+    partnerMinAge: 21,
+    partnerMaxAge: 35,
+    partnerEducation: 'Graduate',
+    partnerOccupation: 'Employed',
+    partnerLocation: 'Maharashtra',
+    isVerified: true,
+    status: 'active',
+  };
+
+  const [newUserForm, setNewUserForm] = useState(initialNewUserForm);
+
+  const handleNewUserPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    setNewUserUploadingPhoto(true);
+    try {
+      const targetUserId = `usr_temp_${Date.now()}`;
+      const uploadedUrls = await Promise.all(
+        files.map((file) => uploadUserPhotoToStorage(file, targetUserId))
+      );
+
+      const existingPhotos = newUserForm.photos || [];
+      const newPhotos = Array.from(new Set([...existingPhotos, ...uploadedUrls]));
+      const newPrimary = newUserForm.primaryPhoto || newPhotos[0] || '';
+
+      setNewUserForm((prev) => ({
+        ...prev,
+        photos: newPhotos,
+        primaryPhoto: newPrimary,
+      }));
+    } catch (err: any) {
+      alert(err.message || 'Error uploading photo');
+    } finally {
+      setNewUserUploadingPhoto(false);
+    }
+  };
+
+  const handleCreateUserSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newUserForm.fullName || !newUserForm.mobile) {
+      alert('Please enter Candidate Full Name and Mobile Phone.');
+      return;
+    }
+    setCreatingUser(true);
+    try {
+      await fetchApi('/admin/users/create', {
+        method: 'POST',
+        body: JSON.stringify({
+          ...newUserForm,
+          age: Number(newUserForm.age),
+        }),
+      });
+      alert(
+        language === 'EN'
+          ? 'New member profile created successfully (No OTP & No Payment needed)!'
+          : 'नवीन उमेदवाराचे प्रोफाईल यशस्वीरीत्या तयार झाले!'
+      );
+      setShowAddUserModal(false);
+      setNewUserForm(initialNewUserForm);
+      fetchAdminData();
+    } catch (err: any) {
+      alert(err.message || 'Error creating profile');
+    } finally {
+      setCreatingUser(false);
+    }
+  };
+
   const handleAdminPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0 || !editingUser) return;
@@ -168,7 +274,7 @@ export const AdminPage: React.FC = () => {
 
   // Lock background scrolling when modal is open
   useEffect(() => {
-    if (editingUser || showAddStory) {
+    if (editingUser || showAddStory || showAddUserModal) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -176,7 +282,7 @@ export const AdminPage: React.FC = () => {
     return () => {
       document.body.style.overflow = '';
     };
-  }, [editingUser, showAddStory]);
+  }, [editingUser, showAddStory, showAddUserModal]);
 
   // Actions
   const handleToggleVerify = async (userId: string) => {
@@ -499,7 +605,7 @@ export const AdminPage: React.FC = () => {
       {/* TAB 1: User & Profile Management */}
       {tab === 'users' && (
         <div className="bg-white rounded-3xl border border-ivory-300 p-4 sm:p-6 space-y-4 shadow-sm">
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="relative flex-1 max-w-md">
               <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-3" />
               <input
@@ -510,6 +616,19 @@ export const AdminPage: React.FC = () => {
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 text-xs focus:ring-2 focus:ring-brand-900"
               />
             </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setNewUserForm(initialNewUserForm);
+                setNewUserTab('account');
+                setShowAddUserModal(true);
+              }}
+              className="px-4 py-2.5 bg-brand-900 text-gold-300 font-bold rounded-xl text-xs flex items-center justify-center gap-2 hover:bg-brand-950 shadow-sm cursor-pointer shrink-0 border border-gold-400/30"
+            >
+              <Plus className="w-4 h-4 text-gold-400" />
+              <span>Add Candidate Profile (No OTP / No Payment)</span>
+            </button>
           </div>
 
           {/* DESKTOP TABLE VIEW (Preserved 100% on desktop md:block) */}
@@ -963,6 +1082,628 @@ export const AdminPage: React.FC = () => {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ADD MEMBER MODAL (Direct Creation: No OTP & No Payment needed) */}
+      {showAddUserModal && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-3xl w-full p-4 sm:p-6 space-y-4 shadow-2xl animate-in zoom-in-95 max-h-[92vh] flex flex-col">
+            
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-ivory-300 pb-3 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-700 text-white flex items-center justify-center font-bold text-sm">
+                  <Plus className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-brand-950 text-base flex items-center gap-2">
+                    <span>Add New Candidate Profile</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300">
+                      ⚡ No OTP & No Payment
+                    </span>
+                  </h3>
+                  <p className="text-[11px] text-gray-500">Directly create a verified active profile into the system</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowAddUserModal(false)}
+                className="p-2 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Admin Creation Tabs */}
+            <div className="flex items-center gap-1 overflow-x-auto border-b border-ivory-200 bg-ivory-50/50 p-1 rounded-2xl shrink-0 text-xs">
+              <button
+                type="button"
+                onClick={() => setNewUserTab('account')}
+                className={`px-3 py-2 rounded-xl flex items-center gap-1.5 font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  newUserTab === 'account'
+                    ? 'bg-brand-900 text-gold-300 shadow-xs'
+                    : 'text-gray-600 hover:bg-white'
+                }`}
+              >
+                <KeyRound className="w-3.5 h-3.5" />
+                <span>Account & Contact</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setNewUserTab('personal')}
+                className={`px-3 py-2 rounded-xl flex items-center gap-1.5 font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  newUserTab === 'personal'
+                    ? 'bg-brand-900 text-gold-300 shadow-xs'
+                    : 'text-gray-600 hover:bg-white'
+                }`}
+              >
+                <User className="w-3.5 h-3.5" />
+                <span>Personal Info</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setNewUserTab('career')}
+                className={`px-3 py-2 rounded-xl flex items-center gap-1.5 font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  newUserTab === 'career'
+                    ? 'bg-brand-900 text-gold-300 shadow-xs'
+                    : 'text-gray-600 hover:bg-white'
+                }`}
+              >
+                <Briefcase className="w-3.5 h-3.5" />
+                <span>Education & Job</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setNewUserTab('family')}
+                className={`px-3 py-2 rounded-xl flex items-center gap-1.5 font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  newUserTab === 'family'
+                    ? 'bg-brand-900 text-gold-300 shadow-xs'
+                    : 'text-gray-600 hover:bg-white'
+                }`}
+              >
+                <Users className="w-3.5 h-3.5" />
+                <span>Family Details</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setNewUserTab('photos')}
+                className={`px-3 py-2 rounded-xl flex items-center gap-1.5 font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  newUserTab === 'photos'
+                    ? 'bg-brand-900 text-gold-300 shadow-xs'
+                    : 'text-gray-600 hover:bg-white'
+                }`}
+              >
+                <Camera className="w-3.5 h-3.5" />
+                <span>Candidate Photos</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setNewUserTab('partner')}
+                className={`px-3 py-2 rounded-xl flex items-center gap-1.5 font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  newUserTab === 'partner'
+                    ? 'bg-brand-900 text-gold-300 shadow-xs'
+                    : 'text-gray-600 hover:bg-white'
+                }`}
+              >
+                <Sliders className="w-3.5 h-3.5" />
+                <span>Partner Preferences</span>
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleCreateUserSubmit} className="flex-1 overflow-y-auto pr-1 space-y-4 text-xs">
+              
+              {/* TAB 1: ACCOUNT & CONTACT */}
+              {newUserTab === 'account' && (
+                <div className="space-y-4 animate-in fade-in">
+                  <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 p-3 rounded-2xl flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Direct Admin Bypass Active: No mobile OTP verification required. Account is automatically marked as Paid and Verified.</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="sm:col-span-2">
+                      <label className="block font-semibold text-gray-700 mb-1">Full Name *</label>
+                      <input
+                        type="text"
+                        value={newUserForm.fullName}
+                        onChange={(e) => setNewUserForm({ ...newUserForm, fullName: e.target.value })}
+                        placeholder="e.g. Priyanjali Patil"
+                        className="w-full p-2.5 border rounded-xl"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-gray-700 mb-1">Mobile Phone Number *</label>
+                      <input
+                        type="text"
+                        value={newUserForm.mobile}
+                        onChange={(e) => setNewUserForm({ ...newUserForm, mobile: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+                        placeholder="e.g. 9876543210"
+                        maxLength={10}
+                        className="w-full p-2.5 border rounded-xl"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-gray-700 mb-1">Email Address</label>
+                      <input
+                        type="email"
+                        value={newUserForm.email}
+                        onChange={(e) => setNewUserForm({ ...newUserForm, email: e.target.value })}
+                        placeholder="e.g. priyanjali@gmail.com"
+                        className="w-full p-2.5 border rounded-xl"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <label className="block font-semibold text-gray-700 mb-1">Set Account Password 🔑</label>
+                      <div className="relative">
+                        <input
+                          type={newUserShowPassword ? 'text' : 'password'}
+                          value={newUserForm.password}
+                          onChange={(e) => setNewUserForm({ ...newUserForm, password: e.target.value })}
+                          placeholder="Password@123"
+                          className="w-full p-2.5 pr-10 border rounded-xl font-mono text-xs"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setNewUserShowPassword(!newUserShowPassword)}
+                          className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-700 cursor-pointer"
+                        >
+                          {newUserShowPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-gray-700 mb-1">Auto Verification Status</label>
+                      <select
+                        value={newUserForm.isVerified ? 'true' : 'false'}
+                        onChange={(e) => setNewUserForm({ ...newUserForm, isVerified: e.target.value === 'true' })}
+                        className="w-full p-2.5 border rounded-xl"
+                      >
+                        <option value="true">Verified ✓ (Green Badge)</option>
+                        <option value="false">Unverified</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-gray-700 mb-1">Initial Account Status</label>
+                      <select
+                        value={newUserForm.status}
+                        onChange={(e) => setNewUserForm({ ...newUserForm, status: e.target.value })}
+                        className="w-full p-2.5 border rounded-xl"
+                      >
+                        <option value="active">Active (Normal Access)</option>
+                        <option value="suspended">Suspended</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 2: PERSONAL INFO */}
+              {newUserTab === 'personal' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 animate-in fade-in">
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Gender *</label>
+                    <select
+                      value={newUserForm.gender}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, gender: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl capitalize"
+                    >
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Date of Birth *</label>
+                    <input
+                      type="date"
+                      value={newUserForm.dob}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, dob: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Height</label>
+                    <input
+                      type="text"
+                      value={newUserForm.height}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, height: e.target.value })}
+                      placeholder="5'8&quot;"
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Marital Status</label>
+                    <select
+                      value={newUserForm.maritalStatus}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, maritalStatus: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl capitalize"
+                    >
+                      <option value="never_married">Never Married</option>
+                      <option value="divorced">Divorced</option>
+                      <option value="widowed">Widowed</option>
+                      <option value="awaiting_divorce">Awaiting Divorce</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Religion</label>
+                    <input
+                      type="text"
+                      value={newUserForm.religion}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, religion: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Caste</label>
+                    <input
+                      type="text"
+                      value={newUserForm.caste}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, caste: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Sub-Caste</label>
+                    <input
+                      type="text"
+                      value={newUserForm.subCaste}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, subCaste: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Mother Tongue</label>
+                    <input
+                      type="text"
+                      value={newUserForm.motherTongue}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, motherTongue: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">City</label>
+                    <input
+                      type="text"
+                      value={newUserForm.city}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, city: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">State</label>
+                    <input
+                      type="text"
+                      value={newUserForm.state}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, state: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block font-semibold text-gray-700 mb-1">About Candidate</label>
+                    <textarea
+                      value={newUserForm.aboutMe}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, aboutMe: e.target.value })}
+                      rows={3}
+                      placeholder="Write a brief intro about the candidate..."
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 3: CAREER & EDUCATION */}
+              {newUserTab === 'career' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 animate-in fade-in">
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Education Degree</label>
+                    <input
+                      type="text"
+                      value={newUserForm.education}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, education: e.target.value })}
+                      placeholder="e.g. B.Tech / M.B.A."
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">College / University</label>
+                    <input
+                      type="text"
+                      value={newUserForm.college}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, college: e.target.value })}
+                      placeholder="e.g. Pune University"
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Occupation / Job Title</label>
+                    <input
+                      type="text"
+                      value={newUserForm.occupation}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, occupation: e.target.value })}
+                      placeholder="e.g. Software Engineer"
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Company / Organization</label>
+                    <input
+                      type="text"
+                      value={newUserForm.company}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, company: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block font-semibold text-gray-700 mb-1">Annual Income</label>
+                    <input
+                      type="text"
+                      value={newUserForm.income}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, income: e.target.value })}
+                      placeholder="e.g. ₹10 - ₹15 Lakhs p.a."
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 4: FAMILY DETAILS */}
+              {newUserTab === 'family' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 animate-in fade-in">
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Father's Occupation</label>
+                    <input
+                      type="text"
+                      value={newUserForm.fatherOccupation}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, fatherOccupation: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Mother's Occupation</label>
+                    <input
+                      type="text"
+                      value={newUserForm.motherOccupation}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, motherOccupation: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Family Type</label>
+                    <select
+                      value={newUserForm.familyType}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, familyType: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl capitalize"
+                    >
+                      <option value="nuclear">Nuclear Family</option>
+                      <option value="joint">Joint Family</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Family Values</label>
+                    <select
+                      value={newUserForm.familyValues}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, familyValues: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl capitalize"
+                    >
+                      <option value="traditional">Traditional</option>
+                      <option value="moderate">Moderate</option>
+                      <option value="liberal">Liberal</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Number of Brothers</label>
+                    <input
+                      type="number"
+                      value={newUserForm.brothers}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, brothers: Number(e.target.value) })}
+                      min="0"
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Number of Sisters</label>
+                    <input
+                      type="number"
+                      value={newUserForm.sisters}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, sisters: Number(e.target.value) })}
+                      min="0"
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 5: PHOTOS GALLERY */}
+              {newUserTab === 'photos' && (
+                <div className="space-y-4 animate-in fade-in">
+                  <div className="border-2 border-dashed border-ivory-300 hover:border-gold-500 bg-ivory-50 p-4 rounded-2xl text-center transition-all cursor-pointer relative">
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={handleNewUserPhotoUpload}
+                      disabled={newUserUploadingPhoto}
+                      className="hidden"
+                      id="new-user-photo-upload"
+                    />
+                    <label
+                      htmlFor="new-user-photo-upload"
+                      className="cursor-pointer flex flex-col items-center justify-center gap-1 text-xs text-gray-600"
+                    >
+                      <Camera className="w-8 h-8 text-brand-900" />
+                      <span className="font-bold text-brand-950 text-sm">
+                        {newUserUploadingPhoto ? 'Uploading Photos...' : 'Upload Photos for New Candidate'}
+                      </span>
+                      <span className="text-[11px] text-gray-500">
+                        Supports PNG, JPG, WEBP • Select multiple photos at once
+                      </span>
+                    </label>
+                  </div>
+
+                  {newUserForm.photos.length > 0 && (
+                    <div className="space-y-2">
+                      <span className="font-semibold text-gray-700">
+                        Uploaded Photos ({newUserForm.photos.length}):
+                      </span>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {newUserForm.photos.map((photo, idx) => {
+                          const isPrimary = newUserForm.primaryPhoto === photo;
+                          return (
+                            <div key={idx} className="relative group border rounded-xl overflow-hidden bg-gray-100 h-28 shadow-xs">
+                              <img src={photo} alt={`Candidate Photo ${idx + 1}`} className="w-full h-full object-cover" />
+                              {isPrimary && (
+                                <span className="absolute top-1 left-1 bg-gold-400 text-brand-950 text-[9px] font-bold px-1.5 py-0.5 rounded shadow-xs">
+                                  Primary ⭐
+                                </span>
+                              )}
+                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
+                                {!isPrimary && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setNewUserForm({ ...newUserForm, primaryPhoto: photo })}
+                                    className="px-2 py-1 bg-gold-400 text-brand-950 text-[10px] font-bold rounded hover:bg-gold-300"
+                                  >
+                                    Set Main
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const next = newUserForm.photos.filter((_, i) => i !== idx);
+                                    setNewUserForm({
+                                      ...newUserForm,
+                                      photos: next,
+                                      primaryPhoto: newUserForm.primaryPhoto === photo ? (next[0] || '') : newUserForm.primaryPhoto,
+                                    });
+                                  }}
+                                  className="p-1 bg-red-600 text-white rounded hover:bg-red-700"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* TAB 6: PARTNER PREFERENCES */}
+              {newUserTab === 'partner' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 animate-in fade-in">
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Preferred Min Age</label>
+                    <input
+                      type="number"
+                      value={newUserForm.partnerMinAge}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, partnerMinAge: Number(e.target.value) })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Preferred Max Age</label>
+                    <input
+                      type="number"
+                      value={newUserForm.partnerMaxAge}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, partnerMaxAge: Number(e.target.value) })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Preferred Education</label>
+                    <input
+                      type="text"
+                      value={newUserForm.partnerEducation}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, partnerEducation: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Preferred Occupation</label>
+                    <input
+                      type="text"
+                      value={newUserForm.partnerOccupation}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, partnerOccupation: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block font-semibold text-gray-700 mb-1">Preferred Location</label>
+                    <input
+                      type="text"
+                      value={newUserForm.partnerLocation}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, partnerLocation: e.target.value })}
+                      className="w-full p-2.5 border rounded-xl"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="pt-4 border-t border-ivory-300 flex items-center justify-between shrink-0">
+                <span className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>No OTP verification & No Razorpay payment required</span>
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddUserModal(false)}
+                    className="px-4 py-2 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-100 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={creatingUser}
+                    className="px-5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl shadow-md cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>{creatingUser ? 'Creating Profile...' : '🚀 Create Profile Directly'}</span>
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 

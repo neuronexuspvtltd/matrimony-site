@@ -1257,6 +1257,146 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     return '';
   };
 
+  // --- ADMIN CREATE MEMBER PROFILE (No OTP & No Payment needed) ---
+  if (endpoint === '/admin/users/create' && method === 'POST') {
+    const {
+      fullName,
+      email,
+      mobile,
+      password,
+      gender,
+      dob,
+      dateOfBirth,
+      age: customAge,
+      height,
+      maritalStatus,
+      religion,
+      caste,
+      subCaste,
+      motherTongue,
+      city,
+      state,
+      country,
+      education,
+      college,
+      occupation,
+      company,
+      income,
+      fatherOccupation,
+      motherOccupation,
+      brothers,
+      sisters,
+      familyType,
+      familyValues,
+      aboutMe,
+      primaryPhoto,
+      photos,
+      partnerMinAge,
+      partnerMaxAge,
+      partnerEducation,
+      partnerOccupation,
+      partnerLocation,
+      isVerified,
+      status,
+    } = body;
+
+    const cleanEmail = (email || `user_${Date.now()}@vbrothers.com`).trim().toLowerCase();
+    const cleanMobile = (mobile || `9${Math.floor(100000000 + Math.random() * 900000000)}`).trim();
+
+    const newUserId = `usr_${Date.now()}`;
+    const newProfId = `PB-${Math.floor(10000 + Math.random() * 90000)}`;
+
+    const birthDateStr = dob || dateOfBirth;
+    let ageVal = 26;
+    if (customAge !== undefined && customAge !== null && customAge !== '') {
+      ageVal = Number(customAge);
+    } else if (birthDateStr) {
+      const birthDate = new Date(birthDateStr);
+      const today = new Date();
+      let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        calculatedAge--;
+      }
+      ageVal = isNaN(calculatedAge) || calculatedAge < 18 ? 26 : calculatedAge;
+    }
+
+    const photosArr = Array.isArray(photos) && photos.length > 0
+      ? photos
+      : (primaryPhoto ? [primaryPhoto] : []);
+
+    const newProfile: any = {
+      _id: `prof_${Date.now()}`,
+      profileId: newProfId,
+      user: {
+        _id: newUserId,
+        fullName: fullName || 'Candidate Member',
+        email: cleanEmail,
+        password: password || 'Password@123',
+        mobile: cleanMobile,
+        role: 'user',
+        status: status || 'active',
+        isVerified: isVerified !== undefined ? isVerified : true,
+      },
+      gender: gender || 'male',
+      age: ageVal,
+      height: height || "5'8\"",
+      maritalStatus: maritalStatus || 'never_married',
+      religion: religion || 'Hindu',
+      caste: caste || 'Maratha',
+      subCaste: subCaste || '',
+      motherTongue: motherTongue || 'Marathi',
+      city: city || 'Pune',
+      state: state || 'Maharashtra',
+      country: country || 'India',
+      education: education || 'Graduate',
+      college: college || '',
+      occupation: occupation || 'Employed',
+      company: company || '',
+      income: income || '',
+      fatherOccupation: fatherOccupation || '',
+      motherOccupation: motherOccupation || '',
+      brothers: brothers ?? 0,
+      sisters: sisters ?? 0,
+      familyType: familyType || 'nuclear',
+      familyValues: familyValues || 'moderate',
+      aboutMe: aboutMe || `Namaste! I am ${fullName}, looking for a cultured life partner.`,
+      primaryPhoto: primaryPhoto || (photosArr[0] || ''),
+      photos: photosArr,
+      biodataUrl: '',
+      biodataFileName: '',
+      biodataVisibility: 'Connections Only',
+      completionPercentage: 90,
+      isVerified: isVerified !== undefined ? isVerified : true,
+      isFeatured: false,
+      status: status || 'active',
+      createdAt: new Date().toISOString(),
+      partnerPreferences: {
+        minAge: partnerMinAge || 21,
+        maxAge: partnerMaxAge || 35,
+        education: partnerEducation || 'Graduate',
+        occupation: partnerOccupation || 'Employed',
+        location: partnerLocation || 'Maharashtra',
+        religion: religion || 'Hindu',
+        caste: 'Any',
+      },
+      paymentStatus: 'paid_admin',
+      paymentAmount: 0,
+    };
+
+    rawProfiles.unshift(newProfile);
+    setItem(PROFILES_KEY, rawProfiles);
+
+    saveProfileToFirestore(newUserId, newProfile).catch((err) =>
+      console.warn('Firestore profile create error:', err)
+    );
+
+    return {
+      message: 'Member profile created successfully by Admin without OTP or payment!',
+      profile: newProfile,
+    };
+  }
+
   if (
     endpoint.startsWith('/admin/users') &&
     !endpoint.includes('/verify') &&
