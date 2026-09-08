@@ -649,7 +649,7 @@ export const AdminPage: React.FC = () => {
               : 'bg-ivory-100/80 text-gray-600 hover:text-gray-900 sm:bg-transparent sm:text-gray-500 sm:hover:text-gray-800'
           }`}
         >
-          Site Opening Popup Poster 🖼️
+          Site Opening Popup Poster
         </button>
       </div>
 
