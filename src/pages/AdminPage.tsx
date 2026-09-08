@@ -66,10 +66,10 @@ export const AdminPage: React.FC = () => {
     statCitiesCount: '50+',
     statCitiesLabelEn: 'CITIES COVERED',
     statCitiesLabelMr: 'शहरे समाविष्ट',
-    popupBannerEnabled: true,
-    popupBannerImageUrl: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=1000&q=80',
-    popupBannerTitleEn: 'Special Offer! Premium Verification & Membership',
-    popupBannerTitleMr: 'खास ऑफर! आजच नोंदणी करा व सुयोग्य स्थळ शोधा',
+    popupBannerEnabled: false,
+    popupBannerImageUrl: '',
+    popupBannerTitleEn: '',
+    popupBannerTitleMr: '',
     popupBannerLinkUrl: '/register',
   });
 

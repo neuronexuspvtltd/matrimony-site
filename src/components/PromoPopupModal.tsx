@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { X, Sparkles, ChevronRight } from 'lucide-react';
-import { defaultSiteContent } from '../services/mockApi';
 
 interface PromoPopupModalProps {
   siteContent?: any;
@@ -21,44 +20,38 @@ export const PromoPopupModal: React.FC<PromoPopupModalProps> = ({ siteContent: p
       let activeContent: any = propsContent;
 
       // 1. Try reading from localStorage
-      if (!activeContent || !activeContent.popupBannerImageUrl) {
+      if (!activeContent) {
         try {
           const raw = localStorage.getItem('pb_site_content_data');
           if (raw) {
-            const parsed = JSON.parse(raw);
-            if (parsed && parsed.popupBannerImageUrl) {
-              activeContent = { ...defaultSiteContent, ...parsed };
-            }
+            activeContent = JSON.parse(raw);
           }
         } catch (e) {}
       }
 
-      // 2. Fallback fetch from API if missing or empty
-      if (!activeContent || !activeContent.popupBannerImageUrl) {
+      // 2. Fallback fetch from API
+      if (!activeContent) {
         try {
           const res = await fetch('/admin/site-content');
-          const data = await res.json();
-          if (data && data.popupBannerImageUrl) {
-            activeContent = { ...defaultSiteContent, ...data };
-          }
+          activeContent = await res.json();
         } catch (e) {}
-      }
-
-      // Fallback to default site content if none found
-      if (!activeContent || !activeContent.popupBannerImageUrl) {
-        activeContent = defaultSiteContent;
       }
 
       if (!isMounted) return;
 
-      // Check if popup is enabled (defaults to true)
-      const isEnabled = activeContent?.popupBannerEnabled !== false;
-      if (!isEnabled || !activeContent?.popupBannerImageUrl) {
+      // STRICT VALIDATION: If activeContent is missing, OR popupBannerEnabled is false, OR image URL is empty -> DO NOT SHOW ANYTHING!
+      if (
+        !activeContent ||
+        !activeContent.popupBannerEnabled ||
+        !activeContent.popupBannerImageUrl ||
+        typeof activeContent.popupBannerImageUrl !== 'string' ||
+        activeContent.popupBannerImageUrl.trim() === ''
+      ) {
         setIsOpen(false);
+        setContent(null);
         return;
       }
 
-      // Show popup on every site load/refresh as requested by admin
       setContent(activeContent);
       setIsOpen(true);
     };
