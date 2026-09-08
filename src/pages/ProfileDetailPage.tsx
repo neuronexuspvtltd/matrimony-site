@@ -62,6 +62,18 @@ export const ProfileDetailPage: React.FC = () => {
     fetchProfile();
   }, [id]);
 
+  // Lock background scroll when modal or preview image is open
+  useEffect(() => {
+    if (reportModalOpen || previewImage || editModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [reportModalOpen, previewImage, editModalOpen]);
+
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;

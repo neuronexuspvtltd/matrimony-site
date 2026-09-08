@@ -166,6 +166,18 @@ export const AdminPage: React.FC = () => {
     fetchAdminData();
   }, [search]);
 
+  // Lock background scrolling when modal is open
+  useEffect(() => {
+    if (editingUser || showAddStory) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [editingUser, showAddStory]);
+
   // Actions
   const handleToggleVerify = async (userId: string) => {
     try {
