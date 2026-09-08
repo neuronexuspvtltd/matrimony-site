@@ -73,7 +73,7 @@ export const AdminPage: React.FC = () => {
     popupBannerLinkUrl: '/register',
   });
 
-  const [tab, setTab] = useState<'users' | 'stories' | 'content' | 'announcement' | 'reports'>('users');
+  const [tab, setTab] = useState<'users' | 'stories' | 'content' | 'announcement' | 'reports' | 'popup'>('users');
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [savingContent, setSavingContent] = useState(false);
@@ -640,6 +640,16 @@ export const AdminPage: React.FC = () => {
           }`}
         >
           Safety Reports ({reportsList.length})
+        </button>
+        <button
+          onClick={() => setTab('popup')}
+          className={`px-3 py-2 sm:px-0 sm:pb-3 text-xs font-bold transition-colors cursor-pointer whitespace-nowrap rounded-xl sm:rounded-none ${
+            tab === 'popup'
+              ? 'bg-brand-900 text-gold-300 sm:bg-transparent sm:text-brand-900 sm:border-b-2 sm:border-brand-900'
+              : 'bg-ivory-100/80 text-gray-600 hover:text-gray-900 sm:bg-transparent sm:text-gray-500 sm:hover:text-gray-800'
+          }`}
+        >
+          Site Opening Popup Poster 🖼️
         </button>
       </div>
 
@@ -1233,143 +1243,6 @@ export const AdminPage: React.FC = () => {
                 </div>
               </div>
             </div>
-
-            {/* 🖼️ SITE OPENING PROMOTIONAL POPUP POSTER BANNER EDITORS */}
-            <div className="border-t border-gray-100 pt-5 space-y-4">
-              <div className="bg-brand-50/70 border border-brand-200/60 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2 text-brand-900 font-bold text-sm mb-1">
-                    <Images className="w-4 h-4 text-gold-600" />
-                    <span>Site Opening Promotional Popup Poster Modal</span>
-                  </div>
-                  <p className="text-xs text-brand-800/80">
-                    Upload a custom poster banner. When visitors open the website, this promotional popup will automatically open with a prominent close (X) button.
-                  </p>
-                </div>
-
-                <label className="inline-flex items-center gap-2 cursor-pointer shrink-0 bg-white px-3.5 py-2 rounded-xl border border-brand-200 shadow-sm">
-                  <input
-                    type="checkbox"
-                    checked={!!siteContent.popupBannerEnabled}
-                    onChange={(e) => setSiteContent({ ...siteContent, popupBannerEnabled: e.target.checked })}
-                    className="w-4 h-4 text-brand-900 rounded focus:ring-brand-900 cursor-pointer"
-                  />
-                  <span className="text-xs font-bold text-brand-950">
-                    {siteContent.popupBannerEnabled ? 'Popup Active ✅' : 'Popup Disabled ❌'}
-                  </span>
-                </label>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Upload Poster Image */}
-                <div className="space-y-2">
-                  <label className="block text-xs font-semibold text-gray-700">
-                    Upload Poster Image File
-                  </label>
-                  <label className="w-full p-4 border-2 border-dashed border-gray-300 hover:border-brand-900 rounded-2xl bg-gray-50/50 hover:bg-white transition-all cursor-pointer flex flex-col items-center justify-center gap-1.5 text-center">
-                    <UploadCloud className="w-6 h-6 text-brand-900" />
-                    <span className="text-xs font-bold text-brand-950">
-                      {uploadingPoster ? 'Uploading Poster...' : 'Click to Upload Poster Image'}
-                    </span>
-                    <span className="text-[10px] text-gray-500">
-                      Supports JPG, PNG, WEBP (Recommended: 800x800 or 1000x600)
-                    </span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleAdminPosterUpload}
-                      disabled={uploadingPoster}
-                      className="hidden"
-                    />
-                  </label>
-
-                  <div>
-                    <label className="block text-[11px] font-medium text-gray-600 mb-1">Or Paste Direct Image URL</label>
-                    <input
-                      type="text"
-                      value={siteContent.popupBannerImageUrl || ''}
-                      onChange={(e) => setSiteContent({ ...siteContent, popupBannerImageUrl: e.target.value })}
-                      placeholder="https://example.com/poster.jpg"
-                      className="w-full px-3 py-2 rounded-xl border text-xs bg-white"
-                    />
-                  </div>
-                </div>
-
-                {/* Poster Preview Card */}
-                <div className="space-y-2">
-                  <label className="block text-xs font-semibold text-gray-700">
-                    Live Poster Image Preview
-                  </label>
-                  {siteContent.popupBannerImageUrl ? (
-                    <div className="relative rounded-2xl overflow-hidden border border-gray-300 bg-black/90 aspect-[4/3] flex items-center justify-center shadow-inner group">
-                      <img
-                        src={siteContent.popupBannerImageUrl}
-                        alt="Promo Poster Preview"
-                        className="w-full h-full object-contain"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setSiteContent({ ...siteContent, popupBannerImageUrl: '' })}
-                        className="absolute top-2 right-2 p-1.5 bg-red-600 text-white rounded-full opacity-90 hover:opacity-100 shadow-md cursor-pointer"
-                        title="Remove Poster"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="w-full aspect-[4/3] rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 flex flex-col items-center justify-center text-gray-400 text-xs p-4 text-center">
-                      <Images className="w-8 h-8 text-gray-300 mb-1" />
-                      <span>No poster image uploaded yet.</span>
-                      <span className="text-[10px]">Upload an image or paste a URL above.</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    Poster Title (English)
-                  </label>
-                  <input
-                    type="text"
-                    value={siteContent.popupBannerTitleEn || ''}
-                    onChange={(e) => setSiteContent({ ...siteContent, popupBannerTitleEn: e.target.value })}
-                    placeholder="e.g. Special Festival Membership Discount!"
-                    className="w-full px-3 py-2 rounded-xl border text-xs bg-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    Poster Title (मराठी)
-                  </label>
-                  <input
-                    type="text"
-                    value={siteContent.popupBannerTitleMr || ''}
-                    onChange={(e) => setSiteContent({ ...siteContent, popupBannerTitleMr: e.target.value })}
-                    placeholder="e.g. खास ऑफर! आजच नोंदणी करा"
-                    className="w-full px-3 py-2 rounded-xl border text-xs bg-white"
-                  />
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    Poster Click Destination Link URL (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={siteContent.popupBannerLinkUrl || '/register'}
-                    onChange={(e) => setSiteContent({ ...siteContent, popupBannerLinkUrl: e.target.value })}
-                    placeholder="e.g. /register or /search"
-                    className="w-full px-3 py-2 rounded-xl border text-xs bg-white font-mono"
-                  />
-                  <span className="text-[10px] text-gray-500 mt-1 block">
-                    When visitors click the poster, they will automatically be taken to this link (e.g. <code>/register</code>).
-                  </span>
-                </div>
-              </div>
-            </div>
           </div>
 
           <button
@@ -1467,6 +1340,156 @@ export const AdminPage: React.FC = () => {
             </div>
           )}
         </div>
+      )}
+
+      {/* TAB 6: Site Opening Popup Poster Manager */}
+      {tab === 'popup' && (
+        <form onSubmit={handleSaveSiteContent} className="bg-white rounded-3xl border border-ivory-300 p-4 sm:p-6 space-y-6 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-ivory-200 pb-4">
+            <div>
+              <div className="flex items-center gap-2 text-brand-900 font-bold text-base mb-1">
+                <Images className="w-5 h-5 text-gold-600" />
+                <span>Site Opening Promotional Popup Poster Manager</span>
+              </div>
+              <p className="text-xs text-gray-500">
+                Upload and customize the promotional poster image. When users visit the website, this popup modal will open with a prominent close (X) button.
+              </p>
+            </div>
+
+            <label className="inline-flex items-center gap-2 cursor-pointer shrink-0 bg-ivory-100/80 px-4 py-2.5 rounded-xl border border-brand-200 shadow-xs">
+              <input
+                type="checkbox"
+                checked={!!siteContent.popupBannerEnabled}
+                onChange={(e) => setSiteContent({ ...siteContent, popupBannerEnabled: e.target.checked })}
+                className="w-4 h-4 text-brand-900 rounded focus:ring-brand-900 cursor-pointer"
+              />
+              <span className="text-xs font-bold text-brand-950">
+                {siteContent.popupBannerEnabled ? 'Popup Active ✅' : 'Popup Disabled ❌'}
+              </span>
+            </label>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {/* Upload Poster Image */}
+            <div className="space-y-3">
+              <label className="block text-xs font-semibold text-gray-700">
+                Upload Poster Image File
+              </label>
+              <label className="w-full p-6 border-2 border-dashed border-gray-300 hover:border-brand-900 rounded-2xl bg-gray-50/50 hover:bg-white transition-all cursor-pointer flex flex-col items-center justify-center gap-2 text-center">
+                <UploadCloud className="w-8 h-8 text-brand-900" />
+                <span className="text-xs font-bold text-brand-950">
+                  {uploadingPoster ? 'Uploading Poster...' : 'Click to Upload Poster Image'}
+                </span>
+                <span className="text-[10px] text-gray-500">
+                  Supports JPG, PNG, WEBP (Recommended resolution: 800x800 or 1000x600)
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAdminPosterUpload}
+                  disabled={uploadingPoster}
+                  className="hidden"
+                />
+              </label>
+
+              <div>
+                <label className="block text-[11px] font-medium text-gray-600 mb-1">Or Paste Direct Image URL</label>
+                <input
+                  type="text"
+                  value={siteContent.popupBannerImageUrl || ''}
+                  onChange={(e) => setSiteContent({ ...siteContent, popupBannerImageUrl: e.target.value })}
+                  placeholder="https://example.com/poster.jpg"
+                  className="w-full px-3.5 py-2.5 rounded-xl border text-xs bg-white focus:ring-2 focus:ring-brand-900"
+                />
+              </div>
+            </div>
+
+            {/* Poster Preview Card */}
+            <div className="space-y-3">
+              <label className="block text-xs font-semibold text-gray-700">
+                Live Poster Image Preview
+              </label>
+              {siteContent.popupBannerImageUrl ? (
+                <div className="relative rounded-2xl overflow-hidden border border-gray-300 bg-black/90 aspect-[4/3] flex items-center justify-center shadow-inner group">
+                  <img
+                    src={siteContent.popupBannerImageUrl}
+                    alt="Promo Poster Preview"
+                    className="w-full h-full object-contain"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setSiteContent({ ...siteContent, popupBannerImageUrl: '' })}
+                    className="absolute top-2 right-2 p-1.5 bg-red-600 text-white rounded-full opacity-90 hover:opacity-100 shadow-md cursor-pointer"
+                    title="Remove Poster"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <div className="w-full aspect-[4/3] rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 flex flex-col items-center justify-center text-gray-400 text-xs p-4 text-center">
+                  <Images className="w-10 h-10 text-gray-300 mb-2" />
+                  <span className="font-semibold">No poster image uploaded yet</span>
+                  <span className="text-[10px] text-gray-400 mt-0.5">Upload an image file or paste an image URL above</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-gray-100">
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">
+                Poster Title (English)
+              </label>
+              <input
+                type="text"
+                value={siteContent.popupBannerTitleEn || ''}
+                onChange={(e) => setSiteContent({ ...siteContent, popupBannerTitleEn: e.target.value })}
+                placeholder="e.g. Special Festival Membership Discount!"
+                className="w-full px-3.5 py-2.5 rounded-xl border text-xs bg-white focus:ring-2 focus:ring-brand-900"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">
+                Poster Title (मराठी)
+              </label>
+              <input
+                type="text"
+                value={siteContent.popupBannerTitleMr || ''}
+                onChange={(e) => setSiteContent({ ...siteContent, popupBannerTitleMr: e.target.value })}
+                placeholder="e.g. खास ऑफर! आजच नोंदणी करा"
+                className="w-full px-3.5 py-2.5 rounded-xl border text-xs bg-white focus:ring-2 focus:ring-brand-900"
+              />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-semibold text-gray-700 mb-1">
+                Poster Click Destination Link URL (Optional)
+              </label>
+              <input
+                type="text"
+                value={siteContent.popupBannerLinkUrl || '/register'}
+                onChange={(e) => setSiteContent({ ...siteContent, popupBannerLinkUrl: e.target.value })}
+                placeholder="e.g. /register or /search"
+                className="w-full px-3.5 py-2.5 rounded-xl border text-xs bg-white font-mono focus:ring-2 focus:ring-brand-900"
+              />
+              <span className="text-[10px] text-gray-500 mt-1 block">
+                When visitors click on the popup poster image, they will automatically navigate to this URL (e.g. <code>/register</code>).
+              </span>
+            </div>
+          </div>
+
+          <div className="pt-2">
+            <button
+              type="submit"
+              disabled={savingContent}
+              className="w-full sm:w-auto px-6 py-3 bg-brand-900 text-gold-300 font-bold rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md hover:bg-brand-950 transition-all"
+            >
+              <Save className="w-4 h-4" />
+              <span>{savingContent ? 'Saving...' : 'Save & Publish Live Poster Settings'}</span>
+            </button>
+          </div>
+        </form>
       )}
 
       {/* ADD MEMBER MODAL (Direct Creation: No OTP & No Payment needed) */}
