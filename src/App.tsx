@@ -6,6 +6,7 @@ import { NotificationProvider } from './context/NotificationContext';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { MobileBottomNav } from './components/MobileBottomNav';
+import { PromoPopupModal } from './components/PromoPopupModal';
 
 import { LandingPage } from './pages/LandingPage';
 import { AboutPage } from './pages/AboutPage';
@@ -44,6 +45,7 @@ export const App: React.FC = () => {
           <Router>
             <div className="min-h-screen flex flex-col bg-ivory-100 font-sans text-gray-900 selection:bg-brand-900 selection:text-gold-300 pb-16 md:pb-0">
               <Header />
+              <PromoPopupModal />
               
               <main className="flex-1">
                 <Routes>
