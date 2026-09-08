@@ -13,6 +13,7 @@ export const PromoPopupModal: React.FC<PromoPopupModalProps> = ({ siteContent: p
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [content, setContent] = useState<any>(null);
+  const [hasDismissedInTab, setHasDismissedInTab] = useState<boolean>(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -30,7 +31,7 @@ export const PromoPopupModal: React.FC<PromoPopupModalProps> = ({ siteContent: p
         } catch (e) {}
       }
 
-      // 2. Fetch using fetchApi('/admin/site-content')
+      // 2. Fetch using fetchApi('/admin/site-content') if needed
       if (!activeContent) {
         try {
           const res = await fetchApi('/admin/site-content');
@@ -42,7 +43,7 @@ export const PromoPopupModal: React.FC<PromoPopupModalProps> = ({ siteContent: p
 
       if (!isMounted) return;
 
-      // Ensure activeContent exists and has popupBannerEnabled true and a non-empty image URL
+      // Strict Validation: Must be enabled AND have a valid non-empty poster image URL
       const isEnabled = Boolean(activeContent?.popupBannerEnabled);
       const imageUrl = activeContent?.popupBannerImageUrl;
       const isValidImage = typeof imageUrl === 'string' && imageUrl.trim().length > 0;
@@ -54,22 +55,19 @@ export const PromoPopupModal: React.FC<PromoPopupModalProps> = ({ siteContent: p
       }
 
       setContent(activeContent);
-      setIsOpen(true);
+
+      // Open popup on page load / refresh if not dismissed in current tab state
+      if (!hasDismissedInTab) {
+        setIsOpen(true);
+      }
     };
 
     loadSiteContent();
 
-    // Listen for storage changes in real-time
-    const handleStorageChange = () => {
-      loadSiteContent();
-    };
-    window.addEventListener('storage', handleStorageChange);
-
     return () => {
       isMounted = false;
-      window.removeEventListener('storage', handleStorageChange);
     };
-  }, [propsContent]);
+  }, [propsContent, hasDismissedInTab]);
 
   // Handle body scroll locking when promo modal is open
   useEffect(() => {
@@ -85,6 +83,7 @@ export const PromoPopupModal: React.FC<PromoPopupModalProps> = ({ siteContent: p
 
   const handleClose = () => {
     setIsOpen(false);
+    setHasDismissedInTab(true);
   };
 
   const handlePosterClick = () => {
