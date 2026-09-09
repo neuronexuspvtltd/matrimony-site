@@ -221,33 +221,13 @@ export const LandingPage: React.FC = () => {
           </p>
 
           {/* 📍 Primary Focus Districts Highlight Bar */}
-          <div className="pt-2 flex flex-col items-center gap-2.5">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-gold-400/15 border border-gold-400/40 text-gold-300 text-xs font-semibold backdrop-blur-md">
+          <div className="pt-2 flex justify-center">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gold-400/15 border border-gold-400/40 text-gold-300 text-xs font-semibold backdrop-blur-md shadow-sm">
               <MapPin className="w-3.5 h-3.5 text-gold-400 animate-bounce" />
               <span>
                 {language === 'EN'
                   ? 'Main Focus Districts: Sangli • Solapur • Satara • Kolhapur'
                   : 'प्रमुख कार्यक्षेत्र (जिल्हे): सांगली • सोलापूर • सातारा • कोल्हापूर'}
-              </span>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-center gap-2 max-w-2xl mx-auto">
-              {[
-                { en: 'Sangli', mr: 'सांगली' },
-                { en: 'Solapur', mr: 'सोलापूर' },
-                { en: 'Satara', mr: 'सातारा' },
-                { en: 'Kolhapur', mr: 'कोल्हापूर' },
-              ].map((dist) => (
-                <span
-                  key={dist.en}
-                  className="px-3.5 py-1.5 rounded-xl bg-black/40 border border-white/20 hover:border-gold-400/60 backdrop-blur-md text-xs font-semibold text-white shadow-sm flex items-center gap-1.5 transition-all"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span>{language === 'EN' ? dist.en : dist.mr}</span>
-                </span>
-              ))}
-              <span className="px-3.5 py-1.5 rounded-xl bg-gold-400/20 text-gold-200 text-xs font-medium border border-gold-400/30 backdrop-blur-md">
-                {language === 'EN' ? '+ All Maharashtra' : '+ संपूर्ण महाराष्ट्र'}
               </span>
             </div>
           </div>
