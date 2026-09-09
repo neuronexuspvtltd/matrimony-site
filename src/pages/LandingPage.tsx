@@ -180,10 +180,10 @@ export const LandingPage: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-20 pb-16">
+    <div className="space-y-16 pb-16">
       
       {/* Shaadi-Style Full-Bleed Hero Section (Without Search Input Box) */}
-      <section className="relative min-h-[82vh] flex flex-col justify-between overflow-hidden bg-brand-950 text-white">
+      <section className="relative min-h-[calc(100vh-80px)] sm:min-h-[calc(100vh-96px)] flex flex-col justify-between overflow-hidden bg-brand-950 text-white">
         
         {/* Background Image with Dark Vignette & Gradient Overlay */}
         <div className="absolute inset-0 z-0">
