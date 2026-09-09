@@ -1534,6 +1534,56 @@ export const AdminPage: React.FC = () => {
                 This description text is shown inside the official Razorpay payment popup modal during checkout.
               </span>
             </div>
+
+            {/* ⚡ RAZORPAY API KEYS & AUTO-CAPTURE STATUS */}
+            <div className="sm:col-span-2 space-y-4 pt-4 border-t border-gray-100">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-emerald-50 border border-emerald-200 p-3.5 rounded-2xl text-xs">
+                <div className="flex items-center gap-2 font-bold text-emerald-950">
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                  </span>
+                  <span>Payment Capture Mode: <strong>Instant Auto-Capture Enabled ⚡</strong></span>
+                </div>
+                <span className="text-[10px] text-emerald-800 font-extrabold bg-emerald-100 border border-emerald-300 px-3 py-1 rounded-full text-center">
+                  Status: CAPTURED (Automatic Settlement)
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">
+                    Razorpay Key ID
+                  </label>
+                  <input
+                    type="text"
+                    value={siteContent.razorpayKeyId ?? 'rzp_live_TVYUdqwLb9fjkb'}
+                    onChange={(e) => setSiteContent({ ...siteContent, razorpayKeyId: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border text-xs bg-white font-mono focus:ring-2 focus:ring-brand-900"
+                    placeholder="rzp_live_..."
+                  />
+                  <span className="text-[10px] text-gray-500 mt-1 block">
+                    Your active Razorpay API Key ID from your Razorpay Merchant Dashboard.
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">
+                    Razorpay Key Secret
+                  </label>
+                  <input
+                    type="password"
+                    value={siteContent.razorpayKeySecret ?? 'aEB9W9xlX40NuevBr2DB8RKG'}
+                    onChange={(e) => setSiteContent({ ...siteContent, razorpayKeySecret: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border text-xs bg-white font-mono focus:ring-2 focus:ring-brand-900"
+                    placeholder="Key Secret"
+                  />
+                  <span className="text-[10px] text-gray-500 mt-1 block">
+                    Your active Razorpay API Key Secret.
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="pt-2 border-t border-gray-100">

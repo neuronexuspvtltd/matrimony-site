@@ -1,7 +1,7 @@
 import { RAZORPAY_CONFIG } from '../config/razorpay';
 
 // --------------------------------------------------
-// 💳 RAZORPAY CHECKOUT SDK SERVICE
+// 💳 RAZORPAY CHECKOUT SDK SERVICE WITH AUTO-CAPTURE
 // --------------------------------------------------
 
 export interface RazorpaySuccessResponse {
@@ -83,36 +83,39 @@ export const openRazorpayPayment = async ({
     return;
   }
 
-  // Fetch admin custom fee settings from LocalStorage if available
+  // Fetch admin custom fee and API Key settings from LocalStorage if available
   let customAmountINR = amountINR;
   let customDescription = description;
+  let customKeyId = RAZORPAY_CONFIG.keyId;
 
-  if (!customAmountINR || !customDescription) {
-    try {
-      const siteContentStr = localStorage.getItem('pb_site_content_data');
-      if (siteContentStr) {
-        const siteContent = JSON.parse(siteContentStr);
-        if (!customAmountINR && siteContent.registrationFeeAmount) {
-          customAmountINR = Number(siteContent.registrationFeeAmount);
-        }
-        if (!customDescription && siteContent.registrationFeeDescription) {
-          customDescription = siteContent.registrationFeeDescription;
-        }
+  try {
+    const siteContentStr = localStorage.getItem('pb_site_content_data');
+    if (siteContentStr) {
+      const siteContent = JSON.parse(siteContentStr);
+      if (!customAmountINR && siteContent.registrationFeeAmount) {
+        customAmountINR = Number(siteContent.registrationFeeAmount);
       }
-    } catch (e) {}
-  }
+      if (!customDescription && siteContent.registrationFeeDescription) {
+        customDescription = siteContent.registrationFeeDescription;
+      }
+      if (siteContent.razorpayKeyId && siteContent.razorpayKeyId.trim() !== '') {
+        customKeyId = siteContent.razorpayKeyId.trim();
+      }
+    }
+  } catch (e) {}
 
   const finalAmountINR = customAmountINR || RAZORPAY_CONFIG.amountINR;
   const amountPaise = Math.round(finalAmountINR * 100);
   const finalDescription = customDescription || `Membership Registration & Profile Verification Fee (Special Offer ₹${finalAmountINR})`;
 
   const options = {
-    key: RAZORPAY_CONFIG.keyId,
+    key: customKeyId,
     amount: amountPaise,
     currency: RAZORPAY_CONFIG.currency,
     name: RAZORPAY_CONFIG.companyName,
     description: finalDescription,
     image: '/v_brothers_icon.png',
+    payment_capture: 1, // ⚡ AUTO-CAPTURE PAYMENT IMMEDIATELY (Converts status from Authorized -> Captured/Paid)
     prefill: {
       name: userDetails.name,
       email: userDetails.email,
