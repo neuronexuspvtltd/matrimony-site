@@ -219,7 +219,7 @@ export const SearchPage: React.FC = () => {
               name="city"
               value={filters.city}
               onChange={handleFilterChange}
-              placeholder="e.g. Pune, Mumbai, Kolhapur"
+              placeholder="e.g. Sangli, Solapur, Satara, Kolhapur, Pune"
               className="w-full px-3 py-2.5 rounded-xl border border-gray-300 text-xs"
             />
           </div>
