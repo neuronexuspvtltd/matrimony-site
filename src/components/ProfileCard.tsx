@@ -109,9 +109,9 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile }) => {
       
       {/* Top Image Section */}
       <div className="relative aspect-[4/3] bg-ivory-200 overflow-hidden">
-        {profile.primaryPhoto ? (
+        {(profile.primaryPhoto || (Array.isArray((profile as any).photos) && (profile as any).photos.length > 0 ? (profile as any).photos[0] : '')) ? (
           <img
-            src={profile.primaryPhoto}
+            src={profile.primaryPhoto || (profile as any).photos[0]}
             alt={fullName}
             className={`w-full h-full object-cover transition-transform duration-500 ${
               isLoggedIn ? 'group-hover:scale-105' : 'blur-xl scale-110 filter select-none brightness-90'

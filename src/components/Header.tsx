@@ -257,8 +257,12 @@ export const Header: React.FC = () => {
                     }}
                     className="flex items-center gap-1.5 pl-1.5 pr-2.5 sm:pl-2 sm:pr-3 py-1 sm:py-1.5 rounded-full border border-ivory-300 hover:bg-ivory-100 transition-all cursor-pointer"
                   >
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-brand-900 text-gold-300 flex items-center justify-center font-bold text-xs shrink-0">
-                      {user.fullName.charAt(0)}
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-brand-900 text-gold-300 flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden">
+                      {(user.profile?.primaryPhoto || (user as any).primaryPhoto) ? (
+                        <img src={user.profile?.primaryPhoto || (user as any).primaryPhoto} alt={user.fullName} className="w-full h-full object-cover" />
+                      ) : (
+                        user.fullName.charAt(0)
+                      )}
                     </div>
                     <span className="text-xs font-semibold text-gray-800 hidden sm:inline max-w-[80px] lg:max-w-[120px] truncate">
                       {user.fullName.split(' ')[0]}

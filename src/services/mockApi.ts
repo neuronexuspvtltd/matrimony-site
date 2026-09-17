@@ -177,16 +177,28 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
           (p: any) => p.user?.email?.toLowerCase() === fProf.user.email.toLowerCase() || p.user?._id === fProf.user?._id || p._id === fProf._id
         );
         if (idx !== -1) {
+          const localP = rawProfiles[idx];
+          const mergedPrimary = localP.primaryPhoto || fProf.primaryPhoto || (Array.isArray(fProf.photos) && fProf.photos.length > 0 ? fProf.photos[0] : '');
+          const mergedPhotos = Array.from(
+            new Set([
+              ...(Array.isArray(localP.photos) ? localP.photos : []),
+              ...(Array.isArray(fProf.photos) ? fProf.photos : []),
+              ...(mergedPrimary ? [mergedPrimary] : []),
+            ])
+          ).filter(Boolean);
+
           rawProfiles[idx] = { 
-            ...rawProfiles[idx], 
-            ...fProf, // FIRESTORE OVERRIDES LOCAL STALE DATA
-            isVerified: fProf.isVerified ?? fProf.user?.isVerified ?? rawProfiles[idx].isVerified ?? false,
-            isFeatured: fProf.isFeatured ?? rawProfiles[idx].isFeatured ?? false,
+            ...fProf,
+            ...localP, // LOCAL RECENT EDITS TAKE PRECEDENCE OVER FIRESTORE
+            primaryPhoto: mergedPrimary,
+            photos: mergedPhotos,
+            isVerified: fProf.isVerified ?? fProf.user?.isVerified ?? localP.isVerified ?? false,
+            isFeatured: fProf.isFeatured ?? localP.isFeatured ?? false,
             user: {
-              ...rawProfiles[idx].user,
               ...fProf.user,
-              isVerified: fProf.user?.isVerified ?? fProf.isVerified ?? rawProfiles[idx].user?.isVerified ?? false,
-              status: fProf.user?.status || fProf.status || rawProfiles[idx].user?.status || rawProfiles[idx].status || 'active',
+              ...localP.user,
+              isVerified: fProf.user?.isVerified ?? fProf.isVerified ?? localP.user?.isVerified ?? false,
+              status: fProf.user?.status || fProf.status || localP.user?.status || localP.status || 'active',
             }
           };
         } else {
@@ -522,8 +534,23 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
         try {
           const fsProf = await findProfileByEmailFirestore(currentUser.email);
           if (fsProf) {
-            p = { ...p, ...fsProf };
-            const pIdx = profiles.findIndex((prof: ProfileData) => prof.user._id === currentUser?.id || prof.profileId === currentUser?.profileId);
+            const mergedPrimary = p?.primaryPhoto || fsProf.primaryPhoto || (Array.isArray(fsProf.photos) && fsProf.photos.length > 0 ? fsProf.photos[0] : '');
+            const mergedPhotos = Array.from(
+              new Set([
+                ...(Array.isArray(p?.photos) ? p.photos : []),
+                ...(Array.isArray(fsProf.photos) ? fsProf.photos : []),
+                ...(mergedPrimary ? [mergedPrimary] : []),
+              ])
+            ).filter(Boolean);
+
+            p = {
+              ...fsProf,
+              ...p,
+              primaryPhoto: mergedPrimary,
+              photos: mergedPhotos,
+            };
+
+            const pIdx = profiles.findIndex((prof: ProfileData) => prof.user._id === currentUser?.id || prof.profileId === currentUser?.profileId || prof.user?.email?.toLowerCase() === currentUser?.email?.toLowerCase());
             if (pIdx !== -1 && p) {
               profiles[pIdx] = p;
             } else if (p) {

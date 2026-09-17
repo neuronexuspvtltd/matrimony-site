@@ -141,20 +141,42 @@ export const DashboardPage: React.FC = () => {
       
       {/* Welcome Banner */}
       <div className="bg-gradient-to-r from-brand-950 via-brand-900 to-brand-800 rounded-3xl p-6 sm:p-8 text-white flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl relative overflow-hidden">
-        <div className="space-y-2 text-center sm:text-left z-10">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold-400/20 text-gold-300 text-xs font-semibold border border-gold-400/30">
-            <Sparkles className="w-3.5 h-3.5 fill-gold-400" />
-            <span>{t('dashboardTitle')}</span>
+        <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left z-10">
+          <div className="relative group w-20 h-20 sm:w-24 sm:h-24 rounded-2xl border-2 border-gold-400/50 shadow-md overflow-hidden bg-brand-900 shrink-0">
+            {userProfile.primaryPhoto || (Array.isArray(userProfile.photos) && userProfile.photos.length > 0 ? userProfile.photos[0] : '') ? (
+              <img
+                src={userProfile.primaryPhoto || userProfile.photos[0]}
+                alt={user.fullName}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center bg-brand-950 text-gold-400 select-none">
+                <User className="w-10 h-10 text-gold-400 stroke-[1.5]" />
+                <span className="text-[9px] font-semibold text-gold-300 mt-1">No Photo</span>
+              </div>
+            )}
+            <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white text-[10px] font-bold cursor-pointer transition-opacity">
+              <Camera className="w-4 h-4 text-gold-300 mb-0.5" />
+              <span>Change</span>
+              <input type="file" accept="image/*" onChange={handlePhotoUpload} disabled={uploadingPhoto} className="hidden" />
+            </label>
           </div>
-          <h1 className="font-serif text-2xl sm:text-3xl font-bold">
-            {t('welcomeBack')}, <span className="text-gold-300">{user.fullName}</span>!
-          </h1>
-          <p className="text-xs text-ivory-200">
-            Profile ID: <strong className="font-mono text-gold-300">{userProfile.profileId}</strong> • {userProfile.city}, {userProfile.state || 'Maharashtra'}
-          </p>
+
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold-400/20 text-gold-300 text-xs font-semibold border border-gold-400/30">
+              <Sparkles className="w-3.5 h-3.5 fill-gold-400" />
+              <span>{t('dashboardTitle')}</span>
+            </div>
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold">
+              {t('welcomeBack')}, <span className="text-gold-300">{user.fullName}</span>!
+            </h1>
+            <p className="text-xs text-ivory-200">
+              Profile ID: <strong className="font-mono text-gold-300">{userProfile.profileId}</strong> • {userProfile.city}, {userProfile.state || 'Maharashtra'}
+            </p>
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 shrink-0 z-10">
+        <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 shrink-0 z-10 w-full sm:w-auto">
           <button
             type="button"
             onClick={() => setEditModalOpen(true)}
