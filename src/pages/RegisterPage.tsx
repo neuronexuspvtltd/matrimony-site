@@ -303,6 +303,7 @@ export const RegisterPage: React.FC = () => {
       console.warn('Photo upload error:', err);
     } finally {
       setUploadingRegPhotos(false);
+      if (e.target) e.target.value = '';
     }
   };
 

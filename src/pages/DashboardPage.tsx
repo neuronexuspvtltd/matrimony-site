@@ -88,11 +88,18 @@ export const DashboardPage: React.FC = () => {
     setUploadingPhoto(true);
     try {
       const photoUrl = await uploadUserPhotoToStorage(file, user.id);
+      const activeProfile = dbProfile || profile || {};
+      const existingPhotos = Array.isArray(activeProfile.photos) ? activeProfile.photos : (activeProfile.primaryPhoto ? [activeProfile.primaryPhoto] : []);
+      const newPhotos = Array.from(new Set([photoUrl, ...existingPhotos]));
+
       await fetchApi('/profiles/me', {
         method: 'PUT',
-        body: JSON.stringify({ primaryPhoto: photoUrl }),
+        body: JSON.stringify({
+          primaryPhoto: photoUrl,
+          photos: newPhotos,
+        }),
       });
-      alert(language === 'EN' ? 'Profile photo uploaded successfully to Firebase Storage!' : 'प्रोफाईल फोटो बदलला व सेव्ह झाला!');
+      alert(language === 'EN' ? 'Profile photo uploaded successfully!' : 'प्रोफाईल फोटो बदलला व सेव्ह झाला!');
       const updated = await fetchApi('/profiles/me');
       if (updated && updated.profileId) {
         setDbProfile(updated);
@@ -102,6 +109,7 @@ export const DashboardPage: React.FC = () => {
       alert(err.message || 'Failed to upload photo');
     } finally {
       setUploadingPhoto(false);
+      if (e.target) e.target.value = '';
     }
   };
 

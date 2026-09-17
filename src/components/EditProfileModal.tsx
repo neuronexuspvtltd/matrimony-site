@@ -137,7 +137,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
       const uploadedUrls = await Promise.all(uploadPromises);
 
       setPhotosList((prev) => {
-        const next = [...prev, ...uploadedUrls];
+        const next = [...uploadedUrls, ...prev];
         if (!primaryPhotoUrl && next.length > 0) {
           setPrimaryPhotoUrl(next[0]);
         }
@@ -147,6 +147,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
       setError(err.message || 'Failed to upload photos');
     } finally {
       setUploadingPhotos(false);
+      if (e.target) e.target.value = '';
     }
   };
 

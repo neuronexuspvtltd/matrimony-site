@@ -89,27 +89,14 @@ const setItem = (key: string, val: any) => {
       e?.code === 22 ||
       (e?.message && e.message.includes('exceeded the quota'))
     ) {
-      console.warn('LocalStorage quota limit reached. Pruning cache to free space...');
+      console.warn('LocalStorage quota limit reached. Pruning transient cache to free space...');
       try {
         // Clear transient logs to reclaim space
         localStorage.removeItem('pb_views_data');
         localStorage.removeItem('pb_notifications_data');
-
-        // If storing profiles array, compress un-compressed large base64 image strings in historical profiles
-        if (key === PROFILES_KEY && Array.isArray(val)) {
-          const sanitizedProfiles = val.map((prof: any) => {
-            const p = { ...prof };
-            if (p.primaryPhoto && p.primaryPhoto.length > 500000) {
-              p.primaryPhoto = p.primaryPhoto.substring(0, 100) + '...'; // trim oversized raw base64
-            }
-            if (Array.isArray(p.photos)) {
-              p.photos = p.photos.filter((ph: string) => ph.length < 500000);
-            }
-            return p;
-          });
-          localStorage.setItem(key, JSON.stringify(sanitizedProfiles));
-          return;
-        }
+        localStorage.removeItem('pb_shortlists_data');
+        localStorage.removeItem('pb_reports_data');
+        localStorage.removeItem('pb_interests_data');
 
         localStorage.setItem(key, JSON.stringify(val));
       } catch (retryErr) {
@@ -558,14 +545,21 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
     }
 
     if (method === 'PUT') {
-      const pIndex = profiles.findIndex(
+      let pIndex = profiles.findIndex(
         (prof: ProfileData) =>
+          (targetId === 'me' && (prof.user._id === currentUser?.id || prof.profileId === currentUser?.profileId || prof.user.email?.toLowerCase() === currentUser?.email?.toLowerCase())) ||
           prof.user._id === currentUser?.id ||
           prof._id === currentUser?.id ||
           prof.profileId === targetId ||
           prof.user._id === targetId ||
-          prof._id === targetId
+          prof._id === targetId ||
+          (prof.user.email && currentUser?.email && prof.user.email.toLowerCase() === currentUser.email.toLowerCase())
       );
+
+      // Fallback: If profile index is not found but currentUser exists, create or pick first matching profile
+      if (pIndex === -1 && currentUser) {
+        pIndex = profiles.findIndex((prof: ProfileData) => prof.user.email?.toLowerCase() === currentUser.email?.toLowerCase());
+      }
 
       if (pIndex !== -1) {
         const existing = profiles[pIndex];
@@ -583,11 +577,18 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
               ? Math.floor((Date.now() - new Date(body.dob || body.dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
               : existing.age);
 
+        const updatedPrimary = body.primaryPhoto !== undefined ? body.primaryPhoto : existing.primaryPhoto;
+        const updatedPhotosList = Array.isArray(body.photos)
+          ? body.photos
+          : (updatedPrimary ? Array.from(new Set([updatedPrimary, ...(existing.photos || [])])) : existing.photos || []);
+
         const updatedProfile = {
           ...existing,
           ...body,
           age: ageVal,
           user: updatedUser,
+          primaryPhoto: updatedPrimary || (updatedPhotosList.length > 0 ? updatedPhotosList[0] : ''),
+          photos: updatedPhotosList,
           partnerPreferences: {
             ...existing.partnerPreferences,
             ...(body.partnerPreferences || {}),
@@ -604,7 +605,7 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
         setItem(PROFILES_KEY, profiles);
 
         // If updating current user profile, sync current user in localStorage
-        if (currentUser && (existing.user._id === currentUser.id || existing._id === currentUser.id)) {
+        if (currentUser && (existing.user._id === currentUser.id || existing._id === currentUser.id || existing.user.email?.toLowerCase() === currentUser.email?.toLowerCase())) {
           const updatedCurUser = {
             ...currentUser,
             fullName: updatedUser.fullName,

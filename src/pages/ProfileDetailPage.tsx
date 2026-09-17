@@ -80,7 +80,7 @@ export const ProfileDetailPage: React.FC = () => {
 
     setUploadingPhoto(true);
     try {
-      const targetUserId = user?.id || profile?.user?._id || profile?._id || 'usr_me';
+      const targetUserId = profile?.user?._id || profile?._id || user?.id || 'usr_me';
       const fileList = Array.from(files);
       const uploadedUrls = await Promise.all(
         fileList.map((file) => uploadUserPhotoToStorage(file, targetUserId))
@@ -90,10 +90,12 @@ export const ProfileDetailPage: React.FC = () => {
         ? profile.photos
         : (profile?.primaryPhoto ? [profile.primaryPhoto] : []);
 
-      const updatedPhotos = Array.from(new Set([...existingPhotos, ...uploadedUrls]));
-      const updatedPrimary = profile?.primaryPhoto || updatedPhotos[0] || uploadedUrls[0];
+      const updatedPhotos = Array.from(new Set([...uploadedUrls, ...existingPhotos]));
+      const updatedPrimary = uploadedUrls[0] || profile?.primaryPhoto || updatedPhotos[0];
 
-      await fetchApi('/profiles/me', {
+      const targetEndpoint = isOwnProfile ? '/profiles/me' : `/profiles/${id || profile?.profileId || targetUserId}`;
+
+      await fetchApi(targetEndpoint, {
         method: 'PUT',
         body: JSON.stringify({
           primaryPhoto: updatedPrimary,
@@ -112,6 +114,7 @@ export const ProfileDetailPage: React.FC = () => {
       alert(err.message || 'Failed to upload photo');
     } finally {
       setUploadingPhoto(false);
+      if (e.target) e.target.value = '';
     }
   };
 

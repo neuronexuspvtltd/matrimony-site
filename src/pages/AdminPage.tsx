@@ -178,7 +178,7 @@ export const AdminPage: React.FC = () => {
       );
 
       const existingPhotos = newUserForm.photos || [];
-      const newPhotos = Array.from(new Set([...existingPhotos, ...uploadedUrls]));
+      const newPhotos = Array.from(new Set([...uploadedUrls, ...existingPhotos]));
       const newPrimary = newUserForm.primaryPhoto || newPhotos[0] || '';
 
       setNewUserForm((prev) => ({
@@ -190,6 +190,7 @@ export const AdminPage: React.FC = () => {
       alert(err.message || 'Error uploading photo');
     } finally {
       setNewUserUploadingPhoto(false);
+      if (e.target) e.target.value = '';
     }
   };
 
@@ -238,7 +239,7 @@ export const AdminPage: React.FC = () => {
         ? editingUser.photos
         : (editingUser.primaryPhoto ? [editingUser.primaryPhoto] : []);
 
-      const newPhotos = Array.from(new Set([...existingPhotos, ...uploadedUrls]));
+      const newPhotos = Array.from(new Set([...uploadedUrls, ...existingPhotos]));
       const newPrimary = editingUser.primaryPhoto || newPhotos[0] || '';
 
       setEditingUser({
@@ -250,6 +251,7 @@ export const AdminPage: React.FC = () => {
       alert(err.message || 'Error uploading photo');
     } finally {
       setAdminUploadingPhoto(false);
+      if (e.target) e.target.value = '';
     }
   };
 
