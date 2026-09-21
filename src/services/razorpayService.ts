@@ -28,6 +28,45 @@ export const loadRazorpaySDK = (): Promise<boolean> => {
 };
 
 /**
+ * Triggers Razorpay Capture API to convert status from 'authorized' to 'captured'
+ */
+export const captureRazorpayPayment = async (
+  paymentId: string,
+  amountPaise: number,
+  keyId: string = RAZORPAY_CONFIG.keyId,
+  keySecret: string = RAZORPAY_CONFIG.keySecret
+): Promise<{ success: boolean; data?: any; error?: string }> => {
+  try {
+    if (!paymentId || !keyId || !keySecret) {
+      return { success: false, error: 'Missing parameters for capture' };
+    }
+    const authHeader = 'Basic ' + btoa(`${keyId}:${keySecret}`);
+    const res = await fetch(`https://api.razorpay.com/v1/payments/${paymentId}/capture`, {
+      method: 'POST',
+      headers: {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        amount: amountPaise,
+        currency: 'INR',
+      }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      console.log('Razorpay Auto-Capture success:', data);
+      return { success: true, data };
+    } else {
+      console.warn('Razorpay capture API warning (may already be captured client-side):', data);
+      return { success: false, data, error: data?.error?.description || 'Capture response non-OK' };
+    }
+  } catch (err: any) {
+    console.warn('Razorpay capture API call exception:', err);
+    return { success: false, error: err.message };
+  }
+};
+
+/**
  * HMAC SHA256 Signature verification using Razorpay Key Secret
  */
 export const verifyRazorpaySignature = async (
@@ -87,6 +126,7 @@ export const openRazorpayPayment = async ({
   let customAmountINR = amountINR;
   let customDescription = description;
   let customKeyId = RAZORPAY_CONFIG.keyId;
+  let customKeySecret = RAZORPAY_CONFIG.keySecret;
 
   try {
     const siteContentStr = localStorage.getItem('pb_site_content_data');
@@ -100,6 +140,9 @@ export const openRazorpayPayment = async ({
       }
       if (siteContent.razorpayKeyId && siteContent.razorpayKeyId.trim() !== '') {
         customKeyId = siteContent.razorpayKeyId.trim();
+      }
+      if (siteContent.razorpayKeySecret && siteContent.razorpayKeySecret.trim() !== '') {
+        customKeySecret = siteContent.razorpayKeySecret.trim();
       }
     }
   } catch (e) {}
@@ -116,6 +159,7 @@ export const openRazorpayPayment = async ({
     description: finalDescription,
     image: '/v_brothers_icon.png',
     payment_capture: 1, // ⚡ AUTO-CAPTURE PAYMENT IMMEDIATELY (Converts status from Authorized -> Captured/Paid)
+    capture: 1,
     prefill: {
       name: userDetails.name,
       email: userDetails.email,
@@ -126,11 +170,24 @@ export const openRazorpayPayment = async ({
     },
     handler: async function (response: RazorpaySuccessResponse) {
       if (response.razorpay_payment_id) {
+        // Attempt immediate server-side auto-capture via Razorpay Capture API
+        try {
+          await captureRazorpayPayment(
+            response.razorpay_payment_id,
+            amountPaise,
+            customKeyId,
+            customKeySecret
+          );
+        } catch (capErr) {
+          console.warn('Razorpay auto-capture attempt warning:', capErr);
+        }
+
         if (response.razorpay_order_id && response.razorpay_signature) {
           const isValid = await verifyRazorpaySignature(
             response.razorpay_order_id,
             response.razorpay_payment_id,
-            response.razorpay_signature
+            response.razorpay_signature,
+            customKeySecret
           );
           if (!isValid) {
             onFailure('Payment signature verification failed.');
