@@ -28,6 +28,44 @@ export const loadRazorpaySDK = (): Promise<boolean> => {
 };
 
 /**
+ * Creates an order via Razorpay API with payment_capture: 1 for automatic capture
+ */
+export const createRazorpayOrder = async (
+  amountPaise: number,
+  keyId: string = RAZORPAY_CONFIG.keyId,
+  keySecret: string = RAZORPAY_CONFIG.keySecret
+): Promise<string | null> => {
+  try {
+    if (!keyId || !keySecret || keySecret === 'YOUR_KEY_SECRET_HERE') {
+      return null;
+    }
+    const authHeader = 'Basic ' + btoa(`${keyId}:${keySecret}`);
+    const receiptId = `rcpt_${Date.now()}`;
+    const res = await fetch('https://api.razorpay.com/v1/orders', {
+      method: 'POST',
+      headers: {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        amount: amountPaise,
+        currency: 'INR',
+        receipt: receiptId,
+        payment_capture: 1, // ⚡ Force Auto-Capture on Order Level
+      }),
+    });
+    const data = await res.json();
+    if (res.ok && data.id) {
+      console.log('Razorpay Order created for auto-capture:', data.id);
+      return data.id;
+    }
+  } catch (err) {
+    console.warn('Razorpay order creation warning (using direct checkout fallback):', err);
+  }
+  return null;
+};
+
+/**
  * Triggers Razorpay Capture API to convert status from 'authorized' to 'captured'
  */
 export const captureRazorpayPayment = async (
@@ -57,7 +95,7 @@ export const captureRazorpayPayment = async (
       console.log('Razorpay Auto-Capture success:', data);
       return { success: true, data };
     } else {
-      console.warn('Razorpay capture API warning (may already be captured client-side):', data);
+      console.warn('Razorpay capture API response (already captured or pending):', data);
       return { success: false, data, error: data?.error?.description || 'Capture response non-OK' };
     }
   } catch (err: any) {
@@ -151,14 +189,17 @@ export const openRazorpayPayment = async ({
   const amountPaise = Math.round(finalAmountINR * 100);
   const finalDescription = customDescription || `Membership Registration & Profile Verification Fee (Special Offer ₹${finalAmountINR})`;
 
-  const options = {
+  // Attempt to create a Razorpay Order ID upstream with payment_capture = 1
+  const orderId = await createRazorpayOrder(amountPaise, customKeyId, customKeySecret);
+
+  const options: any = {
     key: customKeyId,
     amount: amountPaise,
     currency: RAZORPAY_CONFIG.currency,
     name: RAZORPAY_CONFIG.companyName,
     description: finalDescription,
     image: '/v_brothers_icon.png',
-    payment_capture: 1, // ⚡ AUTO-CAPTURE PAYMENT IMMEDIATELY (Converts status from Authorized -> Captured/Paid)
+    payment_capture: 1, // ⚡ AUTO-CAPTURE PAYMENT IMMEDIATELY
     capture: 1,
     prefill: {
       name: userDetails.name,
@@ -205,6 +246,10 @@ export const openRazorpayPayment = async ({
       },
     },
   };
+
+  if (orderId) {
+    options.order_id = orderId;
+  }
 
   try {
     const razorpayInstance = new (window as any).Razorpay(options);
