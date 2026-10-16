@@ -78,6 +78,136 @@ export const SearchPage: React.FC = () => {
     executeSearch();
   };
 
+  const renderFilterInputs = () => (
+    <>
+      {/* Search Input */}
+      <div>
+        <label className="block text-xs font-semibold text-gray-700 mb-1">
+          {language === 'EN' ? 'Name or Keyword' : 'नाव किंवा शब्द'}
+        </label>
+        <div className="relative">
+          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
+          <input
+            type="text"
+            name="name"
+            value={filters.name}
+            onChange={handleFilterChange}
+            placeholder={t('searchPlaceholder')}
+            className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-300 text-xs focus:ring-2 focus:ring-brand-900"
+          />
+        </div>
+      </div>
+
+      {/* Gender */}
+      <div>
+        <label className="block text-xs font-semibold text-gray-700 mb-1">{t('gender')}</label>
+        <select
+          name="gender"
+          value={filters.gender}
+          onChange={handleFilterChange}
+          className="w-full px-3 py-2.5 rounded-xl border border-gray-300 text-xs"
+        >
+          <option value="">{language === 'EN' ? 'All Genders' : 'सर्व'}</option>
+          <option value="female">{t('female')}</option>
+          <option value="male">{t('male')}</option>
+        </select>
+      </div>
+
+      {/* Age Range */}
+      <div>
+        <label className="block text-xs font-semibold text-gray-700 mb-1">
+          {t('age')} ({t('minAgeLabel')} - {t('maxAgeLabel')})
+        </label>
+        <div className="flex gap-2">
+          <input
+            type="number"
+            name="minAge"
+            value={filters.minAge}
+            onChange={handleFilterChange}
+            placeholder="21"
+            className="w-1/2 px-3 py-2.5 rounded-xl border border-gray-300 text-xs"
+          />
+          <input
+            type="number"
+            name="maxAge"
+            value={filters.maxAge}
+            onChange={handleFilterChange}
+            placeholder="40"
+            className="w-1/2 px-3 py-2.5 rounded-xl border border-gray-300 text-xs"
+          />
+        </div>
+      </div>
+
+      {/* City */}
+      <div>
+        <label className="block text-xs font-semibold text-gray-700 mb-1">{t('city')}</label>
+        <input
+          type="text"
+          name="city"
+          value={filters.city}
+          onChange={handleFilterChange}
+          placeholder="e.g. Sangli, Solapur, Satara, Kolhapur, Pune"
+          className="w-full px-3 py-2.5 rounded-xl border border-gray-300 text-xs"
+        />
+      </div>
+
+      {/* Religion */}
+      <div>
+        <label className="block text-xs font-semibold text-gray-700 mb-1">{t('religion')}</label>
+        <input
+          type="text"
+          name="religion"
+          value={filters.religion}
+          onChange={handleFilterChange}
+          placeholder="e.g. Hindu"
+          className="w-full px-3 py-2.5 rounded-xl border border-gray-300 text-xs"
+        />
+      </div>
+
+      {/* Caste */}
+      <div>
+        <label className="block text-xs font-semibold text-gray-700 mb-1">{t('caste')}</label>
+        <input
+          type="text"
+          name="caste"
+          value={filters.caste}
+          onChange={handleFilterChange}
+          placeholder="e.g. Maratha, Brahmin"
+          className="w-full px-3 py-2.5 rounded-xl border border-gray-300 text-xs"
+        />
+      </div>
+
+      {/* Education */}
+      <div>
+        <label className="block text-xs font-semibold text-gray-700 mb-1">{t('education')}</label>
+        <input
+          type="text"
+          name="education"
+          value={filters.education}
+          onChange={handleFilterChange}
+          placeholder="e.g. B.Tech, MBA"
+          className="w-full px-3 py-2.5 rounded-xl border border-gray-300 text-xs"
+        />
+      </div>
+
+      {/* Marital Status */}
+      <div>
+        <label className="block text-xs font-semibold text-gray-700 mb-1">{t('maritalStatus')}</label>
+        <select
+          name="maritalStatus"
+          value={filters.maritalStatus}
+          onChange={handleFilterChange}
+          className="w-full px-3 py-2.5 rounded-xl border border-gray-300 text-xs"
+        >
+          <option value="">{language === 'EN' ? 'Any Marital Status' : 'सर्व'}</option>
+          <option value="never_married">Never Married (अविवाहित)</option>
+          <option value="divorced">Divorced (घटस्फोटित)</option>
+          <option value="widowed">Widowed (विधवा/विधुर)</option>
+        </select>
+      </div>
+    </>
+  );
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       
@@ -136,9 +266,10 @@ export const SearchPage: React.FC = () => {
         {/* Desktop Sidebar Filter Panel */}
         <form
           onSubmit={handleApply}
-          className="hidden lg:block lg:col-span-4 bg-white rounded-3xl border border-ivory-300 p-6 space-y-5 sticky top-24 shadow-sm"
+          className="hidden lg:flex lg:flex-col lg:col-span-4 bg-white rounded-3xl border border-ivory-300 p-6 sticky top-24 shadow-sm max-h-[calc(100vh-7.5rem)]"
         >
-          <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-gray-100 pb-3 mb-4 shrink-0">
             <h3 className="font-serif font-bold text-brand-900 text-base flex items-center gap-2">
               <Filter className="w-4 h-4 text-gold-600" />
               <span>{language === 'EN' ? 'Search Filters' : 'शोध फिल्टर'}</span>
@@ -153,138 +284,20 @@ export const SearchPage: React.FC = () => {
             </button>
           </div>
 
-          {/* Search Input */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
-              {language === 'EN' ? 'Name or Keyword' : 'नाव किंवा शब्द'}
-            </label>
-            <div className="relative">
-              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
-              <input
-                type="text"
-                name="name"
-                value={filters.name}
-                onChange={handleFilterChange}
-                placeholder={t('searchPlaceholder')}
-                className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-300 text-xs focus:ring-2 focus:ring-brand-900"
-              />
-            </div>
+          {/* Scrollable Filter Inputs */}
+          <div className="overflow-y-auto pr-2 space-y-4 flex-1 min-h-0 custom-scrollbar">
+            {renderFilterInputs()}
           </div>
 
-          {/* Gender */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">{t('gender')}</label>
-            <select
-              name="gender"
-              value={filters.gender}
-              onChange={handleFilterChange}
-              className="w-full px-3 py-2.5 rounded-xl border border-gray-300 text-xs"
+          {/* Action Button */}
+          <div className="pt-3 border-t border-gray-100 mt-4 shrink-0">
+            <button
+              type="submit"
+              className="w-full py-3 rounded-xl bg-brand-900 text-gold-300 font-semibold text-xs hover:bg-brand-950 shadow-md cursor-pointer transition-colors"
             >
-              <option value="">{language === 'EN' ? 'All Genders' : 'सर्व'}</option>
-              <option value="female">{t('female')}</option>
-              <option value="male">{t('male')}</option>
-            </select>
+              {t('applyFilters')}
+            </button>
           </div>
-
-          {/* Age Range */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
-              {t('age')} ({t('minAgeLabel')} - {t('maxAgeLabel')})
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="number"
-                name="minAge"
-                value={filters.minAge}
-                onChange={handleFilterChange}
-                placeholder="21"
-                className="w-1/2 px-3 py-2.5 rounded-xl border border-gray-300 text-xs"
-              />
-              <input
-                type="number"
-                name="maxAge"
-                value={filters.maxAge}
-                onChange={handleFilterChange}
-                placeholder="40"
-                className="w-1/2 px-3 py-2.5 rounded-xl border border-gray-300 text-xs"
-              />
-            </div>
-          </div>
-
-          {/* City */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">{t('city')}</label>
-            <input
-              type="text"
-              name="city"
-              value={filters.city}
-              onChange={handleFilterChange}
-              placeholder="e.g. Sangli, Solapur, Satara, Kolhapur, Pune"
-              className="w-full px-3 py-2.5 rounded-xl border border-gray-300 text-xs"
-            />
-          </div>
-
-          {/* Religion */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">{t('religion')}</label>
-            <input
-              type="text"
-              name="religion"
-              value={filters.religion}
-              onChange={handleFilterChange}
-              placeholder="e.g. Hindu"
-              className="w-full px-3 py-2.5 rounded-xl border border-gray-300 text-xs"
-            />
-          </div>
-
-          {/* Caste */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">{t('caste')}</label>
-            <input
-              type="text"
-              name="caste"
-              value={filters.caste}
-              onChange={handleFilterChange}
-              placeholder="e.g. Maratha, Brahmin"
-              className="w-full px-3 py-2.5 rounded-xl border border-gray-300 text-xs"
-            />
-          </div>
-
-          {/* Education */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">{t('education')}</label>
-            <input
-              type="text"
-              name="education"
-              value={filters.education}
-              onChange={handleFilterChange}
-              placeholder="e.g. B.Tech, MBA"
-              className="w-full px-3 py-2.5 rounded-xl border border-gray-300 text-xs"
-            />
-          </div>
-
-          {/* Marital Status */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">{t('maritalStatus')}</label>
-            <select
-              name="maritalStatus"
-              value={filters.maritalStatus}
-              onChange={handleFilterChange}
-              className="w-full px-3 py-2.5 rounded-xl border border-gray-300 text-xs"
-            >
-              <option value="">{language === 'EN' ? 'Any Marital Status' : 'सर्व'}</option>
-              <option value="never_married">Never Married (अविवाहित)</option>
-              <option value="divorced">Divorced (घटस्फोटित)</option>
-              <option value="widowed">Widowed (विधवा/विधुर)</option>
-            </select>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full py-3 rounded-xl bg-brand-900 text-gold-300 font-semibold text-xs hover:bg-brand-950 shadow-md cursor-pointer"
-          >
-            {t('applyFilters')}
-          </button>
         </form>
 
         {/* Profiles Results Grid */}
@@ -321,51 +334,51 @@ export const SearchPage: React.FC = () => {
       {/* Mobile Filter Modal */}
       {mobileFiltersOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex justify-end lg:hidden">
-          <div className="bg-white w-full max-w-xs h-full p-6 overflow-y-auto space-y-5 animate-in slide-in-from-right">
-            <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="font-serif font-bold text-brand-900 text-base">{t('searchTitle')}</h3>
-              <button onClick={() => setMobileFiltersOpen(false)} className="p-1 text-gray-500">
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            <form onSubmit={handleApply} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">{t('gender')}</label>
-                <select
-                  name="gender"
-                  value={filters.gender}
-                  onChange={handleFilterChange}
-                  className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs"
-                >
-                  <option value="">All</option>
-                  <option value="female">{t('female')}</option>
-                  <option value="male">{t('male')}</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">{t('city')}</label>
-                <input
-                  type="text"
-                  name="city"
-                  value={filters.city}
-                  onChange={handleFilterChange}
-                  className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs"
-                />
-              </div>
-
-              <div className="pt-2 flex gap-2">
+          <div className="bg-white w-full max-w-sm h-full flex flex-col p-6 animate-in slide-in-from-right shadow-2xl">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-gray-100 pb-3 mb-4 shrink-0">
+              <h3 className="font-serif font-bold text-brand-900 text-base flex items-center gap-2">
+                <Filter className="w-4 h-4 text-gold-600" />
+                <span>{language === 'EN' ? 'Search Filters' : 'शोध फिल्टर'}</span>
+              </h3>
+              <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={handleClearFilters}
-                  className="w-1/2 py-2.5 rounded-xl border border-gray-300 text-xs font-semibold"
+                  className="text-xs text-gray-500 hover:text-brand-900 flex items-center gap-1 cursor-pointer"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>{t('clearFilters')}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMobileFiltersOpen(false)}
+                  className="p-1 text-gray-500 hover:text-brand-900 cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleApply} className="flex flex-col flex-1 min-h-0">
+              {/* Scrollable Filter Inputs */}
+              <div className="overflow-y-auto pr-2 space-y-4 flex-1 min-h-0 custom-scrollbar">
+                {renderFilterInputs()}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-4 border-t border-gray-100 mt-4 flex gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={handleClearFilters}
+                  className="w-1/3 py-2.5 rounded-xl border border-gray-300 text-xs font-semibold hover:bg-gray-50 cursor-pointer"
                 >
                   {t('clearFilters')}
                 </button>
                 <button
                   type="submit"
-                  className="w-1/2 py-2.5 rounded-xl bg-brand-900 text-gold-300 text-xs font-semibold"
+                  className="w-2/3 py-2.5 rounded-xl bg-brand-900 text-gold-300 font-semibold text-xs hover:bg-brand-950 shadow-md cursor-pointer transition-colors"
                 >
                   {t('applyFilters')}
                 </button>

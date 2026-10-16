@@ -52,9 +52,9 @@ export const Header: React.FC = () => {
           {/* Logo Section */}
           <Link to="/" className="flex items-center group shrink-0 py-1">
             <img
-              src="/v_brothers_logo_clean.png"
+              src="/v_brothers_navbar_logo.png?v=2"
               alt="V Brothers Marriage Bureau"
-              className="h-14 sm:h-16 md:h-20 lg:h-22 w-auto object-contain max-w-[260px] sm:max-w-[340px] md:max-w-[420px] transition-transform group-hover:scale-[1.02]"
+              className="h-14 sm:h-16 md:h-18 lg:h-20 w-auto object-contain max-w-[260px] sm:max-w-[340px] md:max-w-[420px] transition-transform group-hover:scale-[1.02]"
             />
           </Link>
 

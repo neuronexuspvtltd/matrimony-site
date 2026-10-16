@@ -327,7 +327,7 @@ export const LandingPage: React.FC = () => {
         <div className="text-center max-w-2xl mx-auto space-y-3">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 border border-brand-200 text-brand-900 text-xs font-semibold">
             <Heart className="w-3.5 h-3.5 fill-brand-700 text-brand-700" />
-            <span>{language === 'EN' ? '1,800+ Happy Marriages' : '१,८००+ आनंदी दांपत्ये'}</span>
+            <span>{language === 'EN' ? '200+ Happy Marriages' : '२००+ आनंदी दांपत्ये'}</span>
           </div>
           <h2 className="font-serif text-3xl sm:text-4xl font-bold text-brand-950">
             {language === 'EN' ? 'Success Stories' : 'यशस्वी विवाह कथा'}
