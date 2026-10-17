@@ -105,7 +105,7 @@ export const Footer: React.FC = () => {
                 <span>pranotipawar056@gmail.com</span>
               </div>
               <p className="text-[10px] md:text-[11px] text-ivory-400 w-full pt-0.5 md:pt-2">
-                {language === 'EN' ? 'Headquarters: Pune & Mumbai, Maharashtra' : 'मुख्य कार्यालय: पुणे आणि मुंबई, महाराष्ट्र'}
+                {language === 'EN' ? 'Headquarters: Savlaj, Tal. Tasgoan, Dis. Sangli' : 'मुख्य कार्यालय: सावळज, ता. तासगाव, जि. सांगली'}
               </p>
             </div>
           </div>
