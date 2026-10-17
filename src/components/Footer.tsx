@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
-import { Shield, Heart, Globe, Phone, Mail } from 'lucide-react';
+import { Shield, Heart, Globe, Phone, Mail, User } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   const { t, language, toggleLanguage } = useLanguage();
@@ -104,7 +104,11 @@ export const Footer: React.FC = () => {
                 <Mail className="w-3.5 h-3.5 text-gold-400" />
                 <span>pranotipawar056@gmail.com</span>
               </div>
-              <p className="text-[10px] md:text-[11px] text-ivory-400 w-full pt-0.5 md:pt-2">
+              <div className="flex items-center gap-1.5 text-gold-300 font-medium">
+                <User className="w-3.5 h-3.5 text-gold-400 shrink-0" />
+                <span>{language === 'EN' ? 'Mrs. Pranoti Prashant Pawar CEO (MBA)' : 'सौ. प्रणोती प्रशांत पवार CEO (MBA)'}</span>
+              </div>
+              <p className="text-[10px] md:text-[11px] text-ivory-400 w-full pt-0.5 md:pt-1">
                 {language === 'EN' ? 'Headquarters: Savlaj, Tal. Tasgoan, Dis. Sangli' : 'मुख्य कार्यालय: सावळज, ता. तासगाव, जि. सांगली'}
               </p>
             </div>
