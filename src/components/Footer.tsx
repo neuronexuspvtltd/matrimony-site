@@ -16,11 +16,18 @@ export const Footer: React.FC = () => {
           {/* Brand Col */}
           <div className="col-span-2 md:col-span-1 space-y-3 md:space-y-4">
             <Link to="/" className="inline-block bg-white/95 p-2 rounded-2xl shadow-md group">
-              <img
-                src="/v_brothers_navbar_logo.png?v=2"
-                alt="V Brothers Marriage Bureau"
-                className="h-12 md:h-14 w-auto object-contain transition-transform group-hover:scale-[1.02]"
-              />
+              <picture>
+                <source srcSet="/v_brothers_navbar_logo.webp" type="image/webp" />
+                <img
+                  src="/v_brothers_navbar_logo.png"
+                  alt="V Brothers Marriage Bureau"
+                  width="1024"
+                  height="341"
+                  loading="lazy"
+                  decoding="async"
+                  className="h-12 md:h-14 w-auto object-contain transition-transform group-hover:scale-[1.02]"
+                />
+              </picture>
             </Link>
             <p className="text-[11px] md:text-xs text-ivory-300 leading-relaxed max-w-xs">
               {t('brandSubtitle')}

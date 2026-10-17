@@ -51,11 +51,23 @@ export const Header: React.FC = () => {
           
           {/* Logo Section */}
           <Link to="/" className="flex items-center group shrink-0 py-1">
-            <img
-              src="/v_brothers_navbar_logo.png?v=2"
-              alt="V Brothers Marriage Bureau"
-              className="h-14 sm:h-16 md:h-18 lg:h-20 w-auto object-contain max-w-[260px] sm:max-w-[340px] md:max-w-[420px] transition-transform group-hover:scale-[1.02]"
-            />
+            <picture className="flex items-center">
+              <source
+                srcSet="/v_brothers_navbar_logo_mobile.webp 600w, /v_brothers_navbar_logo.webp 1024w"
+                sizes="(max-width: 640px) 260px, 420px"
+                type="image/webp"
+              />
+              <img
+                src="/v_brothers_navbar_logo.png"
+                alt="V Brothers Marriage Bureau"
+                width="1024"
+                height="341"
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
+                className="h-14 sm:h-16 md:h-18 lg:h-20 w-auto object-contain max-w-[260px] sm:max-w-[340px] md:max-w-[420px] transition-transform group-hover:scale-[1.02]"
+              />
+            </picture>
           </Link>
 
           {/* Desktop Navigation Links (Spacious & Clean Layout for Logged-In Users) */}
