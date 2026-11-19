@@ -519,8 +519,16 @@ export const SearchPage: React.FC = () => {
 
       {/* Mobile Filter Modal */}
       {mobileFiltersOpen && (
-        <div className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-xs flex justify-end lg:hidden">
-          <div className="bg-white w-full sm:max-w-md h-[100dvh] max-h-[100dvh] flex flex-col animate-in slide-in-from-right duration-200 shadow-2xl relative overflow-hidden sm:border-l sm:border-ivory-300">
+        <div className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-xs lg:hidden overflow-hidden">
+          {/* Backdrop click to dismiss */}
+          <div
+            className="absolute inset-0 bg-transparent"
+            onClick={() => setMobileFiltersOpen(false)}
+            aria-hidden="true"
+          />
+
+          {/* Drawer strictly pinned from top 0 to bottom 0 */}
+          <div className="absolute inset-y-0 right-0 w-full sm:max-w-md bg-white flex flex-col shadow-2xl overflow-hidden sm:border-l sm:border-ivory-300 animate-in slide-in-from-right duration-200">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4 shrink-0 bg-white">
               <div className="flex items-center gap-3">
@@ -560,12 +568,12 @@ export const SearchPage: React.FC = () => {
             {/* Form */}
             <form onSubmit={handleApply} className="flex flex-col flex-1 min-h-0 overflow-hidden">
               {/* Scrollable Filter Inputs */}
-              <div className="overflow-y-auto px-5 py-5 space-y-4 flex-1 min-h-0 custom-scrollbar">
+              <div className="overflow-y-auto px-5 py-4 space-y-4 flex-1 min-h-0 custom-scrollbar overscroll-contain">
                 {renderMobileFilterInputs()}
               </div>
 
-              {/* Action Buttons - Pinned at bottom */}
-              <div className="p-4 sm:p-5 border-t border-gray-200 bg-white/95 backdrop-blur-md shrink-0 flex items-center gap-3 shadow-[0_-8px_24px_rgba(0,0,0,0.06)]">
+              {/* Action Buttons - Pinned at bottom with safe padding */}
+              <div className="p-4 pb-6 sm:pb-5 border-t border-gray-200 bg-white shrink-0 flex items-center gap-3 shadow-[0_-8px_24px_rgba(0,0,0,0.06)]">
                 <button
                   type="button"
                   onClick={handleClearFilters}
