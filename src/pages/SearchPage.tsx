@@ -223,6 +223,177 @@ export const SearchPage: React.FC = () => {
     </>
   );
 
+  {/* Mobile-optimized Filter Inputs with modern touch controls */}
+  const renderMobileFilterInputs = () => (
+    <>
+      {/* Search Input */}
+      <div>
+        <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+          {language === 'EN' ? 'Name or Keyword' : 'नाव किंवा शब्द'}
+        </label>
+        <div className="relative">
+          <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-3" />
+          <input
+            type="text"
+            name="name"
+            value={filters.name}
+            onChange={handleFilterChange}
+            placeholder={t('searchPlaceholder')}
+            className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50/70 focus:bg-white text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-900/15 focus:border-brand-900 transition-all"
+          />
+        </div>
+      </div>
+
+      {/* Gender Segmented Tabs */}
+      <div>
+        <label className="block text-xs font-semibold text-gray-700 mb-1.5">{t('gender')}</label>
+        <div className="grid grid-cols-3 gap-1.5 p-1 bg-gray-100 rounded-xl border border-gray-200/80">
+          <button
+            type="button"
+            onClick={() => setFilters({ ...filters, gender: '' })}
+            className={`py-2 px-1 text-center text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+              filters.gender === ''
+                ? 'bg-white text-brand-950 shadow-xs border border-gray-200'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            {language === 'EN' ? 'All' : 'सर्व'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilters({ ...filters, gender: 'female' })}
+            className={`py-2 px-1 text-center text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+              filters.gender === 'female'
+                ? 'bg-brand-900 text-gold-300 shadow-xs'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            {language === 'EN' ? 'Bride' : 'वधू (स्त्री)'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilters({ ...filters, gender: 'male' })}
+            className={`py-2 px-1 text-center text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+              filters.gender === 'male'
+                ? 'bg-brand-900 text-gold-300 shadow-xs'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            {language === 'EN' ? 'Groom' : 'वर (पुरुष)'}
+          </button>
+        </div>
+      </div>
+
+      {/* Age Range with Min / Max Badge Inputs */}
+      <div>
+        <div className="flex items-center justify-between mb-1.5">
+          <label className="block text-xs font-semibold text-gray-700">
+            {t('age')}
+          </label>
+          <span className="text-[11px] text-brand-900 font-semibold bg-brand-50 px-2 py-0.5 rounded-md border border-brand-100">
+            {filters.minAge || '21'} - {filters.maxAge || '40'} {language === 'EN' ? 'Yrs' : 'वर्षे'}
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-2.5">
+          <div className="relative">
+            <span className="absolute left-3 top-2 text-[10px] uppercase font-bold text-gray-400 tracking-wider">
+              {language === 'EN' ? 'Min' : 'किमान'}
+            </span>
+            <input
+              type="number"
+              name="minAge"
+              value={filters.minAge}
+              onChange={handleFilterChange}
+              placeholder="21"
+              className="w-full pt-5 pb-1.5 px-3 rounded-xl border border-gray-200 bg-gray-50/70 focus:bg-white text-xs font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-900/15 focus:border-brand-900 transition-all"
+            />
+          </div>
+          <div className="relative">
+            <span className="absolute left-3 top-2 text-[10px] uppercase font-bold text-gray-400 tracking-wider">
+              {language === 'EN' ? 'Max' : 'कमाल'}
+            </span>
+            <input
+              type="number"
+              name="maxAge"
+              value={filters.maxAge}
+              onChange={handleFilterChange}
+              placeholder="40"
+              className="w-full pt-5 pb-1.5 px-3 rounded-xl border border-gray-200 bg-gray-50/70 focus:bg-white text-xs font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-900/15 focus:border-brand-900 transition-all"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* City */}
+      <div>
+        <label className="block text-xs font-semibold text-gray-700 mb-1.5">{t('city')}</label>
+        <input
+          type="text"
+          name="city"
+          value={filters.city}
+          onChange={handleFilterChange}
+          placeholder="e.g. Sangli, Solapur, Satara, Kolhapur, Pune"
+          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/70 focus:bg-white text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-900/15 focus:border-brand-900 transition-all"
+        />
+      </div>
+
+      {/* Religion */}
+      <div>
+        <label className="block text-xs font-semibold text-gray-700 mb-1.5">{t('religion')}</label>
+        <input
+          type="text"
+          name="religion"
+          value={filters.religion}
+          onChange={handleFilterChange}
+          placeholder="e.g. Hindu"
+          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/70 focus:bg-white text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-900/15 focus:border-brand-900 transition-all"
+        />
+      </div>
+
+      {/* Caste */}
+      <div>
+        <label className="block text-xs font-semibold text-gray-700 mb-1.5">{t('caste')}</label>
+        <input
+          type="text"
+          name="caste"
+          value={filters.caste}
+          onChange={handleFilterChange}
+          placeholder="e.g. Maratha, Brahmin, Mahar"
+          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/70 focus:bg-white text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-900/15 focus:border-brand-900 transition-all"
+        />
+      </div>
+
+      {/* Education */}
+      <div>
+        <label className="block text-xs font-semibold text-gray-700 mb-1.5">{t('education')}</label>
+        <input
+          type="text"
+          name="education"
+          value={filters.education}
+          onChange={handleFilterChange}
+          placeholder="e.g. B.Tech, MBA, Doctor"
+          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/70 focus:bg-white text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-900/15 focus:border-brand-900 transition-all"
+        />
+      </div>
+
+      {/* Marital Status */}
+      <div>
+        <label className="block text-xs font-semibold text-gray-700 mb-1.5">{t('maritalStatus')}</label>
+        <select
+          name="maritalStatus"
+          value={filters.maritalStatus}
+          onChange={handleFilterChange}
+          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/70 focus:bg-white text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-900/15 focus:border-brand-900 transition-all"
+        >
+          <option value="">{language === 'EN' ? 'Any Marital Status' : 'सर्व वैवाहिक स्थिती'}</option>
+          <option value="never_married">{language === 'EN' ? 'Never Married' : 'Never Married (अविवाहित)'}</option>
+          <option value="divorced">{language === 'EN' ? 'Divorced' : 'Divorced (घटस्फोटित)'}</option>
+          <option value="widowed">{language === 'EN' ? 'Widowed' : 'Widowed (विधवा/विधुर)'}</option>
+        </select>
+      </div>
+    </>
+  );
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       
@@ -349,26 +520,37 @@ export const SearchPage: React.FC = () => {
       {/* Mobile Filter Modal */}
       {mobileFiltersOpen && (
         <div className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-xs flex justify-end lg:hidden">
-          <div className="bg-white w-full max-w-sm h-[100dvh] max-h-[100dvh] flex flex-col animate-in slide-in-from-right shadow-2xl relative overflow-hidden">
+          <div className="bg-white w-full sm:max-w-md h-[100dvh] max-h-[100dvh] flex flex-col animate-in slide-in-from-right duration-200 shadow-2xl relative overflow-hidden sm:border-l sm:border-ivory-300">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4 shrink-0 bg-white">
-              <h3 className="font-serif font-bold text-brand-900 text-base flex items-center gap-2">
-                <Filter className="w-4 h-4 text-gold-600" />
-                <span>{language === 'EN' ? 'Search Filters' : 'शोध फिल्टर'}</span>
-              </h3>
               <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-brand-50 border border-brand-100 text-brand-900 flex items-center justify-center shadow-xs">
+                  <Filter className="w-4 h-4 text-gold-600" />
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-brand-950 text-base leading-tight">
+                    {language === 'EN' ? 'Search Filters' : 'शोध फिल्टर'}
+                  </h3>
+                  <p className="text-[11px] text-gray-500 font-medium">
+                    {language === 'EN' ? `${totalCount} profiles available` : `${totalCount} प्रोफाईल्स उपलब्ध`}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5">
                 <button
                   type="button"
                   onClick={handleClearFilters}
-                  className="text-xs text-gray-500 hover:text-brand-900 flex items-center gap-1 cursor-pointer"
+                  className="px-2.5 py-1.5 text-xs text-brand-900 hover:bg-brand-50 rounded-lg transition-colors font-medium flex items-center gap-1 cursor-pointer"
+                  title={t('clearFilters')}
                 >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span>{t('clearFilters')}</span>
+                  <RotateCcw className="w-3.5 h-3.5 text-gold-600" />
+                  <span className="hidden sm:inline">{t('clearFilters')}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setMobileFiltersOpen(false)}
-                  className="p-1 text-gray-500 hover:text-brand-900 cursor-pointer"
+                  className="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 active:scale-95 text-gray-600 hover:text-gray-900 flex items-center justify-center transition-all cursor-pointer"
+                  aria-label="Close"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -378,26 +560,29 @@ export const SearchPage: React.FC = () => {
             {/* Form */}
             <form onSubmit={handleApply} className="flex flex-col flex-1 min-h-0 overflow-hidden">
               {/* Scrollable Filter Inputs */}
-              <div className="overflow-y-auto px-5 py-4 space-y-4 flex-1 min-h-0 custom-scrollbar">
-                {renderFilterInputs()}
+              <div className="overflow-y-auto px-5 py-5 space-y-4 flex-1 min-h-0 custom-scrollbar">
+                {renderMobileFilterInputs()}
               </div>
 
-              {/* Action Buttons - Pinned at bottom with safe area padding */}
-              <div className="p-4 sm:p-5 border-t border-gray-200 bg-white shrink-0 flex gap-2.5 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] pb-8 sm:pb-5">
+              {/* Action Buttons - Pinned at bottom */}
+              <div className="p-4 sm:p-5 border-t border-gray-200 bg-white/95 backdrop-blur-md shrink-0 flex items-center gap-3 shadow-[0_-8px_24px_rgba(0,0,0,0.06)]">
                 <button
                   type="button"
                   onClick={handleClearFilters}
-                  className="w-1/3 py-3 rounded-xl border border-gray-300 text-xs font-semibold hover:bg-gray-50 cursor-pointer flex items-center justify-center gap-1"
+                  className="py-3 px-4 rounded-xl border border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold cursor-pointer flex items-center justify-center gap-1.5 transition-all active:scale-95 shrink-0"
                 >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span>{t('clearFilters')}</span>
+                  <RotateCcw className="w-3.5 h-3.5 text-gray-500" />
+                  <span>{language === 'EN' ? 'Reset' : 'रीसेट'}</span>
                 </button>
                 <button
                   type="submit"
-                  className="w-2/3 py-3 rounded-xl bg-brand-900 text-gold-300 font-bold text-xs hover:bg-brand-950 shadow-md cursor-pointer transition-colors flex items-center justify-center gap-1.5"
+                  className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-brand-950 via-brand-900 to-brand-800 text-gold-300 font-bold text-xs sm:text-sm hover:brightness-110 shadow-lg shadow-brand-950/25 cursor-pointer transition-all active:scale-98 flex items-center justify-center gap-2"
                 >
-                  <Filter className="w-3.5 h-3.5" />
+                  <Filter className="w-4 h-4 text-gold-400" />
                   <span>{t('applyFilters')}</span>
+                  <span className="ml-1 px-2 py-0.5 rounded-full bg-gold-400/20 text-gold-200 text-[10px] font-bold border border-gold-400/30">
+                    {totalCount}
+                  </span>
                 </button>
               </div>
             </form>
