@@ -485,26 +485,63 @@ export const mockApiRequest = async (endpoint: string, options: RequestInit = {}
   if (endpoint.startsWith('/search') || endpoint === '/profiles') {
     const params = new URLSearchParams(endpoint.split('?')[1] || '');
     const gender = params.get('gender');
-    const minAge = parseInt(params.get('minAge') || '18', 10);
-    const maxAge = parseInt(params.get('maxAge') || '70', 10);
+    const minAgeParam = params.get('minAge');
+    const minAge = minAgeParam ? parseInt(minAgeParam, 10) : 0;
+    const maxAgeParam = params.get('maxAge');
+    const maxAge = maxAgeParam ? parseInt(maxAgeParam, 10) : 150;
     const city = params.get('city');
     const caste = params.get('caste');
     const religion = params.get('religion');
     const maritalStatus = params.get('maritalStatus');
-    const search = params.get('search');
+    const education = params.get('education');
+    const occupation = params.get('occupation');
+    const motherTongue = params.get('motherTongue');
+    const search = (params.get('search') || params.get('name') || '').trim().toLowerCase();
+
+    const normalizeMS = (val?: string) => (val || '').toLowerCase().replace(/[\s_-]+/g, '');
 
     const filtered = profiles.filter((p: any) => {
       // Exclude suspended or deleted profiles from public site views
       if (p.status === 'suspended' || p.status === 'deleted' || (p as any).isDeleted === true) return false;
       // Exclude currently logged in user's own profile from match search results
-      if (currentUser && (p.user._id === currentUser.id || p._id === currentUser.id || p.profileId === currentUser.profileId)) return false;
-      if (gender && p.gender !== gender) return false;
-      if (p.age < minAge || p.age > maxAge) return false;
-      if (city && city !== 'All' && !p.city.toLowerCase().includes(city.toLowerCase())) return false;
-      if (caste && caste !== 'All' && p.caste.toLowerCase() !== caste.toLowerCase()) return false;
-      if (religion && religion !== 'All' && p.religion.toLowerCase() !== religion.toLowerCase()) return false;
-      if (maritalStatus && maritalStatus !== 'All' && p.maritalStatus.toLowerCase() !== maritalStatus.toLowerCase()) return false;
-      if (search && !p.user.fullName.toLowerCase().includes(search.toLowerCase()) && !p.profileId.toLowerCase().includes(search.toLowerCase())) return false;
+      if (currentUser && (p.user?._id === currentUser.id || p._id === currentUser.id || p.profileId === currentUser.profileId)) return false;
+      
+      // Gender filter
+      if (gender && gender !== 'All' && gender !== 'all' && (p.gender || p.user?.gender)?.toLowerCase() !== gender.toLowerCase()) return false;
+      
+      // Age filter
+      const pAge = typeof p.age === 'number' ? p.age : (p.age ? parseInt(p.age, 10) : 0);
+      if (pAge && (pAge < minAge || pAge > maxAge)) return false;
+      
+      // City & State filter (fuzzy/includes check)
+      if (city && city !== 'All' && city !== 'all' && !((p.city || '') + ' ' + (p.state || '')).toLowerCase().includes(city.trim().toLowerCase())) return false;
+      
+      // Caste & Sub-caste filter
+      if (caste && caste !== 'All' && caste !== 'all' && !((p.caste || '') + ' ' + (p.subCaste || '')).toLowerCase().includes(caste.trim().toLowerCase())) return false;
+      
+      // Religion filter
+      if (religion && religion !== 'All' && religion !== 'all' && !(p.religion || '').toLowerCase().includes(religion.trim().toLowerCase())) return false;
+      
+      // Education filter
+      if (education && education !== 'All' && education !== 'all' && !(p.education || '').toLowerCase().includes(education.trim().toLowerCase())) return false;
+      
+      // Occupation filter
+      if (occupation && occupation !== 'All' && occupation !== 'all' && !(p.occupation || '').toLowerCase().includes(occupation.trim().toLowerCase())) return false;
+      
+      // Mother Tongue filter
+      if (motherTongue && motherTongue !== 'All' && motherTongue !== 'all' && !(p.motherTongue || '').toLowerCase().includes(motherTongue.trim().toLowerCase())) return false;
+      
+      // Marital Status filter (normalizes never_married, Never Married, etc.)
+      if (maritalStatus && maritalStatus !== 'All' && maritalStatus !== 'all' && normalizeMS(p.maritalStatus) !== normalizeMS(maritalStatus)) return false;
+      
+      // Name / ID / Keyword search
+      if (search) {
+        const nameMatch = (p.user?.fullName || p.fullName || '').toLowerCase().includes(search);
+        const idMatch = (p.profileId || '').toLowerCase().includes(search);
+        const occupationMatch = (p.occupation || '').toLowerCase().includes(search);
+        const cityMatch = (p.city || '').toLowerCase().includes(search);
+        if (!nameMatch && !idMatch && !occupationMatch && !cityMatch) return false;
+      }
       return true;
     });
 

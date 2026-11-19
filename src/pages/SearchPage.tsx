@@ -35,7 +35,7 @@ export const SearchPage: React.FC = () => {
   };
 
   const handleClearFilters = () => {
-    setFilters({
+    const defaultFilters = {
       name: '',
       gender: '',
       minAge: '21',
@@ -47,14 +47,17 @@ export const SearchPage: React.FC = () => {
       education: '',
       occupation: '',
       maritalStatus: '',
-    });
+    };
+    setFilters(defaultFilters);
+    executeSearch(defaultFilters);
   };
 
-  const executeSearch = async () => {
+  const executeSearch = async (overrideFilters?: typeof filters) => {
     setLoading(true);
     try {
+      const activeFilters = overrideFilters || filters;
       const queryParams = new URLSearchParams();
-      Object.entries(filters).forEach(([key, val]) => {
+      Object.entries(activeFilters).forEach(([key, val]) => {
         if (val) queryParams.append(key, val);
       });
 
@@ -71,6 +74,18 @@ export const SearchPage: React.FC = () => {
   useEffect(() => {
     executeSearch();
   }, []);
+
+  // Lock body scroll when mobile filter drawer is open
+  useEffect(() => {
+    if (mobileFiltersOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileFiltersOpen]);
 
   const handleApply = (e: React.FormEvent) => {
     e.preventDefault();
@@ -333,10 +348,10 @@ export const SearchPage: React.FC = () => {
 
       {/* Mobile Filter Modal */}
       {mobileFiltersOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex justify-end lg:hidden">
-          <div className="bg-white w-full max-w-sm h-full flex flex-col p-6 animate-in slide-in-from-right shadow-2xl">
+        <div className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-xs flex justify-end lg:hidden">
+          <div className="bg-white w-full max-w-sm h-[100dvh] max-h-[100dvh] flex flex-col animate-in slide-in-from-right shadow-2xl relative overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3 mb-4 shrink-0">
+            <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4 shrink-0 bg-white">
               <h3 className="font-serif font-bold text-brand-900 text-base flex items-center gap-2">
                 <Filter className="w-4 h-4 text-gold-600" />
                 <span>{language === 'EN' ? 'Search Filters' : 'शोध फिल्टर'}</span>
@@ -361,26 +376,28 @@ export const SearchPage: React.FC = () => {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleApply} className="flex flex-col flex-1 min-h-0">
+            <form onSubmit={handleApply} className="flex flex-col flex-1 min-h-0 overflow-hidden">
               {/* Scrollable Filter Inputs */}
-              <div className="overflow-y-auto pr-2 space-y-4 flex-1 min-h-0 custom-scrollbar">
+              <div className="overflow-y-auto px-5 py-4 space-y-4 flex-1 min-h-0 custom-scrollbar">
                 {renderFilterInputs()}
               </div>
 
-              {/* Action Buttons */}
-              <div className="pt-4 border-t border-gray-100 mt-4 flex gap-2 shrink-0">
+              {/* Action Buttons - Pinned at bottom with safe area padding */}
+              <div className="p-4 sm:p-5 border-t border-gray-200 bg-white shrink-0 flex gap-2.5 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] pb-8 sm:pb-5">
                 <button
                   type="button"
                   onClick={handleClearFilters}
-                  className="w-1/3 py-2.5 rounded-xl border border-gray-300 text-xs font-semibold hover:bg-gray-50 cursor-pointer"
+                  className="w-1/3 py-3 rounded-xl border border-gray-300 text-xs font-semibold hover:bg-gray-50 cursor-pointer flex items-center justify-center gap-1"
                 >
-                  {t('clearFilters')}
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>{t('clearFilters')}</span>
                 </button>
                 <button
                   type="submit"
-                  className="w-2/3 py-2.5 rounded-xl bg-brand-900 text-gold-300 font-semibold text-xs hover:bg-brand-950 shadow-md cursor-pointer transition-colors"
+                  className="w-2/3 py-3 rounded-xl bg-brand-900 text-gold-300 font-bold text-xs hover:bg-brand-950 shadow-md cursor-pointer transition-colors flex items-center justify-center gap-1.5"
                 >
-                  {t('applyFilters')}
+                  <Filter className="w-3.5 h-3.5" />
+                  <span>{t('applyFilters')}</span>
                 </button>
               </div>
             </form>
